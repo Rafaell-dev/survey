@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useParams } from "next/navigation";
 import { fetchApi } from "@/services/api";
 import { Button } from "@/components/ui/button";
@@ -17,6 +17,9 @@ export default function SurveyPlayerPage() {
   const [responseId, setResponseId] = useState<string | null>(null);
   
   const [currentBlockIndex, setCurrentBlockIndex] = useState(0);
+  const blockEnterTimeRef = useRef<number>(Date.now());
+  const blockEnterDateRef = useRef<string>(new Date().toISOString());
+
   const [answers, setAnswers] = useState<Record<string, any>>({});
   
   const [loading, setLoading] = useState(true);
@@ -42,6 +45,13 @@ export default function SurveyPlayerPage() {
     loadSurvey();
   }, [id]);
 
+  useEffect(() => {
+    if (!loading && survey && survey.blocks.length > 0) {
+      blockEnterTimeRef.current = Date.now();
+      blockEnterDateRef.current = new Date().toISOString();
+    }
+  }, [currentBlockIndex, loading, survey]);
+
   if (loading) return <div className="p-8 text-center text-muted-foreground">Carregando questionário...</div>;
   if (error) return <div className="p-8 text-center text-destructive">{error}</div>;
   if (finished) return (
@@ -63,6 +73,25 @@ export default function SurveyPlayerPage() {
   const handleNext = async () => {
     setSubmitting(true);
     try {
+      const leftAt = new Date();
+      const timeSpentMs = leftAt.getTime() - blockEnterTimeRef.current;
+
+      // 0. Registrar tracking de tempo do bloco
+      try {
+        await fetchApi(`/public/response/${responseId}/track/block`, {
+          method: "POST",
+          body: JSON.stringify({
+            blockId: currentBlock.id,
+            enteredAt: blockEnterDateRef.current,
+            leftAt: leftAt.toISOString(),
+            timeSpentMs,
+            orderIndex: currentBlockIndex
+          })
+        });
+      } catch (err) {
+        console.error("Erro ao registrar tracking", err);
+      }
+
       // 1. Salvar respostas
       for (const question of currentBlock.questions) {
         const answerVal = answers[question.id];
