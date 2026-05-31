@@ -8,11 +8,12 @@ import { QuestionEditor } from "./QuestionEditor";
 interface BlockEditorProps {
   block: Block;
   index: number;
+  allBlocks: Block[];
   updateBlock: (id: string, updates: Partial<Block>) => void;
   removeBlock: (id: string) => void;
 }
 
-export function BlockEditor({ block, index, updateBlock, removeBlock }: BlockEditorProps) {
+export function BlockEditor({ block, index, allBlocks, updateBlock, removeBlock }: BlockEditorProps) {
   const handleAddQuestion = () => {
     const newQuestion: Question = {
       id: crypto.randomUUID(),
@@ -67,6 +68,7 @@ export function BlockEditor({ block, index, updateBlock, removeBlock }: BlockEdi
             key={q.id}
             index={qIndex}
             question={q}
+            allBlocks={allBlocks}
             updateQuestion={handleUpdateQuestion}
             removeQuestion={handleRemoveQuestion}
           />

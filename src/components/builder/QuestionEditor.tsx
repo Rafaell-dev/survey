@@ -1,23 +1,25 @@
 "use client";
 
-import { Question, QuestionType, Media } from "@/domain/types";
+import { Question, QuestionType, Media, Block, ConditionalRule } from "@/domain/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Trash2, Plus, GripVertical, ImageIcon, Loader2 } from "lucide-react";
+import { Trash2, Plus, GripVertical, ImageIcon, Loader2, GitBranch } from "lucide-react";
 import { useState, useRef } from "react";
 import { fetchApi } from "@/services/api";
 
 interface QuestionEditorProps {
   question: Question;
   index: number;
+  allBlocks: Block[];
   updateQuestion: (id: string, updates: Partial<Question>) => void;
   removeQuestion: (id: string) => void;
 }
 
-export function QuestionEditor({ question, index, updateQuestion, removeQuestion }: QuestionEditorProps) {
+export function QuestionEditor({ question, index, allBlocks, updateQuestion, removeQuestion }: QuestionEditorProps) {
   const [uploading, setUploading] = useState(false);
+  const [showLogic, setShowLogic] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleOptionChange = (optIndex: number, value: string) => {
@@ -72,6 +74,26 @@ export function QuestionEditor({ question, index, updateQuestion, removeQuestion
     fetchApi(`/media/${mediaId}`, { method: 'DELETE' }).catch(console.error);
   };
 
+  const addRule = () => {
+    const newRule: ConditionalRule = {
+      operator: 'EQUALS',
+      matchValue: '',
+      targetBlockId: allBlocks[0]?.id || ''
+    };
+    updateQuestion(question.id, { rules: [...(question.rules || []), newRule] });
+  };
+
+  const updateRule = (ruleIndex: number, updates: Partial<ConditionalRule>) => {
+    const newRules = [...(question.rules || [])];
+    newRules[ruleIndex] = { ...newRules[ruleIndex], ...updates };
+    updateQuestion(question.id, { rules: newRules });
+  };
+
+  const removeRule = (ruleIndex: number) => {
+    const newRules = (question.rules || []).filter((_, i) => i !== ruleIndex);
+    updateQuestion(question.id, { rules: newRules });
+  };
+
   return (
     <Card className="relative group hover:border-primary/30 transition-colors">
       <div className="absolute left-1/2 -top-3 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-background border px-2 py-0.5 rounded shadow-sm cursor-grab">
@@ -120,7 +142,6 @@ export function QuestionEditor({ question, index, updateQuestion, removeQuestion
             </select>
           </div>
 
-          {/* Mídia renderizada */}
           {question.medias && question.medias.length > 0 && (
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
               {question.medias.map((m) => (
@@ -144,7 +165,6 @@ export function QuestionEditor({ question, index, updateQuestion, removeQuestion
         </div>
       </CardHeader>
       <CardContent className="pl-12">
-        {/* Render options based on type */}
         {(question.type === "multiple_choice" || question.type === "checkboxes") && (
           <div className="space-y-3 mt-2">
             {question.options?.map((opt, i) => (
@@ -223,19 +243,76 @@ export function QuestionEditor({ question, index, updateQuestion, removeQuestion
           </div>
         )}
 
-        <div className="flex items-center justify-end gap-4 mt-6 pt-4 border-t border-muted/50">
-          <label className="flex items-center gap-2 text-sm cursor-pointer">
-            <input
-              type="checkbox"
-              checked={question.required}
-              onChange={(e) => updateQuestion(question.id, { required: e.target.checked })}
-              className="rounded border-gray-300"
-            />
-            Required
-          </label>
-          <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-destructive" onClick={() => removeQuestion(question.id)}>
-            <Trash2 className="h-4 w-4" />
+        {showLogic && (
+          <div className="mt-4 space-y-4 bg-primary/5 p-4 rounded-md border border-primary/20">
+            <div className="flex items-center justify-between">
+              <h4 className="text-sm font-semibold flex items-center gap-2">
+                <GitBranch className="h-4 w-4 text-primary" /> Regras de Pulo Lógico
+              </h4>
+              <Button size="sm" variant="outline" onClick={addRule}>
+                <Plus className="h-4 w-4 mr-1" /> Adicionar Regra
+              </Button>
+            </div>
+            
+            {question.rules?.map((rule, ruleIndex) => (
+              <div key={ruleIndex} className="flex flex-wrap items-center gap-3 p-3 bg-background border rounded shadow-sm">
+                <span className="text-sm font-medium text-muted-foreground">Se a resposta for</span>
+                <select
+                  value={rule.operator}
+                  onChange={(e) => updateRule(ruleIndex, { operator: e.target.value as any })}
+                  className="h-8 rounded-md border border-input px-2 text-sm bg-background focus-visible:ring-1 focus-visible:ring-primary"
+                >
+                  <option value="EQUALS">Igual a</option>
+                  <option value="NOT_EQUALS">Diferente de</option>
+                  <option value="GREATER_THAN">Maior que</option>
+                  <option value="LESS_THAN">Menor que</option>
+                </select>
+                <Input
+                  value={rule.matchValue}
+                  onChange={(e) => updateRule(ruleIndex, { matchValue: e.target.value })}
+                  placeholder="Valor"
+                  className="h-8 w-32 focus-visible:ring-1 focus-visible:ring-primary"
+                />
+                <span className="text-sm font-medium text-muted-foreground">pular para</span>
+                <select
+                  value={rule.targetBlockId}
+                  onChange={(e) => updateRule(ruleIndex, { targetBlockId: e.target.value })}
+                  className="h-8 rounded-md border border-input px-2 text-sm flex-1 bg-background focus-visible:ring-1 focus-visible:ring-primary"
+                >
+                  {allBlocks.map(b => (
+                    <option key={b.id} value={b.id}>{b.title || 'Bloco sem título'}</option>
+                  ))}
+                </select>
+                <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive" onClick={() => removeRule(ruleIndex)}>
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
+            ))}
+            {(!question.rules || question.rules.length === 0) && (
+              <p className="text-sm text-muted-foreground italic">Nenhuma regra definida.</p>
+            )}
+          </div>
+        )}
+
+        <div className="flex items-center justify-between mt-6 pt-4 border-t border-muted/50">
+          <Button variant="ghost" size="sm" className={`gap-2 ${showLogic ? 'bg-muted' : ''}`} onClick={() => setShowLogic(!showLogic)}>
+            <GitBranch className="h-4 w-4" /> Lógica
           </Button>
+
+          <div className="flex items-center gap-4">
+            <label className="flex items-center gap-2 text-sm cursor-pointer">
+              <input
+                type="checkbox"
+                checked={question.required}
+                onChange={(e) => updateQuestion(question.id, { required: e.target.checked })}
+                className="rounded border-gray-300"
+              />
+              Required
+            </label>
+            <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-destructive" onClick={() => removeQuestion(question.id)}>
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
       </CardContent>
     </Card>

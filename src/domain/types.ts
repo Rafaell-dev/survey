@@ -2,6 +2,7 @@ export interface Form {
   id: string;
   title: string;
   description: string;
+  status?: string;
   createdAt: string;
   updatedAt: string;
   blocks: Block[];
@@ -26,6 +27,14 @@ export interface Question {
   scaleEnd?: number;
   scaleVisualType?: string;
   medias?: Media[];
+  rules?: ConditionalRule[];
+}
+
+export interface ConditionalRule {
+  id?: string;
+  operator: 'EQUALS' | 'NOT_EQUALS' | 'GREATER_THAN' | 'LESS_THAN';
+  matchValue: string;
+  targetBlockId: string;
 }
 
 export interface Media {
