@@ -5,7 +5,7 @@ WORKDIR /app
 
 # Copy package files and install dependencies
 COPY package.json package-lock.json ./
-RUN npm ci
+RUN npm install
 
 # Build arguments (if any)
 ARG NEXT_PUBLIC_API_URL
