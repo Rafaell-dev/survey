@@ -25,6 +25,13 @@ export interface Question {
   scaleStart?: number;
   scaleEnd?: number;
   scaleVisualType?: string;
+  medias?: Media[];
+}
+
+export interface Media {
+  id: string;
+  type: 'IMAGE' | 'VIDEO' | 'AUDIO';
+  url: string;
 }
 
 export interface User {
