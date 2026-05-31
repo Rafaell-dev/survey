@@ -4,6 +4,13 @@ export interface Form {
   description: string;
   createdAt: string;
   updatedAt: string;
+  blocks: Block[];
+}
+
+export interface Block {
+  id: string;
+  title: string;
+  description: string;
   questions: Question[];
 }
 

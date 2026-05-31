@@ -3,12 +3,12 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useStore } from "@/store/useStore";
-import { Form, Question } from "@/domain/types";
+import { Form, Block } from "@/domain/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
-import { QuestionEditor } from "@/components/builder/QuestionEditor";
-import { ArrowLeft, Save, PlusCircle } from "lucide-react";
+import { BlockEditor } from "@/components/builder/BlockEditor";
+import { ArrowLeft, Save, LayoutTemplate } from "lucide-react";
 import Link from "next/link";
 import { fetchApi } from "@/services/api";
 
@@ -18,37 +18,43 @@ export default function CreateFormPage() {
   
   const [title, setTitle] = useState("Formulário sem título");
   const [description, setDescription] = useState("");
-  const [questions, setQuestions] = useState<Question[]>([
+  const [blocks, setBlocks] = useState<Block[]>([
     {
       id: crypto.randomUUID(),
-      title: "Pergunta sem título",
-      type: "multiple_choice",
-      required: false,
-      options: ["Opção 1"],
+      title: "Bloco 1",
+      description: "",
+      questions: [
+        {
+          id: crypto.randomUUID(),
+          title: "Pergunta sem título",
+          type: "multiple_choice",
+          required: false,
+          options: ["Opção 1"],
+        }
+      ],
     },
   ]);
 
-  const handleAddQuestion = () => {
-    setQuestions([
-      ...questions,
+  const handleAddBlock = () => {
+    setBlocks([
+      ...blocks,
       {
         id: crypto.randomUUID(),
-        title: "",
-        type: "multiple_choice",
-        required: false,
-        options: ["Opção 1"],
+        title: `Bloco ${blocks.length + 1}`,
+        description: "",
+        questions: [],
       },
     ]);
   };
 
-  const handleUpdateQuestion = (id: string, updates: Partial<Question>) => {
-    setQuestions((prev) =>
-      prev.map((q) => (q.id === id ? { ...q, ...updates } : q))
+  const handleUpdateBlock = (id: string, updates: Partial<Block>) => {
+    setBlocks((prev) =>
+      prev.map((b) => (b.id === id ? { ...b, ...updates } : b))
     );
   };
 
-  const handleRemoveQuestion = (id: string) => {
-    setQuestions((prev) => prev.filter((q) => q.id !== id));
+  const handleRemoveBlock = (id: string) => {
+    setBlocks((prev) => prev.filter((b) => b.id !== id));
   };
 
   const [loading, setLoading] = useState(false);
@@ -63,14 +69,23 @@ export default function CreateFormPage() {
           description,
         }),
       });
-      // Em um cenário real, também salvaríamos as perguntas (blocos/opções) aqui ou numa rota aninhada
-      // Mas para a Tarefa 2.1 e 2.2, focamos no Survey principal primeiro.
+      
+      // Criar blocos vinculados ao survey
+      for (const block of blocks) {
+        await fetchApi(`/blocks/survey/${data.id}`, {
+          method: "POST",
+          body: JSON.stringify({
+            title: block.title,
+            description: block.description
+          })
+        });
+      }
       
       const newForm: Form = {
         id: data.id,
         title: data.title,
         description: data.description || "",
-        questions,
+        blocks,
         createdAt: data.createdAt,
         updatedAt: data.updatedAt,
       };
@@ -86,7 +101,7 @@ export default function CreateFormPage() {
   };
 
   return (
-    <div className="max-w-3xl mx-auto space-y-6 pb-20 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="max-w-4xl mx-auto space-y-6 pb-20 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="flex items-center justify-between sticky top-0 z-10 bg-background/80 backdrop-blur-md pb-4 pt-2 border-b">
         <div className="flex items-center gap-4">
           <Link href="/dashboard">
@@ -119,21 +134,21 @@ export default function CreateFormPage() {
       </Card>
 
       <div className="space-y-6">
-        {questions.map((q, index) => (
-          <QuestionEditor
-            key={q.id}
+        {blocks.map((b, index) => (
+          <BlockEditor
+            key={b.id}
             index={index}
-            question={q}
-            updateQuestion={handleUpdateQuestion}
-            removeQuestion={handleRemoveQuestion}
+            block={b}
+            updateBlock={handleUpdateBlock}
+            removeBlock={handleRemoveBlock}
           />
         ))}
       </div>
 
       <div className="flex justify-center mt-8">
-        <Button onClick={handleAddQuestion} variant="outline" className="gap-2 border-primary/20 hover:bg-primary/5">
-          <PlusCircle className="h-5 w-5 text-primary" />
-          Adicionar Pergunta
+        <Button onClick={handleAddBlock} variant="outline" className="gap-2 border-secondary/20 hover:bg-secondary/5 text-secondary">
+          <LayoutTemplate className="h-5 w-5" />
+          Adicionar Novo Bloco
         </Button>
       </div>
     </div>
