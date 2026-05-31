@@ -70,6 +70,18 @@ export default function SurveyPlayerPage() {
     setAnswers(prev => ({ ...prev, [questionId]: value }));
   };
 
+  const trackMedia = (mediaId: string, interactionType: "PLAY" | "PAUSE" | "END" | "CLICK", e?: React.SyntheticEvent<HTMLMediaElement>) => {
+    if (!responseId) return;
+    let timeOffsetMs: number | undefined;
+    if (e && e.currentTarget && typeof e.currentTarget.currentTime === 'number') {
+      timeOffsetMs = e.currentTarget.currentTime * 1000;
+    }
+    fetchApi(`/public/response/${responseId}/track/media`, {
+      method: "POST",
+      body: JSON.stringify({ mediaId, interactionType, timeOffsetMs })
+    }).catch(console.error);
+  };
+
   const handleNext = async () => {
     setSubmitting(true);
     try {
@@ -183,10 +195,35 @@ export default function SurveyPlayerPage() {
                 {q.medias && q.medias.length > 0 && (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {q.medias.map((m: any) => (
-                      <div key={m.id} className="rounded overflow-hidden">
-                        {m.type === "IMAGE" && <img src={m.url} className="w-full h-auto" />}
-                        {m.type === "VIDEO" && <video src={m.url} controls className="w-full h-auto" />}
-                        {m.type === "AUDIO" && <audio src={m.url} controls className="w-full" />}
+                      <div key={m.id} className="rounded overflow-hidden bg-background p-2 border">
+                        {m.type === "IMAGE" && (
+                          <img 
+                            src={m.url} 
+                            className="w-full h-auto cursor-pointer" 
+                            onClick={() => trackMedia(m.id, "CLICK")} 
+                            alt="Mídia"
+                          />
+                        )}
+                        {m.type === "VIDEO" && (
+                          <video 
+                            src={m.url} 
+                            controls 
+                            className="w-full h-auto"
+                            onPlay={(e) => trackMedia(m.id, "PLAY", e)}
+                            onPause={(e) => trackMedia(m.id, "PAUSE", e)}
+                            onEnded={(e) => trackMedia(m.id, "END", e)}
+                          />
+                        )}
+                        {m.type === "AUDIO" && (
+                          <audio 
+                            src={m.url} 
+                            controls 
+                            className="w-full"
+                            onPlay={(e) => trackMedia(m.id, "PLAY", e)}
+                            onPause={(e) => trackMedia(m.id, "PAUSE", e)}
+                            onEnded={(e) => trackMedia(m.id, "END", e)}
+                          />
+                        )}
                       </div>
                     ))}
                   </div>
