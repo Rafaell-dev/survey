@@ -6,7 +6,7 @@ import { useStore } from "@/store/useStore";
 import { Plus, Users, LayoutTemplate, Clock, Download, ExternalLink } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { fetchApi } from "@/services/api";
+import { fetchApi, API_URL } from "@/services/api";
 
 export default function DashboardPage() {
   const forms = useStore((state) => state.forms);
@@ -28,7 +28,7 @@ export default function DashboardPage() {
   const handleExport = async (e: React.MouseEvent, formId: string) => {
     e.stopPropagation();
     try {
-      const response = await fetch(`http://localhost:5415/surveys/${formId}/export`, {
+      const response = await fetch(`${API_URL}/surveys/${formId}/export`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`
         }
