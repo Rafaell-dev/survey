@@ -89,7 +89,10 @@ export default function CreateFormPage() {
               description: "", // A ser expandido no futuro
               type: question.type,
               required: question.required,
-              options: question.options
+              options: question.options,
+              scaleStart: question.scaleStart,
+              scaleEnd: question.scaleEnd,
+              scaleVisualType: question.scaleVisualType
             })
           });
         }

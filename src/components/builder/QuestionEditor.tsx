@@ -56,6 +56,8 @@ export function QuestionEditor({ question, index, updateQuestion, removeQuestion
               <option value="paragraph">Paragraph</option>
               <option value="multiple_choice">Multiple Choice</option>
               <option value="checkboxes">Checkboxes</option>
+              <option value="likert">Likert Scale</option>
+              <option value="slider">Slider</option>
             </select>
           </div>
         </div>
@@ -89,6 +91,55 @@ export function QuestionEditor({ question, index, updateQuestion, removeQuestion
         {(question.type === "short_answer" || question.type === "paragraph") && (
           <div className="mt-2 border-b border-dashed border-muted-foreground/30 pb-2 w-1/2 text-muted-foreground text-sm">
             {question.type === "short_answer" ? "Short answer text" : "Long answer text"}
+          </div>
+        )}
+
+        {(question.type === "likert" || question.type === "slider") && (
+          <div className="mt-4 space-y-4 bg-muted/30 p-4 rounded-md border border-muted/50">
+            <div className="flex items-center gap-6">
+              <div>
+                <Label className="text-xs text-muted-foreground mb-1 block">Scale Start</Label>
+                <Input
+                  type="number"
+                  value={question.scaleStart ?? 1}
+                  onChange={(e) => updateQuestion(question.id, { scaleStart: parseInt(e.target.value) })}
+                  className="w-20 h-8"
+                />
+              </div>
+              <div>
+                <Label className="text-xs text-muted-foreground mb-1 block">Scale End</Label>
+                <Input
+                  type="number"
+                  value={question.scaleEnd ?? 5}
+                  onChange={(e) => updateQuestion(question.id, { scaleEnd: parseInt(e.target.value) })}
+                  className="w-20 h-8"
+                />
+              </div>
+              <div>
+                <Label className="text-xs text-muted-foreground mb-1 block">Visual Type</Label>
+                <select
+                  value={question.scaleVisualType || "numbers"}
+                  onChange={(e) => updateQuestion(question.id, { scaleVisualType: e.target.value })}
+                  className="h-8 rounded-md border border-input bg-background px-3 py-1 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                >
+                  <option value="numbers">Numbers</option>
+                  <option value="emojis">Emojis</option>
+                  <option value="icons">Icons</option>
+                  <option value="slider">Slider (Continuous)</option>
+                  <option value="text_labels">Text Labels</option>
+                </select>
+              </div>
+            </div>
+            
+            {/* Visualização mockada da escala */}
+            <div className="flex items-center justify-between mt-6 px-2 text-muted-foreground">
+              <span className="text-sm font-medium bg-background px-2 py-1 rounded border shadow-sm">{question.scaleStart ?? 1}</span>
+              <div className="h-2 flex-1 mx-4 bg-secondary/20 rounded-full overflow-hidden relative">
+                <div className="absolute left-0 top-0 w-1/2 h-full bg-secondary/60" />
+                <div className="absolute left-1/2 top-1/2 -translate-y-1/2 -translate-x-1/2 w-4 h-4 bg-secondary rounded-full shadow-md border-2 border-background" />
+              </div>
+              <span className="text-sm font-medium bg-background px-2 py-1 rounded border shadow-sm">{question.scaleEnd ?? 5}</span>
+            </div>
           </div>
         )}
 

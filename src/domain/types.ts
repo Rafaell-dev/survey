@@ -14,7 +14,7 @@ export interface Block {
   questions: Question[];
 }
 
-export type QuestionType = 'short_answer' | 'paragraph' | 'multiple_choice' | 'checkboxes';
+export type QuestionType = 'short_answer' | 'paragraph' | 'multiple_choice' | 'checkboxes' | 'likert' | 'slider';
 
 export interface Question {
   id: string;
@@ -22,6 +22,9 @@ export interface Question {
   type: QuestionType;
   required: boolean;
   options?: string[];
+  scaleStart?: number;
+  scaleEnd?: number;
+  scaleVisualType?: string;
 }
 
 export interface User {
