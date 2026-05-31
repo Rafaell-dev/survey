@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useStore } from "@/store/useStore";
-import { Plus, Users, LayoutTemplate, Clock } from "lucide-react";
+import { Plus, Users, LayoutTemplate, Clock, Download, ExternalLink } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { fetchApi } from "@/services/api";
@@ -24,6 +24,28 @@ export default function DashboardPage() {
         setLoading(false);
       });
   }, [setForms]);
+
+  const handleExport = async (e: React.MouseEvent, formId: string) => {
+    e.stopPropagation();
+    try {
+      const response = await fetch(`http://localhost:5415/surveys/${formId}/export`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`
+        }
+      });
+      if (!response.ok) throw new Error("Falha na exportação");
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `survey_${formId}_export.csv`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    } catch (err) {
+      alert("Erro ao exportar dados");
+    }
+  };
 
   const stats = [
     { title: "Total de Formulários", value: forms.length.toString(), icon: LayoutTemplate },
@@ -82,13 +104,33 @@ export default function DashboardPage() {
             {forms.map((form) => (
               <Card key={form.id} className="group transition-all hover:shadow-md border-primary/10 cursor-pointer">
                 <CardHeader>
-                  <CardTitle className="truncate">{form.title || "Formulário sem título"}</CardTitle>
+                  <div className="flex items-start justify-between">
+                    <CardTitle className="truncate pr-4">{form.title || "Formulário sem título"}</CardTitle>
+                    <div className="flex items-center gap-1">
+                      {form.status === 'PUBLISHED' && (
+                        <>
+                          <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-primary" onClick={(e) => {
+                            e.stopPropagation();
+                            window.open(`/s/${form.id}`, '_blank');
+                          }} title="Acessar Formulário Público">
+                            <ExternalLink className="h-4 w-4" />
+                          </Button>
+                          <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-green-600" onClick={(e) => handleExport(e, form.id)} title="Baixar Resultados (CSV)">
+                            <Download className="h-4 w-4" />
+                          </Button>
+                        </>
+                      )}
+                    </div>
+                  </div>
                   <CardDescription className="line-clamp-2">
                     {form.description || "Nenhuma descrição fornecida."}
                   </CardDescription>
                 </CardHeader>
-                <CardContent className="text-xs text-muted-foreground">
-                  Atualizado em {new Date(form.updatedAt).toLocaleDateString()}
+                <CardContent className="flex justify-between items-center text-xs text-muted-foreground">
+                  <span>Atualizado em {new Date(form.updatedAt).toLocaleDateString()}</span>
+                  <span className={`px-2 py-0.5 rounded-full ${form.status === 'PUBLISHED' ? 'bg-green-100 text-green-800' : 'bg-secondary text-secondary-foreground'}`}>
+                    {form.status === 'PUBLISHED' ? 'Publicado' : 'Rascunho'}
+                  </span>
                 </CardContent>
               </Card>
             ))}
