@@ -72,13 +72,27 @@ export default function CreateFormPage() {
       
       // Criar blocos vinculados ao survey
       for (const block of blocks) {
-        await fetchApi(`/blocks/survey/${data.id}`, {
+        const createdBlock = await fetchApi(`/blocks/survey/${data.id}`, {
           method: "POST",
           body: JSON.stringify({
             title: block.title,
             description: block.description
           })
         });
+
+        // Criar perguntas vinculadas ao bloco
+        for (const question of block.questions) {
+          await fetchApi(`/questions/block/${createdBlock.id}`, {
+            method: "POST",
+            body: JSON.stringify({
+              title: question.title,
+              description: "", // A ser expandido no futuro
+              type: question.type,
+              required: question.required,
+              options: question.options
+            })
+          });
+        }
       }
       
       const newForm: Form = {
