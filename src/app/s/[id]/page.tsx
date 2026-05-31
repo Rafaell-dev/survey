@@ -110,9 +110,10 @@ export default function SurveyPlayerPage() {
         if (answerVal !== undefined) {
           let body: any = { questionId: question.id };
           
-          if (question.type === "multiple_choice" || question.type === "checkboxes" || question.type === "short_answer" || question.type === "paragraph") {
+          const qType = question.type.toLowerCase();
+          if (qType === "multiple_choice" || qType === "single_choice" || qType === "checkboxes" || qType === "short_text" || qType === "short_answer" || qType === "long_text" || qType === "paragraph") {
             body.valueText = Array.isArray(answerVal) ? JSON.stringify(answerVal) : String(answerVal);
-          } else if (question.type === "likert" || question.type === "slider") {
+          } else if (qType === "likert" || qType === "slider") {
             body.valueNumber = Number(answerVal);
           }
 
@@ -230,21 +231,21 @@ export default function SurveyPlayerPage() {
                 )}
 
                 <div className="mt-2">
-                  {q.type === "short_answer" && (
+                  {(q.type === "SHORT_TEXT" || q.type === "short_answer") && (
                     <Input 
                       className="max-w-md" 
                       value={answers[q.id] || ""} 
                       onChange={e => handleAnswerChange(q.id, e.target.value)} 
                     />
                   )}
-                  {q.type === "paragraph" && (
+                  {(q.type === "LONG_TEXT" || q.type === "paragraph") && (
                     <Textarea 
                       className="max-w-xl" 
                       value={answers[q.id] || ""} 
                       onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => handleAnswerChange(q.id, e.target.value)} 
                     />
                   )}
-                  {(q.type === "multiple_choice") && (
+                  {(q.type === "MULTIPLE_CHOICE" || q.type === "multiple_choice" || q.type === "SINGLE_CHOICE") && (
                     <div className="space-y-2">
                       {q.options.map((opt: any) => (
                         <Label key={opt.id} className="flex items-center gap-2 cursor-pointer font-normal border p-3 rounded-md hover:bg-muted/30 transition-colors">
@@ -284,7 +285,7 @@ export default function SurveyPlayerPage() {
                       })}
                     </div>
                   )}
-                  {(q.type === "likert" || q.type === "slider") && (
+                  {(q.type === "LIKERT" || q.type === "likert" || q.type === "SLIDER" || q.type === "slider") && (
                     <div className="pt-2 pb-4">
                       <div className="flex items-center justify-between gap-4 max-w-xl mx-auto">
                         <span className="text-sm font-medium bg-muted px-3 py-1 rounded shadow-sm">{q.scaleStart ?? 1}</span>
