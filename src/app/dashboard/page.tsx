@@ -102,37 +102,40 @@ export default function DashboardPage() {
         ) : (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {forms.map((form) => (
-              <Card key={form.id} className="group transition-all hover:shadow-md border-primary/10 cursor-pointer">
-                <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <CardTitle className="truncate pr-4">{form.title || "Formulário sem título"}</CardTitle>
-                    <div className="flex items-center gap-1">
-                      {form.status === 'PUBLISHED' && (
-                        <>
-                          <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-primary" onClick={(e) => {
-                            e.stopPropagation();
-                            window.open(`/s/${form.id}`, '_blank');
-                          }} title="Acessar Formulário Público">
-                            <ExternalLink className="h-4 w-4" />
-                          </Button>
-                          <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-green-600" onClick={(e) => handleExport(e, form.id)} title="Baixar Resultados (CSV)">
-                            <Download className="h-4 w-4" />
-                          </Button>
-                        </>
-                      )}
+              <Link key={form.id} href={`/dashboard/edit/${form.id}`}>
+                <Card className="group transition-all hover:shadow-md border-primary/10 cursor-pointer h-full">
+                  <CardHeader>
+                    <div className="flex items-start justify-between">
+                      <CardTitle className="truncate pr-4">{form.title || "Formulário sem título"}</CardTitle>
+                      <div className="flex items-center gap-1">
+                        {form.status === 'PUBLISHED' && (
+                          <>
+                            <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-primary" onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              window.open(`/s/${form.id}`, '_blank');
+                            }} title="Acessar Formulário Público">
+                              <ExternalLink className="h-4 w-4" />
+                            </Button>
+                            <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-green-600" onClick={(e) => { e.preventDefault(); handleExport(e, form.id); }} title="Baixar Resultados (CSV)">
+                              <Download className="h-4 w-4" />
+                            </Button>
+                          </>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                  <CardDescription className="line-clamp-2">
-                    {form.description || "Nenhuma descrição fornecida."}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="flex justify-between items-center text-xs text-muted-foreground">
-                  <span>Atualizado em {new Date(form.updatedAt).toLocaleDateString()}</span>
-                  <span className={`px-2 py-0.5 rounded-full ${form.status === 'PUBLISHED' ? 'bg-green-100 text-green-800' : 'bg-secondary text-secondary-foreground'}`}>
-                    {form.status === 'PUBLISHED' ? 'Publicado' : 'Rascunho'}
-                  </span>
-                </CardContent>
-              </Card>
+                    <CardDescription className="line-clamp-2">
+                      {form.description || "Nenhuma descrição fornecida."}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="flex justify-between items-center text-xs text-muted-foreground">
+                    <span>Atualizado em {new Date(form.updatedAt).toLocaleDateString()}</span>
+                    <span className={`px-2 py-0.5 rounded-full ${form.status === 'PUBLISHED' ? 'bg-green-100 text-green-800' : 'bg-secondary text-secondary-foreground'}`}>
+                      {form.status === 'PUBLISHED' ? 'Publicado' : 'Rascunho'}
+                    </span>
+                  </CardContent>
+                </Card>
+              </Link>
             ))}
           </div>
         )}

@@ -3,7 +3,7 @@
 import { useStore } from "@/store/useStore";
 import { useRouter, usePathname } from "next/navigation";
 import { useEffect } from "react";
-import { LayoutDashboard, FileText, Settings, LogOut } from "lucide-react";
+import { LayoutDashboard, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 
@@ -31,9 +31,7 @@ export default function DashboardLayout({
   };
 
   const navItems = [
-    { name: "Visão Geral", href: "/dashboard", icon: LayoutDashboard },
-    { name: "Meus Formulários", href: "/dashboard/forms", icon: FileText },
-    { name: "Configurações", href: "/dashboard/settings", icon: Settings },
+    { name: "Painel de Controle", href: "/dashboard", icon: LayoutDashboard },
   ];
 
   return (
