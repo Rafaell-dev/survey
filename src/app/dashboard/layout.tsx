@@ -1,6 +1,6 @@
 "use client";
 
-import { useStore } from "@/store/useStore";
+import { useAuthStore } from "@/store/auth.store";
 import { useRouter, usePathname } from "next/navigation";
 import { useEffect } from "react";
 import { LayoutDashboard, LogOut } from "lucide-react";
@@ -12,22 +12,24 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const user = useStore((state) => state.user);
-  const setUser = useStore((state) => state.setUser);
+  const user = useAuthStore((state) => state.user);
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const loading = useAuthStore((state) => state.loading);
+  const logout = useAuthStore((state) => state.logout);
   const router = useRouter();
   const pathname = usePathname();
 
   useEffect(() => {
-    if (!user) {
+    // Só redireciona se já terminou de carregar a sessão
+    if (!loading && !isAuthenticated) {
       router.push("/login");
     }
-  }, [user, router]);
+  }, [isAuthenticated, loading, router]);
 
-  if (!user) return null;
+  if (!user || loading) return null;
 
-  const handleLogout = () => {
-    setUser(null);
-    router.push("/login");
+  const handleLogout = async () => {
+    await logout();
   };
 
   const navItems = [

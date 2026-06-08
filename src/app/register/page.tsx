@@ -12,25 +12,33 @@ import { toast } from "sonner";
 import Link from "next/link";
 import { isAxiosError } from "axios";
 
-export default function LoginPage() {
+export default function RegisterPage() {
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const router = useRouter();
-  const { login, loading } = useAuthStore();
+  const { register, loading } = useAuthStore();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    if (password !== confirmPassword) {
+      toast.error("As senhas não coincidem!");
+      return;
+    }
+
     try {
-      await login({ email, password });
-      toast.success("Login realizado com sucesso!");
+      await register({ name, email, password });
+      toast.success("Conta criada! Autenticação realizada com sucesso.");
       router.push("/dashboard");
     } catch (err: unknown) {
       if (isAxiosError(err)) {
-        toast.error(err.response?.data?.message || "Credenciais inválidas");
+        toast.error(err.response?.data?.message || "Ocorreu um erro ao criar a conta");
       } else {
-        toast.error("Credenciais inválidas");
+        toast.error("Ocorreu um erro ao criar a conta");
       }
     }
   };
@@ -46,14 +54,25 @@ export default function LoginPage() {
             </div>
           </div>
           <CardTitle className="text-2xl font-bold tracking-tight">
-            Bem-vindo de volta
+            Criar Conta
           </CardTitle>
           <CardDescription>
-            Insira suas credenciais para acessar o painel administrativo
+            Crie sua conta para começar a gerenciar formulários e pesquisas
           </CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit}>
           <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="name">Nome Completo</Label>
+              <Input
+                id="name"
+                type="text"
+                placeholder="Seu nome"
+                required
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+              />
+            </div>
             <div className="space-y-2">
               <Label htmlFor="email">E-mail</Label>
               <Input
@@ -66,17 +85,13 @@ export default function LoginPage() {
               />
             </div>
             <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="password">Senha</Label>
-                <Link href="#" className="text-sm font-medium text-primary hover:underline">
-                  Esqueceu a senha?
-                </Link>
-              </div>
+              <Label htmlFor="password">Senha</Label>
               <div className="relative">
                 <Input
                   id="password"
                   type={showPassword ? "text" : "password"}
                   required
+                  minLength={8}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="pr-10"
@@ -91,16 +106,38 @@ export default function LoginPage() {
                 </button>
               </div>
             </div>
+            <div className="space-y-2">
+              <Label htmlFor="confirmPassword">Confirmar Senha</Label>
+              <div className="relative">
+                <Input
+                  id="confirmPassword"
+                  type={showConfirmPassword ? "text" : "password"}
+                  required
+                  minLength={8}
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  className="pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                  aria-label={showConfirmPassword ? "Ocultar senha" : "Mostrar senha"}
+                >
+                  {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
+            </div>
           </CardContent>
           <CardFooter className="flex-col gap-4">
             <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? "Autenticando..." : "Entrar"}
+              {loading ? "Aguarde..." : "Cadastrar"}
             </Button>
             <Link 
-              href="/register"
+              href="/login"
               className="text-sm text-muted-foreground hover:text-primary transition-colors"
             >
-              Não tem conta? Cadastre-se
+              Já tem uma conta? Faça login
             </Link>
           </CardFooter>
         </form>

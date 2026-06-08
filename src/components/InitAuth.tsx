@@ -1,24 +1,18 @@
 "use client";
 
-import { useEffect } from "react";
-import { useStore } from "@/store/useStore";
-import { fetchApi } from "@/services/api";
+import { useEffect, useRef } from "react";
+import { useAuthStore } from "@/store/auth.store";
 
 export function InitAuth() {
-  const setUser = useStore((state) => state.setUser);
-  
+  const { loadCurrentUser } = useAuthStore();
+  const initRef = useRef(false);
+
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      fetchApi("/auth/me").then(user => {
-        setUser(user);
-      }).catch((err) => {
-        console.error("Auth failed:", err);
-        localStorage.removeItem("token");
-        setUser(null);
-      });
+    if (!initRef.current) {
+      loadCurrentUser();
+      initRef.current = true;
     }
-  }, [setUser]);
+  }, [loadCurrentUser]);
 
   return null;
 }
