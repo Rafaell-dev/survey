@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { QuestionList } from "./QuestionList";
 
 interface BlockCardProps {
   block: LocalBlock;
@@ -82,6 +83,8 @@ export function BlockCard({ block, onUpdate, onDelete }: BlockCardProps) {
             className="min-h-[60px] resize-none bg-transparent border-transparent focus-visible:border-primary px-0 rounded-none shadow-none focus-visible:ring-0 transition-colors py-1"
           />
         </div>
+
+        <QuestionList blockId={block.id} />
       </CardContent>
     </Card>
   );
