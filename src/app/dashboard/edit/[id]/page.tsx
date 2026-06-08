@@ -12,6 +12,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
 
 import { useSurveyStore } from "@/store/survey.store";
+import { useBuilderStore } from "@/store/builder.store";
+import { BlockList } from "@/components/builder/BlockList";
 
 export default function EditFormPage() {
   const router = useRouter();
@@ -19,6 +21,7 @@ export default function EditFormPage() {
   const surveyId = params.id as string;
 
   const { fetchSurvey, updateSurvey } = useSurveyStore();
+  const { fetchBlocks, saveAllBlocks, saving: savingBlocks, loading: loadingBlocks } = useBuilderStore();
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -26,57 +29,65 @@ export default function EditFormPage() {
   const [status, setStatus] = useState("DRAFT");
   
   const [initialLoading, setInitialLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
+  const [savingSurvey, setSavingSurvey] = useState(false);
 
   useEffect(() => {
-    fetchSurvey(surveyId)
-      .then((survey) => {
-        setTitle(survey.title);
-        setDescription(survey.description || "");
-        setInstructions(survey.instructions || "");
-        setStatus(survey.status);
-        setInitialLoading(false);
-      })
-      .catch((err) => {
-        toast.error("Erro ao carregar o survey.");
-        router.push("/dashboard");
-      });
-  }, [surveyId, fetchSurvey, router]);
+    Promise.all([
+      fetchSurvey(surveyId),
+      fetchBlocks(surveyId)
+    ]).then(([survey]) => {
+      setTitle(survey.title);
+      setDescription(survey.description || "");
+      setInstructions(survey.instructions || "");
+      setStatus(survey.status);
+      setInitialLoading(false);
+    }).catch((err) => {
+      toast.error("Erro ao carregar os dados.");
+      router.push("/dashboard");
+    });
+  }, [surveyId, fetchSurvey, fetchBlocks, router]);
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim()) {
-      toast.error("O título é obrigatório.");
+      toast.error("O título do formulário é obrigatório.");
       return;
     }
 
-    setSaving(true);
+    setSavingSurvey(true);
     try {
+      // Salva Metadados do Survey
       await updateSurvey(surveyId, {
         title,
         description: description || undefined,
         instructions: instructions || undefined,
       });
+
+      // Salva Lote de Blocos (Criações, Edições, Deleções, Reordenações)
+      await saveAllBlocks(surveyId);
       
-      toast.success("Survey atualizado com sucesso!");
+      toast.success("Todas as alterações foram salvas com sucesso!");
     } catch (err: any) {
-      toast.error(err.response?.data?.message || "Erro ao atualizar survey.");
+      console.error(err);
+      toast.error(err.response?.data?.message || "Erro ao salvar as alterações.");
     } finally {
-      setSaving(false);
+      setSavingSurvey(false);
     }
   };
 
-  if (initialLoading) {
+  if (initialLoading || loadingBlocks) {
     return (
       <div className="flex items-center justify-center h-96 animate-in fade-in">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        <span className="ml-3 text-muted-foreground">Carregando survey...</span>
+        <span className="ml-3 text-muted-foreground">Carregando construtor...</span>
       </div>
     );
   }
 
+  const isSaving = savingSurvey || savingBlocks;
+
   return (
-    <div className="max-w-3xl mx-auto space-y-6 pb-20 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="max-w-4xl mx-auto space-y-6 pb-20 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <form onSubmit={handleSave}>
         <div className="flex items-center justify-between sticky top-0 z-10 bg-background/80 backdrop-blur-md pb-4 pt-2 border-b mb-6">
           <div className="flex items-center gap-4">
@@ -86,53 +97,73 @@ export default function EditFormPage() {
               </Button>
             </Link>
             <div>
-              <h1 className="text-xl font-semibold">Editar Survey</h1>
+              <h1 className="text-xl font-semibold">Construtor de Formulário</h1>
               <span className={`text-xs px-2 py-0.5 rounded-full ${status === 'PUBLISHED' ? 'bg-green-100 text-green-800' : status === 'ARCHIVED' ? 'bg-destructive/10 text-destructive' : 'bg-secondary text-secondary-foreground'}`}>
                 {status === 'PUBLISHED' ? 'Publicado' : status === 'ARCHIVED' ? 'Arquivado' : 'Rascunho'}
               </span>
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <Button type="submit" className="gap-2" disabled={saving || !title.trim()}>
-              {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-              {saving ? "Salvando..." : "Salvar Alterações"}
+            <Button type="submit" className="gap-2 px-8" disabled={isSaving || !title.trim()}>
+              {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+              {isSaving ? "Salvando..." : "Salvar Tudo"}
             </Button>
           </div>
         </div>
 
-        <Card className="border-t-8 border-t-primary shadow-sm">
-          <CardContent className="pt-6 space-y-6">
-            <div className="space-y-2">
-              <Input
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                className="text-3xl font-bold h-auto px-0 border-transparent focus-visible:ring-0 focus-visible:border-b-primary rounded-none shadow-none text-foreground bg-transparent"
-                placeholder="Título do Formulário *"
-                required
-              />
+        <div className="space-y-12">
+          {/* Seção 1: Configurações Básicas do Survey */}
+          <section className="space-y-4">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="h-8 w-1 bg-primary rounded-full"></div>
+              <h2 className="text-lg font-semibold">Informações Gerais</h2>
             </div>
             
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-muted-foreground">Descrição</label>
-              <Textarea
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                className="min-h-[100px] resize-y"
-                placeholder="Uma breve descrição sobre o objetivo desta pesquisa (Opcional)"
-              />
-            </div>
+            <Card className="border-t-0 shadow-sm border-border/50">
+              <CardContent className="pt-6 space-y-6">
+                <div className="space-y-2">
+                  <Input
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    className="text-3xl font-bold h-auto px-0 border-transparent focus-visible:ring-0 focus-visible:border-b-primary rounded-none shadow-none text-foreground bg-transparent"
+                    placeholder="Título do Formulário *"
+                    required
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-muted-foreground">Descrição</label>
+                  <Textarea
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    className="min-h-[100px] resize-y"
+                    placeholder="Uma breve descrição sobre o objetivo desta pesquisa (Opcional)"
+                  />
+                </div>
 
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-muted-foreground">Instruções para o Participante</label>
-              <Textarea
-                value={instructions}
-                onChange={(e) => setInstructions(e.target.value)}
-                className="min-h-[100px] resize-y"
-                placeholder="Ex: Leia atentamente cada questão antes de responder... (Opcional)"
-              />
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-muted-foreground">Instruções Iniciais</label>
+                  <Textarea
+                    value={instructions}
+                    onChange={(e) => setInstructions(e.target.value)}
+                    className="min-h-[100px] resize-y"
+                    placeholder="Ex: Leia atentamente cada questão antes de responder... (Opcional)"
+                  />
+                </div>
+              </CardContent>
+            </Card>
+          </section>
+
+          {/* Seção 2: Construtor de Blocos */}
+          <section className="space-y-4">
+            <div className="flex items-center gap-2 mb-4">
+              <div className="h-8 w-1 bg-indigo-500 rounded-full"></div>
+              <h2 className="text-lg font-semibold">Blocos e Páginas</h2>
             </div>
-          </CardContent>
-        </Card>
+            <BlockList />
+          </section>
+        </div>
+
       </form>
     </div>
   );
