@@ -1,32 +1,28 @@
 "use client";
 
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { Plus, Users, LayoutTemplate, Clock, Download, ExternalLink, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { useStore } from "@/store/useStore";
-import { Plus, Users, LayoutTemplate, Clock, Download, ExternalLink } from "lucide-react";
-import Link from "next/link";
-import { useEffect, useState } from "react";
-import { api, API_URL } from "@/services/api";
+import { isAxiosError } from "axios";
+import { useSurveyStore } from "@/store/survey.store";
+import { api } from "@/services/api";
 
 export default function DashboardPage() {
-  const forms = useStore((state) => state.forms);
-  const setForms = useStore((state) => state.setForms);
-  const [loading, setLoading] = useState(true);
+  const { surveys, loading, fetchSurveys, deleteSurvey, total } = useSurveyStore();
+  const [deleteId, setDeleteId] = useState<string | null>(null);
 
   useEffect(() => {
-    api.get("/surveys")
-      .then((res) => {
-        setForms(res.data.items || []);
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.error(err);
-        setLoading(false);
-      });
-  }, [setForms]);
+    fetchSurveys().catch((err) => {
+      toast.error("Erro ao carregar surveys.");
+    });
+  }, [fetchSurveys]);
 
   const handleExport = async (e: React.MouseEvent, formId: string) => {
     e.stopPropagation();
+    e.preventDefault();
     try {
       const response = await api.get(`/surveys/${formId}/export/csv`, {
         responseType: 'blob'
@@ -39,13 +35,32 @@ export default function DashboardPage() {
       document.body.appendChild(a);
       a.click();
       a.remove();
+      toast.success("Download iniciado com sucesso");
     } catch (err) {
-      alert("Erro ao exportar dados");
+      toast.error("Erro ao exportar dados");
+    }
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!deleteId) return;
+    try {
+      await deleteSurvey(deleteId);
+      toast.success("Survey removido com sucesso.");
+      setDeleteId(null);
+    } catch (err: unknown) {
+      console.error("Erro na exclusão:", err);
+      if (isAxiosError(err)) {
+        toast.error(err.response?.data?.message || "Erro ao remover survey.");
+      } else if (err instanceof Error) {
+        toast.error(err.message);
+      } else {
+        toast.error("Erro ao remover survey.");
+      }
     }
   };
 
   const stats = [
-    { title: "Total de Formulários", value: forms.length.toString(), icon: LayoutTemplate },
+    { title: "Total de Formulários", value: total.toString(), icon: LayoutTemplate },
     { title: "Total de Respostas", value: "0", icon: Users },
     { title: "Tempo Médio de Conclusão", value: "0m", icon: Clock },
   ];
@@ -81,16 +96,29 @@ export default function DashboardPage() {
 
       <div className="space-y-4">
         <h2 className="text-xl font-semibold tracking-tight">Formulários Recentes</h2>
+        
         {loading ? (
-          <div className="flex justify-center p-12">Carregando formulários...</div>
-        ) : forms.length === 0 ? (
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {[1, 2, 3].map((i) => (
+              <Card key={i} className="h-full opacity-50 animate-pulse">
+                <CardHeader>
+                  <div className="h-6 bg-muted w-3/4 mb-2 rounded" />
+                  <div className="h-4 bg-muted w-full rounded" />
+                </CardHeader>
+                <CardContent>
+                  <div className="h-4 bg-muted w-1/2 rounded" />
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        ) : surveys.length === 0 ? (
           <Card className="border-dashed flex flex-col items-center justify-center p-12 text-center">
             <div className="rounded-full bg-primary/10 p-4 mb-4">
               <LayoutTemplate className="h-8 w-8 text-primary" />
             </div>
-            <h3 className="text-lg font-semibold">Nenhum formulário criado</h3>
+            <h3 className="text-lg font-semibold">Nenhum formulário encontrado</h3>
             <p className="text-sm text-muted-foreground mb-4 max-w-sm">
-              Você ainda não criou nenhum formulário. Comece criando seu primeiro formulário para coletar respostas.
+              Você ainda não criou nenhum formulário ou todos foram excluídos. Comece criando seu primeiro survey para coletar respostas.
             </p>
             <Link href="/dashboard/create">
               <Button>Crie seu primeiro formulário</Button>
@@ -98,37 +126,41 @@ export default function DashboardPage() {
           </Card>
         ) : (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {forms.map((form) => (
-              <Link key={form.id} href={`/dashboard/edit/${form.id}`}>
-                <Card className="group transition-all hover:shadow-md border-primary/10 cursor-pointer h-full">
-                  <CardHeader>
+            {surveys.map((survey) => (
+              <Link key={survey.id} href={`/dashboard/edit/${survey.id}`}>
+                <Card className="group transition-all hover:shadow-md border-primary/10 cursor-pointer h-full flex flex-col">
+                  <CardHeader className="flex-1">
                     <div className="flex items-start justify-between">
-                      <CardTitle className="truncate pr-4">{form.title || "Formulário sem título"}</CardTitle>
-                      <div className="flex items-center gap-1">
-                        {form.status === 'PUBLISHED' && (
+                      <CardTitle className="truncate pr-4">{survey.title}</CardTitle>
+                      
+                      <div className="flex items-center gap-1" onClick={(e) => e.preventDefault()}>
+                        {survey.status === 'PUBLISHED' && (
                           <>
                             <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-primary" onClick={(e) => {
                               e.preventDefault();
-                              e.stopPropagation();
-                              window.open(`/s/${form.id}`, '_blank');
+                              window.open(`/s/${survey.id}`, '_blank');
                             }} title="Acessar Formulário Público">
                               <ExternalLink className="h-4 w-4" />
                             </Button>
-                            <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-green-600" onClick={(e) => { e.preventDefault(); handleExport(e, form.id); }} title="Baixar Resultados (CSV)">
+                            <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-green-600" onClick={(e) => handleExport(e, survey.id)} title="Baixar Resultados (CSV)">
                               <Download className="h-4 w-4" />
                             </Button>
                           </>
                         )}
+                        
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive" onClick={(e) => { e.stopPropagation(); e.preventDefault(); setDeleteId(survey.id); }}>
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
                       </div>
                     </div>
                     <CardDescription className="line-clamp-2">
-                      {form.description || "Nenhuma descrição fornecida."}
+                      {survey.description || "Nenhuma descrição fornecida."}
                     </CardDescription>
                   </CardHeader>
-                  <CardContent className="flex justify-between items-center text-xs text-muted-foreground">
-                    <span>Atualizado em {new Date(form.updatedAt).toLocaleDateString()}</span>
-                    <span className={`px-2 py-0.5 rounded-full ${form.status === 'PUBLISHED' ? 'bg-green-100 text-green-800' : 'bg-secondary text-secondary-foreground'}`}>
-                      {form.status === 'PUBLISHED' ? 'Publicado' : 'Rascunho'}
+                  <CardContent className="flex justify-between items-center text-xs text-muted-foreground border-t pt-4">
+                    <span>{new Date(survey.createdAt).toLocaleDateString()}</span>
+                    <span className={`px-2 py-0.5 rounded-full ${survey.status === 'PUBLISHED' ? 'bg-green-100 text-green-800' : survey.status === 'ARCHIVED' ? 'bg-destructive/10 text-destructive' : 'bg-secondary text-secondary-foreground'}`}>
+                      {survey.status === 'PUBLISHED' ? 'Publicado' : survey.status === 'ARCHIVED' ? 'Arquivado' : 'Rascunho'}
                     </span>
                   </CardContent>
                 </Card>
@@ -137,6 +169,21 @@ export default function DashboardPage() {
           </div>
         )}
       </div>
+
+      {deleteId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in">
+          <div className="bg-background w-full max-w-md rounded-xl p-6 shadow-xl animate-in zoom-in-95">
+            <h3 className="text-xl font-bold mb-2">Tem certeza absoluta?</h3>
+            <p className="text-muted-foreground mb-6">
+              Essa ação irá remover ou arquivar este formulário. Respostas vinculadas a ele poderão deixar de ser computadas.
+            </p>
+            <div className="flex justify-end gap-3">
+              <Button variant="outline" onClick={() => setDeleteId(null)}>Cancelar</Button>
+              <Button variant="destructive" onClick={handleDeleteConfirm}>Sim, excluir</Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
