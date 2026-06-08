@@ -6,7 +6,7 @@ import { useStore } from "@/store/useStore";
 import { Plus, Users, LayoutTemplate, Clock, Download, ExternalLink } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { fetchApi, API_URL } from "@/services/api";
+import { api, API_URL } from "@/services/api";
 
 export default function DashboardPage() {
   const forms = useStore((state) => state.forms);
@@ -14,9 +14,9 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchApi("/surveys")
-      .then((data) => {
-        setForms(data);
+    api.get("/surveys")
+      .then((res) => {
+        setForms(res.data.items || []);
         setLoading(false);
       })
       .catch((err) => {
@@ -28,13 +28,10 @@ export default function DashboardPage() {
   const handleExport = async (e: React.MouseEvent, formId: string) => {
     e.stopPropagation();
     try {
-      const response = await fetch(`${API_URL}/surveys/${formId}/export`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`
-        }
+      const response = await api.get(`/surveys/${formId}/export/csv`, {
+        responseType: 'blob'
       });
-      if (!response.ok) throw new Error("Falha na exportação");
-      const blob = await response.blob();
+      const blob = new Blob([response.data]);
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
