@@ -3,6 +3,9 @@ import { LocalBlock } from '../domain/block.types';
 import { blockService } from '../services/block.service';
 import { LocalQuestion, QuestionType } from '../domain/question.types';
 import { questionService } from '../services/question.service';
+import { LocalOption } from '../domain/question-option.types';
+import { questionOptionService } from '../services/question-option.service';
+import { surveyService } from '../services/survey.service';
 
 interface BuilderState {
   blocks: LocalBlock[];
@@ -10,6 +13,9 @@ interface BuilderState {
   
   questions: LocalQuestion[];
   deletedQuestionIds: string[];
+
+  options: LocalOption[];
+  deletedOptionIds: string[];
 
   loading: boolean;
   saving: boolean;
@@ -28,6 +34,12 @@ interface BuilderState {
   deleteQuestionLocal: (id: string) => void;
   reorderQuestionsLocal: (blockId: string, newOrder: LocalQuestion[]) => void;
 
+  // Ações de Opções
+  addOption: (questionId: string) => void;
+  updateOptionLocal: (id: string, updates: Partial<LocalOption>) => void;
+  deleteOptionLocal: (id: string) => void;
+  reorderOptionsLocal: (questionId: string, newOrder: LocalOption[]) => void;
+
   saveAllBlocks: (surveyId: string) => Promise<void>;
 }
 
@@ -38,11 +50,14 @@ export const useBuilderStore = create<BuilderState>((set, get) => ({
   questions: [],
   deletedQuestionIds: [],
 
+  options: [],
+  deletedOptionIds: [],
+
   loading: false,
   saving: false,
 
   fetchBlocks: async (surveyId: string) => {
-    set({ loading: true, deletedBlockIds: [], deletedQuestionIds: [] });
+    set({ loading: true, deletedBlockIds: [], deletedQuestionIds: [], deletedOptionIds: [] });
     try {
       // 1. Busca Blocos
       const response = await blockService.getBlocks(surveyId);
@@ -73,8 +88,22 @@ export const useBuilderStore = create<BuilderState>((set, get) => ({
         scaleVisualType: q.scaleVisualType,
         isNew: false
       }));
-      
       set({ questions: localQuestions });
+
+      // 3. Busca Opções de cada Pergunta (em paralelo)
+      const allOptions = await Promise.all(
+        localQuestions.map(q => questionOptionService.getOptionsByQuestion(q.id))
+      );
+
+      const localOptions: LocalOption[] = allOptions.flat().map(o => ({
+        id: o.id,
+        label: o.label,
+        value: o.value,
+        orderIndex: o.orderIndex,
+        questionId: o.questionId,
+        isNew: false
+      }));
+      set({ options: localOptions });
 
     } finally {
       set({ loading: false });
@@ -102,29 +131,39 @@ export const useBuilderStore = create<BuilderState>((set, get) => ({
   },
 
   deleteBlockLocal: (id: string) => {
-    const { blocks, deletedBlockIds, questions, deletedQuestionIds } = get();
+    const { blocks, deletedBlockIds, questions, deletedQuestionIds, options, deletedOptionIds } = get();
     const blockToDelete = blocks.find(b => b.id === id);
     
-    // Marca o bloco para deleção se existir no banco
     if (blockToDelete && !blockToDelete.isNew) {
       set({ deletedBlockIds: [...deletedBlockIds, id] });
     }
     
-    // Todas as perguntas atreladas ao bloco também devem ser apagadas visualmente e fisicamente
     const questionsToDelete = questions.filter(q => q.blockId === id);
+    const questionIdsToDelete = questionsToDelete.map(q => q.id);
+    
     const newDeletedQuestionIds = [...deletedQuestionIds];
     questionsToDelete.forEach(q => {
       if (!q.isNew) newDeletedQuestionIds.push(q.id);
     });
 
+    // Filtra também as opções filhas das perguntas
+    const newDeletedOptionIds = [...deletedOptionIds];
+    const optionsToDelete = options.filter(o => questionIdsToDelete.includes(o.questionId));
+    optionsToDelete.forEach(o => {
+      if (!o.isNew) newDeletedOptionIds.push(o.id);
+    });
+
     const remainingBlocks = blocks.filter(b => b.id !== id);
     const reorderedBlocks = remainingBlocks.map((b, index) => ({ ...b, orderIndex: index }));
     const remainingQuestions = questions.filter(q => q.blockId !== id);
+    const remainingOptions = options.filter(o => !questionIdsToDelete.includes(o.questionId));
     
     set({ 
       blocks: reorderedBlocks, 
       questions: remainingQuestions, 
-      deletedQuestionIds: newDeletedQuestionIds 
+      options: remainingOptions,
+      deletedQuestionIds: newDeletedQuestionIds,
+      deletedOptionIds: newDeletedOptionIds
     });
   },
 
@@ -159,15 +198,22 @@ export const useBuilderStore = create<BuilderState>((set, get) => ({
   },
 
   deleteQuestionLocal: (id: string) => {
-    const { questions, deletedQuestionIds } = get();
+    const { questions, deletedQuestionIds, options, deletedOptionIds } = get();
     const questionToDelete = questions.find(q => q.id === id);
     
     if (questionToDelete && !questionToDelete.isNew) {
       set({ deletedQuestionIds: [...deletedQuestionIds, id] });
     }
+
+    const optionsToDelete = options.filter(o => o.questionId === id);
+    const newDeletedOptionIds = [...deletedOptionIds];
+    optionsToDelete.forEach(o => {
+      if (!o.isNew) newDeletedOptionIds.push(o.id);
+    });
     
     const remainingQuestions = questions.filter(q => q.id !== id);
-    // Precisamos reordenar apenas as perguntas do MESMO bloco da que foi removida
+    const remainingOptions = options.filter(o => o.questionId !== id);
+
     const blockId = questionToDelete?.blockId;
     if (blockId) {
       const blockQuestions = remainingQuestions
@@ -176,120 +222,154 @@ export const useBuilderStore = create<BuilderState>((set, get) => ({
         .map((q, index) => ({ ...q, orderIndex: index }));
       
       const otherQuestions = remainingQuestions.filter(q => q.blockId !== blockId);
-      set({ questions: [...otherQuestions, ...blockQuestions] });
+      set({ questions: [...otherQuestions, ...blockQuestions], options: remainingOptions, deletedOptionIds: newDeletedOptionIds });
     } else {
-      set({ questions: remainingQuestions });
+      set({ questions: remainingQuestions, options: remainingOptions, deletedOptionIds: newDeletedOptionIds });
     }
   },
 
   reorderQuestionsLocal: (blockId: string, newOrder: LocalQuestion[]) => {
     const { questions } = get();
-    // Atualiza apenas os indexes das perguntas que mudaram naquele bloco
     const updatedOrder = newOrder.map((q, index) => ({ ...q, orderIndex: index }));
-    
     const otherQuestions = questions.filter(q => q.blockId !== blockId);
     set({ questions: [...otherQuestions, ...updatedOrder] });
   },
 
-  // === SINCRONIZAÇÃO EM BATCH ===
+  // === AÇÕES DE OPÇÕES ===
+
+  addOption: (questionId: string) => {
+    const { options } = get();
+    const questionOptions = options.filter(o => o.questionId === questionId);
+    
+    const newOption: LocalOption = {
+      id: crypto.randomUUID(),
+      questionId,
+      label: `Opção ${questionOptions.length + 1}`,
+      orderIndex: questionOptions.length,
+      isNew: true
+    };
+    set({ options: [...options, newOption] });
+  },
+
+  updateOptionLocal: (id: string, updates: Partial<LocalOption>) => {
+    set((state) => ({
+      options: state.options.map(o => o.id === id ? { ...o, ...updates } : o)
+    }));
+  },
+
+  deleteOptionLocal: (id: string) => {
+    const { options, deletedOptionIds } = get();
+    const optionToDelete = options.find(o => o.id === id);
+    
+    if (optionToDelete && !optionToDelete.isNew) {
+      set({ deletedOptionIds: [...deletedOptionIds, id] });
+    }
+    
+    const remainingOptions = options.filter(o => o.id !== id);
+    const questionId = optionToDelete?.questionId;
+    if (questionId) {
+      const qOptions = remainingOptions
+        .filter(o => o.questionId === questionId)
+        .sort((a, b) => a.orderIndex - b.orderIndex)
+        .map((o, index) => ({ ...o, orderIndex: index }));
+      
+      const otherOptions = remainingOptions.filter(o => o.questionId !== questionId);
+      set({ options: [...otherOptions, ...qOptions] });
+    } else {
+      set({ options: remainingOptions });
+    }
+  },
+
+  reorderOptionsLocal: (questionId: string, newOrder: LocalOption[]) => {
+    const { options } = get();
+    const updatedOrder = newOrder.map((o, index) => ({ ...o, orderIndex: index }));
+    const otherOptions = options.filter(o => o.questionId !== questionId);
+    set({ options: [...otherOptions, ...updatedOrder] });
+  },
+
+  // === SINCRONIZAÇÃO EM BATCH OTIMIZADA (TREE SYNC) ===
 
   saveAllBlocks: async (surveyId: string) => {
-    const { blocks, deletedBlockIds, questions, deletedQuestionIds } = get();
+    const { blocks, deletedBlockIds, questions, deletedQuestionIds, options, deletedOptionIds } = get();
     set({ saving: true });
 
     try {
-      // 1. Apaga no BD as perguntas marcadas
-      for (const id of deletedQuestionIds) {
-        await questionService.deleteQuestion(id);
-      }
-
-      // 2. Apaga no BD os blocos marcados
-      for (const id of deletedBlockIds) {
-        await blockService.deleteBlock(id);
-      }
-
-      // 3. Cria ou Atualiza os blocos e pega as IDs reais
-      const newBlockIdMap = new Map<string, string>(); // Mapeia ID Falso -> ID Real
-      
-      for (const block of blocks) {
-        if (block.isNew) {
-          const created = await blockService.createBlock(surveyId, {
-            title: block.title,
-            description: block.description
-          });
-          newBlockIdMap.set(block.id, created.id);
-        } else {
-          await blockService.updateBlock(block.id, {
-            title: block.title,
-            description: block.description
-          });
-        }
-      }
-
-      const syncedBlocks = blocks.map(b => {
-        if (b.isNew && newBlockIdMap.has(b.id)) {
-          return { ...b, id: newBlockIdMap.get(b.id)!, isNew: false };
-        }
-        return b;
-      });
-      set({ blocks: syncedBlocks, deletedBlockIds: [] });
-
-      // 4. Cria ou Atualiza as perguntas
-      const newQuestionIdMap = new Map<string, string>();
-
-      for (const question of questions) {
-        // Se a pergunta estiver em um bloco que ACABOU de ser criado, atualiza o blockId dela para o Real
-        const actualBlockId = newBlockIdMap.get(question.blockId) || question.blockId;
-        
-        const payload = {
-          title: question.title,
-          description: question.description || undefined,
-          type: question.type,
-          isRequired: question.isRequired,
-          scaleStart: question.scaleStart || undefined,
-          scaleEnd: question.scaleEnd || undefined,
-          scaleVisualType: question.scaleVisualType || undefined
-        };
-
-        if (question.isNew) {
-          const created = await questionService.createQuestion(actualBlockId, payload);
-          newQuestionIdMap.set(question.id, created.id);
-        } else {
-          await questionService.updateQuestion(question.id, payload);
-        }
-      }
-
-      const syncedQuestions = questions.map(q => {
-        let updatedQ = { ...q, blockId: newBlockIdMap.get(q.blockId) || q.blockId };
-        if (q.isNew && newQuestionIdMap.has(q.id)) {
-          updatedQ = { ...updatedQ, id: newQuestionIdMap.get(q.id)!, isNew: false };
-        }
-        return updatedQ;
-      });
-      set({ questions: syncedQuestions, deletedQuestionIds: [] });
-
-      // 5. Reordena Blocos se necessário
-      if (syncedBlocks.length > 0) {
-        await blockService.reorderBlocks(surveyId, {
-          blocks: syncedBlocks.map(b => ({
-            id: b.id,
-            orderIndex: b.orderIndex
-          }))
-        });
-      }
-
-      // 6. Reordena Perguntas dentro de cada Bloco (se houver perguntas)
-      for (const block of syncedBlocks) {
-        const blockQuestions = syncedQuestions.filter(q => q.blockId === block.id);
-        if (blockQuestions.length > 0) {
-          await questionService.reorderQuestions(block.id, {
-            questions: blockQuestions.map(q => ({
-              id: q.id,
-              orderIndex: q.orderIndex
+      // Monta a árvore completa para enviar de uma só vez
+      const payload = {
+        deletedBlockIds,
+        deletedQuestionIds,
+        deletedOptionIds,
+        blocks: blocks.map(b => ({
+          id: b.id,
+          isNew: b.isNew,
+          title: b.title,
+          description: b.description,
+          orderIndex: b.orderIndex,
+          questions: questions.filter(q => q.blockId === b.id).map(q => ({
+            id: q.id,
+            isNew: q.isNew,
+            title: q.title,
+            description: q.description,
+            type: q.type,
+            isRequired: q.isRequired,
+            orderIndex: q.orderIndex,
+            scaleStart: q.scaleStart,
+            scaleEnd: q.scaleEnd,
+            scaleVisualType: q.scaleVisualType,
+            options: options.filter(o => o.questionId === q.id).map(o => ({
+              id: o.id,
+              isNew: o.isNew,
+              label: o.label,
+              value: o.value,
+              orderIndex: o.orderIndex
             }))
-          });
-        }
-      }
+          }))
+        }))
+      };
+
+      // Única requisição pro backend
+      const tree: any[] = await surveyService.syncSurveyTree(surveyId, payload);
+
+      // Re-hidrata a store local com a "Verdade" do Banco de Dados
+      const newBlocks = tree.map((b: any) => ({
+        id: b.id,
+        title: b.title || "",
+        description: b.description || "",
+        orderIndex: b.orderIndex,
+        isNew: false
+      }));
+
+      const newQuestions = tree.flatMap((b: any) => b.questions).map((q: any) => ({
+        id: q.id,
+        title: q.title,
+        description: q.description || "",
+        type: q.type,
+        isRequired: q.isRequired,
+        orderIndex: q.orderIndex,
+        blockId: q.blockId,
+        scaleStart: q.scaleStart,
+        scaleEnd: q.scaleEnd,
+        scaleVisualType: q.scaleVisualType,
+        isNew: false
+      }));
+
+      const newOptions = tree.flatMap((b: any) => b.questions).flatMap((q: any) => q.options).map((o: any) => ({
+        id: o.id,
+        label: o.label,
+        value: o.value,
+        orderIndex: o.orderIndex,
+        questionId: o.questionId,
+        isNew: false
+      }));
+
+      set({
+        blocks: newBlocks,
+        questions: newQuestions,
+        options: newOptions,
+        deletedBlockIds: [],
+        deletedQuestionIds: [],
+        deletedOptionIds: []
+      });
 
     } finally {
       set({ saving: false });

@@ -6,6 +6,7 @@ import { GripVertical, Trash2 } from "lucide-react";
 import { LocalQuestion, QuestionType } from "@/domain/question.types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { OptionList } from "./OptionList";
 
 interface QuestionCardProps {
   question: LocalQuestion;
@@ -105,6 +106,10 @@ export function QuestionCard({ question, onUpdate, onDelete }: QuestionCardProps
             <span className="text-sm font-medium text-muted-foreground select-none">Obrigatória</span>
           </label>
         </div>
+
+        {["SINGLE_CHOICE", "MULTIPLE_CHOICE", "LIKERT"].includes(question.type) && (
+          <OptionList questionId={question.id} />
+        )}
       </div>
     </div>
   );
