@@ -35,5 +35,10 @@ export const surveyService = {
 
   async deleteSurvey(id: string): Promise<void> {
     await api.delete(`/surveys/${id}`);
+  },
+
+  async syncSurveyTree(id: string, payload: any): Promise<any> {
+    const response = await api.put(`/surveys/${id}/sync`, payload);
+    return response.data;
   }
 };
