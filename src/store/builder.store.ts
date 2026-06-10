@@ -6,6 +6,8 @@ import { questionService } from '../services/question.service';
 import { LocalOption } from '../domain/question-option.types';
 import { questionOptionService } from '../services/question-option.service';
 import { surveyService } from '../services/survey.service';
+import { mediaService } from '../services/media.service';
+import { Media } from '../domain/media.types';
 
 interface BuilderState {
   blocks: LocalBlock[];
@@ -19,6 +21,7 @@ interface BuilderState {
 
   loading: boolean;
   saving: boolean;
+  mediaByQuestion: Record<string, Media[]>;
 
   fetchBlocks: (surveyId: string) => Promise<void>;
   
@@ -41,6 +44,11 @@ interface BuilderState {
   reorderOptionsLocal: (questionId: string, newOrder: LocalOption[]) => void;
 
   saveAllBlocks: (surveyId: string) => Promise<void>;
+  
+  // Media
+  fetchQuestionMedia: (questionId: string) => Promise<void>;
+  uploadMediaToQuestion: (questionId: string, file: File, onProgress?: (p: number) => void) => Promise<void>;
+  removeMedia: (questionId: string, mediaId: string) => Promise<void>;
 }
 
 export const useBuilderStore = create<BuilderState>((set, get) => ({
@@ -55,6 +63,7 @@ export const useBuilderStore = create<BuilderState>((set, get) => ({
 
   loading: false,
   saving: false,
+  mediaByQuestion: {},
 
   fetchBlocks: async (surveyId: string) => {
     set({ loading: true, deletedBlockIds: [], deletedQuestionIds: [], deletedOptionIds: [] });
@@ -373,6 +382,58 @@ export const useBuilderStore = create<BuilderState>((set, get) => ({
 
     } finally {
       set({ saving: false });
+    }
+  },
+
+  // MEDIA ACTIONS
+  fetchQuestionMedia: async (questionId: string) => {
+    try {
+      const mediaList = await mediaService.getQuestionMedia(questionId);
+      set((state) => ({
+        mediaByQuestion: {
+          ...state.mediaByQuestion,
+          [questionId]: mediaList
+        }
+      }));
+    } catch (err) {
+      console.error("Erro ao buscar mídias:", err);
+      throw err;
+    }
+  },
+
+  uploadMediaToQuestion: async (questionId: string, file: File, onProgress?: (p: number) => void) => {
+    try {
+      const newMedia = await mediaService.uploadMedia(questionId, file, onProgress);
+      set((state) => {
+        const currentList = state.mediaByQuestion[questionId] || [];
+        return {
+          mediaByQuestion: {
+            ...state.mediaByQuestion,
+            [questionId]: [...currentList, newMedia as Media]
+          }
+        };
+      });
+    } catch (err) {
+      console.error("Erro no upload de mídia:", err);
+      throw err;
+    }
+  },
+
+  removeMedia: async (questionId: string, mediaId: string) => {
+    try {
+      await mediaService.deleteMedia(mediaId);
+      set((state) => {
+        const currentList = state.mediaByQuestion[questionId] || [];
+        return {
+          mediaByQuestion: {
+            ...state.mediaByQuestion,
+            [questionId]: currentList.filter(m => m.id !== mediaId)
+          }
+        };
+      });
+    } catch (err) {
+      console.error("Erro ao deletar mídia:", err);
+      throw err;
     }
   }
 }));
