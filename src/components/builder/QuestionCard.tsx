@@ -16,13 +16,12 @@ interface QuestionCardProps {
   onDelete: (id: string) => void;
 }
 
-const QUESTION_TYPES: Record<QuestionType, string> = {
+const QUESTION_TYPES: Omit<Record<QuestionType, string>, "SLIDER"> = {
   SHORT_TEXT: "Texto Curto",
   LONG_TEXT: "Texto Longo",
   MULTIPLE_CHOICE: "Múltipla Escolha",
   SINGLE_CHOICE: "Escolha Única",
   LIKERT: "Escala Likert",
-  SLIDER: "Slider Numérico",
   MEDIA_ONLY: "Apenas Mídia",
 };
 
@@ -125,9 +124,9 @@ export function QuestionCard({
           </label>
         </div>
 
-        {["SINGLE_CHOICE", "MULTIPLE_CHOICE", "LIKERT"].includes(
-          question.type,
-        ) && <OptionList questionId={question.id} />}
+        {["SINGLE_CHOICE", "MULTIPLE_CHOICE"].includes(question.type) && (
+          <OptionList questionId={question.id} />
+        )}
 
         {["LIKERT", "SLIDER"].includes(question.type) && (
           <ScaleConfigurationPanel question={question} onUpdate={onUpdate} />

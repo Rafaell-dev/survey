@@ -187,6 +187,8 @@ export const useBuilderStore = create<BuilderState>((set, get) => ({
     const { questions } = get();
     const blockQuestions = questions.filter(q => q.blockId === blockId);
     
+    const isScale = type === "LIKERT" || type === "SLIDER";
+
     const newQuestion: LocalQuestion = {
       id: crypto.randomUUID(),
       blockId,
@@ -195,14 +197,30 @@ export const useBuilderStore = create<BuilderState>((set, get) => ({
       type,
       isRequired: true,
       orderIndex: blockQuestions.length,
-      isNew: true
+      isNew: true,
+      ...(isScale ? { scaleStart: 1, scaleEnd: 5, scaleVisualType: "NUMBERS" } : {})
     };
     set({ questions: [...questions, newQuestion] });
   },
 
   updateQuestionLocal: (id: string, updates: Partial<LocalQuestion>) => {
     set((state) => ({
-      questions: state.questions.map(q => q.id === id ? { ...q, ...updates } : q)
+      questions: state.questions.map(q => {
+        if (q.id !== id) return q;
+
+        let newQuestion = { ...q, ...updates };
+
+        // Se estiver trocando o tipo de uma pergunta que não era escala para uma que É escala, forçamos os valores iniciais caso não existam
+        if (updates.type && (updates.type === "LIKERT" || updates.type === "SLIDER")) {
+          if (newQuestion.scaleStart === undefined || newQuestion.scaleStart === null) {
+            newQuestion.scaleStart = 1;
+            newQuestion.scaleEnd = 5;
+            newQuestion.scaleVisualType = "NUMBERS";
+          }
+        }
+
+        return newQuestion;
+      })
     }));
   },
 
