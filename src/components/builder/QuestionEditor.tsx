@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Trash2, Plus, GripVertical, ImageIcon, Loader2, GitBranch } from "lucide-react";
 import { useState, useRef } from "react";
-import { fetchApi } from "@/services/api";
+import { api } from "@/services/api";
 
 interface QuestionEditorProps {
   question: Question;
@@ -47,10 +47,8 @@ export function QuestionEditor({ question, index, allBlocks, updateQuestion, rem
       const formData = new FormData();
       formData.append("file", file);
 
-      const media = await fetchApi("/media/upload", {
-        method: "POST",
-        body: formData,
-      });
+      const response = await api.post("/media/upload", formData);
+      const media = response.data;
 
       const newMedias = [...(question.medias || []), {
         id: media.id,
@@ -71,7 +69,7 @@ export function QuestionEditor({ question, index, allBlocks, updateQuestion, rem
   const removeMedia = (mediaId: string) => {
     const newMedias = (question.medias || []).filter((m) => m.id !== mediaId);
     updateQuestion(question.id, { medias: newMedias });
-    fetchApi(`/media/${mediaId}`, { method: 'DELETE' }).catch(console.error);
+    api.delete(`/media/${mediaId}`).catch(console.error);
   };
 
   const addRule = () => {

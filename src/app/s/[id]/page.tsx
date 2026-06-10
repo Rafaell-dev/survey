@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import { useParams } from "next/navigation";
-import { fetchApi } from "@/services/api";
+import { api } from "@/services/api";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -30,12 +30,12 @@ export default function SurveyPlayerPage() {
   useEffect(() => {
     async function loadSurvey() {
       try {
-        const data = await fetchApi(`/public/survey/${id}`);
-        setSurvey(data);
+        const response = await api.get(`/public/survey/${id}`);
+        setSurvey(response.data);
 
         // Start response
-        const resp = await fetchApi(`/public/survey/${id}/start`, { method: "POST" });
-        setResponseId(resp.id);
+        const startResp = await api.post(`/public/survey/${id}/start`);
+        setResponseId(startResp.data.id);
       } catch (err: any) {
         setError(err.message || "Erro ao carregar o questionário.");
       } finally {
@@ -76,10 +76,7 @@ export default function SurveyPlayerPage() {
     if (e && e.currentTarget && typeof e.currentTarget.currentTime === 'number') {
       timeOffsetMs = e.currentTarget.currentTime * 1000;
     }
-    fetchApi(`/public/response/${responseId}/track/media`, {
-      method: "POST",
-      body: JSON.stringify({ mediaId, interactionType, timeOffsetMs })
-    }).catch(console.error);
+    api.post(`/public/response/${responseId}/track/media`, { mediaId, interactionType, timeOffsetMs }).catch(console.error);
   };
 
   const handleNext = async () => {
@@ -90,15 +87,12 @@ export default function SurveyPlayerPage() {
 
       // 0. Registrar tracking de tempo do bloco
       try {
-        await fetchApi(`/public/response/${responseId}/track/block`, {
-          method: "POST",
-          body: JSON.stringify({
-            blockId: currentBlock.id,
-            enteredAt: blockEnterDateRef.current,
-            leftAt: leftAt.toISOString(),
-            timeSpentMs,
-            orderIndex: currentBlockIndex
-          })
+        await api.post(`/public/response/${responseId}/track/block`, {
+          blockId: currentBlock.id,
+          enteredAt: blockEnterDateRef.current,
+          leftAt: leftAt.toISOString(),
+          timeSpentMs,
+          orderIndex: currentBlockIndex
         });
       } catch (err) {
         console.error("Erro ao registrar tracking", err);
@@ -117,10 +111,7 @@ export default function SurveyPlayerPage() {
             body.valueNumber = Number(answerVal);
           }
 
-          await fetchApi(`/public/response/${responseId}/answer`, {
-            method: "POST",
-            body: JSON.stringify(body)
-          });
+          await api.post(`/public/response/${responseId}/answer`, body);
         }
       }
 
@@ -152,7 +143,7 @@ export default function SurveyPlayerPage() {
 
       // 3. Navegar
       if (nextBlockIndex >= survey.blocks.length) {
-        await fetchApi(`/public/response/${responseId}/complete`, { method: "POST" });
+        await api.post(`/public/response/${responseId}/complete`);
         setFinished(true);
       } else {
         setCurrentBlockIndex(nextBlockIndex);
