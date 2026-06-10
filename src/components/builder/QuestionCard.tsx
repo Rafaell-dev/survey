@@ -7,6 +7,7 @@ import { LocalQuestion, QuestionType } from "@/domain/question.types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { OptionList } from "./OptionList";
+import { ScaleConfigurationPanel } from "./ScaleConfigurationPanel";
 
 interface QuestionCardProps {
   question: LocalQuestion;
@@ -14,13 +15,12 @@ interface QuestionCardProps {
   onDelete: (id: string) => void;
 }
 
-const QUESTION_TYPES: Record<QuestionType, string> = {
+const QUESTION_TYPES: Omit<Record<QuestionType, string>, "SLIDER"> = {
   SHORT_TEXT: "Texto Curto",
   LONG_TEXT: "Texto Longo",
   MULTIPLE_CHOICE: "Múltipla Escolha",
   SINGLE_CHOICE: "Escolha Única",
   LIKERT: "Escala Likert",
-  SLIDER: "Slider Numérico",
   MEDIA_ONLY: "Apenas Mídia",
 };
 
@@ -65,7 +65,7 @@ export function QuestionCard({ question, onUpdate, onDelete }: QuestionCardProps
               className="font-medium bg-transparent border-transparent focus-visible:border-primary px-0 rounded-none h-8 shadow-none focus-visible:ring-0 transition-colors text-base"
             />
             <Input 
-              value={question.description}
+              value={question.description || ""}
               onChange={(e) => onUpdate(question.id, { description: e.target.value })}
               placeholder="Descrição ou ajuda para a pergunta (opcional)"
               className="text-sm text-muted-foreground bg-transparent border-transparent focus-visible:border-primary px-0 rounded-none h-6 shadow-none focus-visible:ring-0 transition-colors"
@@ -107,8 +107,12 @@ export function QuestionCard({ question, onUpdate, onDelete }: QuestionCardProps
           </label>
         </div>
 
-        {["SINGLE_CHOICE", "MULTIPLE_CHOICE", "LIKERT"].includes(question.type) && (
+        {["SINGLE_CHOICE", "MULTIPLE_CHOICE"].includes(question.type) && (
           <OptionList questionId={question.id} />
+        )}
+
+        {["LIKERT", "SLIDER"].includes(question.type) && (
+          <ScaleConfigurationPanel question={question} onUpdate={onUpdate} />
         )}
       </div>
     </div>
