@@ -8,9 +8,10 @@ import { useBuilderStore } from "@/store/builder.store";
 
 interface MediaUploaderProps {
   questionId: string;
+  onComplete?: () => void;
 }
 
-export function MediaUploader({ questionId }: MediaUploaderProps) {
+export function MediaUploader({ questionId, onComplete }: MediaUploaderProps) {
   const [isUploading, setIsUploading] = useState(false);
   const [progress, setProgress] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -61,6 +62,7 @@ export function MediaUploader({ questionId }: MediaUploaderProps) {
       setIsUploading(false);
       setProgress(0);
       if (fileInputRef.current) fileInputRef.current.value = "";
+      if (onComplete) onComplete();
     }
   };
 

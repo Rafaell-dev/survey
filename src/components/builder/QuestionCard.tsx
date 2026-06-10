@@ -124,6 +124,8 @@ export function QuestionCard({
           </label>
         </div>
 
+        <MediaSection questionId={question.id} isNew={question.isNew} />
+
         {["SINGLE_CHOICE", "MULTIPLE_CHOICE"].includes(question.type) && (
           <OptionList questionId={question.id} />
         )}
@@ -131,8 +133,6 @@ export function QuestionCard({
         {["LIKERT", "SLIDER"].includes(question.type) && (
           <ScaleConfigurationPanel question={question} onUpdate={onUpdate} />
         )}
-
-        <MediaSection questionId={question.id} isNew={question.isNew} />
       </div>
     </div>
   );
