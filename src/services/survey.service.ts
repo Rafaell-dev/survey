@@ -3,7 +3,8 @@ import {
   Survey, 
   CreateSurveyDTO, 
   UpdateSurveyDTO, 
-  SurveyPaginationResponse 
+  SurveyPaginationResponse,
+  PublicLinkInfo
 } from '../domain/survey.types';
 
 export const surveyService = {
@@ -39,6 +40,26 @@ export const surveyService = {
 
   async syncSurveyTree(id: string, payload: any): Promise<any> {
     const response = await api.put(`/surveys/${id}/sync`, payload);
+    return response.data;
+  },
+
+  async publishSurvey(id: string): Promise<{ id: string; status: string; publishedAt: string }> {
+    const response = await api.post(`/surveys/${id}/publish`);
+    return response.data;
+  },
+
+  async archiveSurvey(id: string): Promise<{ id: string; status: string }> {
+    const response = await api.post(`/surveys/${id}/archive`);
+    return response.data;
+  },
+
+  async getPublicLink(id: string): Promise<PublicLinkInfo> {
+    const response = await api.get(`/surveys/${id}/public-link`);
+    return response.data;
+  },
+
+  async generatePublicLink(id: string): Promise<PublicLinkInfo> {
+    const response = await api.post(`/surveys/${id}/public-link`);
     return response.data;
   }
 };
