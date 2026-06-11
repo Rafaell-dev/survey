@@ -218,7 +218,7 @@ export function RuleSection({ questionId, blockId, isNew }: RuleSectionProps) {
 interface RuleFormProps {
   availableBlocks: { id: string; title: string; orderIndex: number }[];
   currentQuestion?: any;
-  questionOptions?: { id: string; label: string }[];
+  questionOptions?: { id: string; label: string; orderIndex: number }[];
   initialValues?: {
     operator: RuleOperator;
     matchValue: string;
