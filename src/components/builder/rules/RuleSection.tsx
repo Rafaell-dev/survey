@@ -29,6 +29,8 @@ export function RuleSection({ questionId, blockId, isNew }: RuleSectionProps) {
 
   const { 
     blocks, 
+    questions,
+    options,
     rulesByQuestion, 
     fetchQuestionRules, 
     createRule, 
@@ -38,6 +40,9 @@ export function RuleSection({ questionId, blockId, isNew }: RuleSectionProps) {
 
   const rules = rulesByQuestion[questionId] || [];
   const availableBlocks = blocks.filter(b => b.id !== blockId);
+  
+  const currentQuestion = questions.find(q => q.id === questionId);
+  const questionOptions = options.filter(o => o.questionId === questionId);
 
   useEffect(() => {
     if (isOpen && !isNew) {
@@ -117,8 +122,10 @@ export function RuleSection({ questionId, blockId, isNew }: RuleSectionProps) {
               {rules.map((rule) => (
                 <div key={rule.id} className="flex flex-wrap items-center gap-2 p-3 bg-muted/30 border rounded-md text-sm">
                   {editingRuleId === rule.id ? (
-                    <RuleForm
+                      <RuleForm
                       availableBlocks={availableBlocks}
+                      currentQuestion={currentQuestion}
+                      questionOptions={questionOptions}
                       initialValues={{
                         operator: rule.operator,
                         matchValue: rule.matchValue,
@@ -135,7 +142,11 @@ export function RuleSection({ questionId, blockId, isNew }: RuleSectionProps) {
                         {OPERATOR_LABELS[rule.operator]}
                       </span>
                       <span className="font-mono bg-background border px-2 py-0.5 rounded text-xs">
-                        {rule.matchValue}
+                        {(currentQuestion?.type === "SINGLE_CHOICE" || currentQuestion?.type === "MULTIPLE_CHOICE") 
+                          ? (questionOptions.find(o => o.id === rule.matchValue) !== undefined 
+                              ? questionOptions.find(o => o.id === rule.matchValue)!.orderIndex + 1 
+                              : rule.matchValue) 
+                          : rule.matchValue}
                       </span>
                       <span className="text-muted-foreground">→</span>
                       <span className="bg-secondary/50 px-2 py-0.5 rounded text-xs font-medium">
@@ -169,6 +180,8 @@ export function RuleSection({ questionId, blockId, isNew }: RuleSectionProps) {
                 <div className="p-3 border border-dashed border-primary/30 rounded-md bg-primary/5">
                   <RuleForm
                     availableBlocks={availableBlocks}
+                    currentQuestion={currentQuestion}
+                    questionOptions={questionOptions}
                     onSubmit={handleCreate}
                     onCancel={() => setShowForm(false)}
                     submitLabel="Criar Regra"
@@ -204,6 +217,8 @@ export function RuleSection({ questionId, blockId, isNew }: RuleSectionProps) {
 
 interface RuleFormProps {
   availableBlocks: { id: string; title: string; orderIndex: number }[];
+  currentQuestion?: any;
+  questionOptions?: { id: string; label: string }[];
   initialValues?: {
     operator: RuleOperator;
     matchValue: string;
@@ -214,9 +229,10 @@ interface RuleFormProps {
   submitLabel: string;
 }
 
-function RuleForm({ availableBlocks, initialValues, onSubmit, onCancel, submitLabel }: RuleFormProps) {
+function RuleForm({ availableBlocks, currentQuestion, questionOptions = [], initialValues, onSubmit, onCancel, submitLabel }: RuleFormProps) {
   const [operator, setOperator] = useState<RuleOperator>(initialValues?.operator || "EQUALS");
-  const [matchValue, setMatchValue] = useState(initialValues?.matchValue || "");
+  const isChoiceQuestion = currentQuestion?.type === "SINGLE_CHOICE" || currentQuestion?.type === "MULTIPLE_CHOICE";
+  const [matchValue, setMatchValue] = useState(initialValues?.matchValue || (isChoiceQuestion && questionOptions.length > 0 ? questionOptions[0].id : ""));
   const [targetBlockId, setTargetBlockId] = useState(initialValues?.targetBlockId || availableBlocks[0]?.id || "");
   const [submitting, setSubmitting] = useState(false);
 
@@ -245,12 +261,27 @@ function RuleForm({ availableBlocks, initialValues, onSubmit, onCancel, submitLa
           <option key={val} value={val}>{label}</option>
         ))}
       </select>
-      <Input
-        value={matchValue}
-        onChange={(e) => setMatchValue(e.target.value)}
-        placeholder="Valor"
-        className="h-7 w-24 text-xs"
-      />
+      
+      {isChoiceQuestion ? (
+        <select
+          value={matchValue}
+          onChange={(e) => setMatchValue(e.target.value)}
+          className="h-7 w-24 text-xs rounded border border-input bg-background px-2 focus:ring-1 focus:ring-primary outline-none"
+        >
+          {questionOptions.length === 0 && <option value="">Sem opções</option>}
+          {questionOptions.map(opt => (
+            <option key={opt.id} value={opt.id}>{opt.orderIndex + 1}</option>
+          ))}
+        </select>
+      ) : (
+        <Input
+          value={matchValue}
+          onChange={(e) => setMatchValue(e.target.value)}
+          placeholder="Valor"
+          className="h-7 w-24 text-xs"
+        />
+      )}
+
       <span className="text-xs text-muted-foreground shrink-0">pular para</span>
       <select
         value={targetBlockId}

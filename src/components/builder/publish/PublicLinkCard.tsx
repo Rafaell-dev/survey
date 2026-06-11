@@ -15,7 +15,16 @@ export function PublicLinkCard({ url }: PublicLinkCardProps) {
 
   const handleCopy = async () => {
     try {
-      await navigator.clipboard.writeText(url);
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(url);
+      } else {
+        const textArea = document.createElement("textarea");
+        textArea.value = url;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+      }
       setCopied(true);
       toast.success("Link copiado com sucesso!");
       setTimeout(() => setCopied(false), 2000);
@@ -30,7 +39,8 @@ export function PublicLinkCard({ url }: PublicLinkCardProps) {
         <Input 
           readOnly 
           value={url} 
-          className="pr-10 bg-muted/50 font-mono text-xs focus-visible:ring-0" 
+          onClick={(e) => (e.target as HTMLInputElement).select()}
+          className="pr-10 bg-muted/50 font-mono text-xs focus-visible:ring-0 cursor-text" 
         />
         <Button
           type="button"

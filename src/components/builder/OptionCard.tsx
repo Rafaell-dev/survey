@@ -53,11 +53,10 @@ export function OptionCard({ option, onUpdate, onDelete }: OptionCardProps) {
         />
         <Input 
           type="number"
-          value={option.value ?? ""}
-          onChange={(e) => onUpdate(option.id, { value: e.target.value ? Number(e.target.value) : undefined })}
-          placeholder="Valor (Opcional)"
-          className="h-8 w-32 shadow-none focus-visible:ring-1 bg-transparent hover:bg-muted/30 transition-colors text-sm"
-          title="Valor numérico (Ex: Peso da questão)"
+          readOnly
+          value={option.orderIndex + 1}
+          className="h-8 w-24 shadow-none bg-muted/50 cursor-not-allowed text-muted-foreground text-sm"
+          title="Valor sequencial automático"
         />
       </div>
 

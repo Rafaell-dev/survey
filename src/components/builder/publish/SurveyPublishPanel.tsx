@@ -123,7 +123,7 @@ export function SurveyPublishPanel() {
               variant="destructive" 
               onClick={handleArchive} 
               disabled={archiving} 
-              className="w-full bg-destructive/90 hover:bg-destructive"
+              className="w-full"
             >
               {archiving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Archive className="mr-2 h-4 w-4" />}
               Arquivar Survey
