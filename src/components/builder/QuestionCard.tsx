@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { OptionList } from "./OptionList";
 import { ScaleConfigurationPanel } from "./ScaleConfigurationPanel";
 import { MediaSection } from "./media/MediaSection";
+import { RuleSection } from "./rules/RuleSection";
 
 interface QuestionCardProps {
   question: LocalQuestion;
@@ -132,6 +133,10 @@ export function QuestionCard({
 
         {["LIKERT", "SLIDER"].includes(question.type) && (
           <ScaleConfigurationPanel question={question} onUpdate={onUpdate} />
+        )}
+
+        {["SINGLE_CHOICE", "MULTIPLE_CHOICE", "LIKERT", "SLIDER"].includes(question.type) && (
+          <RuleSection questionId={question.id} blockId={question.blockId} isNew={question.isNew} />
         )}
       </div>
     </div>
