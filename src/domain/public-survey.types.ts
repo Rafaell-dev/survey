@@ -1,5 +1,7 @@
 import { SurveyStatus, ParticipantIdentificationType } from './survey.types';
-import { QuestionType, MediaType, RuleOperator } from './builder.types'; // Or we can declare locally if needed, I'll declare them locally to avoid dependency loops if not found.
+import { QuestionType } from './question.types';
+import { MediaType } from './media.types';
+import { RuleOperator } from './conditional-rule.types';
 
 export interface SurveyOptionDTO {
   id: string;
