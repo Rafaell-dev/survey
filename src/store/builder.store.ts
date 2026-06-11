@@ -8,6 +8,8 @@ import { questionOptionService } from '../services/question-option.service';
 import { surveyService } from '../services/survey.service';
 import { mediaService } from '../services/media.service';
 import { Media } from '../domain/media.types';
+import { ConditionalRule, CreateConditionalRuleDTO, UpdateConditionalRuleDTO } from '../domain/conditional-rule.types';
+import { conditionalRuleService } from '../services/conditional-rule.service';
 
 interface BuilderState {
   blocks: LocalBlock[];
@@ -22,6 +24,7 @@ interface BuilderState {
   loading: boolean;
   saving: boolean;
   mediaByQuestion: Record<string, Media[]>;
+  rulesByQuestion: Record<string, ConditionalRule[]>;
 
   fetchBlocks: (surveyId: string) => Promise<void>;
   
@@ -49,6 +52,12 @@ interface BuilderState {
   fetchQuestionMedia: (questionId: string) => Promise<void>;
   uploadMediaToQuestion: (questionId: string, file: File, onProgress?: (p: number) => void) => Promise<void>;
   removeMedia: (questionId: string, mediaId: string) => Promise<void>;
+
+  // Rules
+  fetchQuestionRules: (questionId: string) => Promise<void>;
+  createRule: (questionId: string, dto: CreateConditionalRuleDTO) => Promise<void>;
+  updateRule: (questionId: string, ruleId: string, dto: UpdateConditionalRuleDTO) => Promise<void>;
+  deleteRule: (questionId: string, ruleId: string) => Promise<void>;
 }
 
 export const useBuilderStore = create<BuilderState>((set, get) => ({
@@ -64,6 +73,7 @@ export const useBuilderStore = create<BuilderState>((set, get) => ({
   loading: false,
   saving: false,
   mediaByQuestion: {},
+  rulesByQuestion: {},
 
   fetchBlocks: async (surveyId: string) => {
     set({ loading: true, deletedBlockIds: [], deletedQuestionIds: [], deletedOptionIds: [] });
@@ -451,6 +461,76 @@ export const useBuilderStore = create<BuilderState>((set, get) => ({
       });
     } catch (err) {
       console.error("Erro ao deletar mídia:", err);
+      throw err;
+    }
+  },
+
+  // RULES ACTIONS
+  fetchQuestionRules: async (questionId: string) => {
+    try {
+      const rules = await conditionalRuleService.getRulesByQuestion(questionId);
+      set((state) => ({
+        rulesByQuestion: {
+          ...state.rulesByQuestion,
+          [questionId]: rules
+        }
+      }));
+    } catch (err) {
+      console.error("Erro ao buscar regras:", err);
+      throw err;
+    }
+  },
+
+  createRule: async (questionId: string, dto: CreateConditionalRuleDTO) => {
+    try {
+      const newRule = await conditionalRuleService.createRule(questionId, dto);
+      set((state) => {
+        const currentList = state.rulesByQuestion[questionId] || [];
+        return {
+          rulesByQuestion: {
+            ...state.rulesByQuestion,
+            [questionId]: [...currentList, newRule]
+          }
+        };
+      });
+    } catch (err) {
+      console.error("Erro ao criar regra:", err);
+      throw err;
+    }
+  },
+
+  updateRule: async (questionId: string, ruleId: string, dto: UpdateConditionalRuleDTO) => {
+    try {
+      const updatedRule = await conditionalRuleService.updateRule(ruleId, dto);
+      set((state) => {
+        const currentList = state.rulesByQuestion[questionId] || [];
+        return {
+          rulesByQuestion: {
+            ...state.rulesByQuestion,
+            [questionId]: currentList.map(r => r.id === ruleId ? { ...r, ...updatedRule } : r)
+          }
+        };
+      });
+    } catch (err) {
+      console.error("Erro ao atualizar regra:", err);
+      throw err;
+    }
+  },
+
+  deleteRule: async (questionId: string, ruleId: string) => {
+    try {
+      await conditionalRuleService.deleteRule(ruleId);
+      set((state) => {
+        const currentList = state.rulesByQuestion[questionId] || [];
+        return {
+          rulesByQuestion: {
+            ...state.rulesByQuestion,
+            [questionId]: currentList.filter(r => r.id !== ruleId)
+          }
+        };
+      });
+    } catch (err) {
+      console.error("Erro ao deletar regra:", err);
       throw err;
     }
   }
