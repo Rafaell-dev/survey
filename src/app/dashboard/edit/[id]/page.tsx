@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
-import { ArrowLeft, Save, Loader2 } from "lucide-react";
+import { ArrowLeft, Save, Loader2, Share2 } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
 
@@ -10,10 +10,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 
 import { useSurveyStore } from "@/store/survey.store";
 import { useBuilderStore } from "@/store/builder.store";
 import { BlockList } from "@/components/builder/BlockList";
+import { SurveyPublishPanel } from "@/components/builder/publish/SurveyPublishPanel";
+import { SurveyStatusBadge } from "@/components/builder/publish/SurveyStatusBadge";
 
 export default function EditFormPage() {
   const router = useRouter();
@@ -98,12 +101,22 @@ export default function EditFormPage() {
             </Link>
             <div>
               <h1 className="text-xl font-semibold">Construtor de Formulário</h1>
-              <span className={`text-xs px-2 py-0.5 rounded-full ${status === 'PUBLISHED' ? 'bg-green-100 text-green-800' : status === 'ARCHIVED' ? 'bg-destructive/10 text-destructive' : 'bg-secondary text-secondary-foreground'}`}>
-                {status === 'PUBLISHED' ? 'Publicado' : status === 'ARCHIVED' ? 'Arquivado' : 'Rascunho'}
-              </span>
+              <SurveyStatusBadge status={status as any} />
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button type="button" variant="outline" className="gap-2">
+                  <Share2 className="h-4 w-4" />
+                  Compartilhar
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-md">
+                <SurveyPublishPanel />
+              </DialogContent>
+            </Dialog>
+
             <Button type="submit" className="gap-2 px-8" disabled={isSaving || !title.trim()}>
               {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
               {isSaving ? "Salvando..." : "Salvar Tudo"}
