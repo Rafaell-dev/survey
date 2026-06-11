@@ -136,12 +136,14 @@ export default function DashboardPage() {
                       <div className="flex items-center gap-1" onClick={(e) => e.preventDefault()}>
                         {survey.status === 'PUBLISHED' && (
                           <>
-                            <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-primary" onClick={(e) => {
-                              e.preventDefault();
-                              window.open(`/s/${survey.id}`, '_blank');
-                            }} title="Acessar Formulário Público">
-                              <ExternalLink className="h-4 w-4" />
-                            </Button>
+                            {survey.publicSlug && (
+                              <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-primary" onClick={(e) => {
+                                e.preventDefault();
+                                window.open(`/survey/${survey.publicSlug}`, '_blank');
+                              }} title="Acessar Formulário Público">
+                                <ExternalLink className="h-4 w-4" />
+                              </Button>
+                            )}
                             <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-green-600" onClick={(e) => handleExport(e, survey.id)} title="Baixar Resultados (CSV)">
                               <Download className="h-4 w-4" />
                             </Button>
