@@ -108,6 +108,8 @@ export function SurveyPublishPanel() {
               <div className="flex items-center justify-center py-4 text-muted-foreground">
                 <Loader2 className="h-5 w-5 animate-spin mr-2" /> Carregando link...
               </div>
+            ) : publicLinkInfo?.publicSlug ? (
+              <PublicLinkCard url={`${typeof window !== 'undefined' ? window.location.origin : ''}/survey/${publicLinkInfo.publicSlug}`} />
             ) : publicLinkInfo?.url ? (
               <PublicLinkCard url={publicLinkInfo.url} />
             ) : (
