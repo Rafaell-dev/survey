@@ -38,6 +38,11 @@ export interface UpdateSurveyDTO {
   instructions?: string;
 }
 
+export interface UpdateSurveySettingsDTO {
+  participantIdentificationType?: ParticipantIdentificationType;
+  allowMultipleResponses?: boolean;
+}
+
 export interface SurveyPaginationResponse {
   items: Survey[];
   total: number;

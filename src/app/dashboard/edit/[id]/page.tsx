@@ -11,25 +11,32 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 
 import { useSurveyStore } from "@/store/survey.store";
 import { useBuilderStore } from "@/store/builder.store";
 import { BlockList } from "@/components/builder/BlockList";
 import { SurveyPublishPanel } from "@/components/builder/publish/SurveyPublishPanel";
 import { SurveyStatusBadge } from "@/components/builder/publish/SurveyStatusBadge";
+import { ParticipantIdentificationType } from "@/domain/survey.types";
 
 export default function EditFormPage() {
   const router = useRouter();
   const params = useParams();
   const surveyId = params.id as string;
 
-  const { fetchSurvey, updateSurvey } = useSurveyStore();
+  const { fetchSurvey, updateSurvey, updateSurveySettings } = useSurveyStore();
   const { fetchBlocks, saveAllBlocks, saving: savingBlocks, loading: loadingBlocks } = useBuilderStore();
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [instructions, setInstructions] = useState("");
   const [status, setStatus] = useState("DRAFT");
+  
+  // Settings
+  const [participantIdentificationType, setParticipantIdentificationType] = useState<ParticipantIdentificationType>("ANONYMOUS");
+  const [allowMultipleResponses, setAllowMultipleResponses] = useState(false);
   
   const [initialLoading, setInitialLoading] = useState(true);
   const [savingSurvey, setSavingSurvey] = useState(false);
@@ -43,6 +50,8 @@ export default function EditFormPage() {
       setDescription(survey.description || "");
       setInstructions(survey.instructions || "");
       setStatus(survey.status);
+      setParticipantIdentificationType(survey.participantIdentificationType);
+      setAllowMultipleResponses(survey.allowMultipleResponses);
       setInitialLoading(false);
     }).catch((err) => {
       toast.error("Erro ao carregar os dados.");
@@ -59,14 +68,20 @@ export default function EditFormPage() {
 
     setSavingSurvey(true);
     try {
-      // Salva Metadados do Survey
-      await updateSurvey(surveyId, {
-        title,
-        description: description || undefined,
-        instructions: instructions || undefined,
-      });
+      // Salva Metadados e Settings paralelamente
+      await Promise.all([
+        updateSurvey(surveyId, {
+          title,
+          description: description || undefined,
+          instructions: instructions || undefined,
+        }),
+        updateSurveySettings(surveyId, {
+          participantIdentificationType,
+          allowMultipleResponses,
+        })
+      ]);
 
-      // Salva Lote de Blocos (Criações, Edições, Deleções, Reordenações)
+      // Salva Lote de Blocos
       await saveAllBlocks(surveyId);
       
       toast.success("Todas as alterações foram salvas com sucesso!");
@@ -167,7 +182,56 @@ export default function EditFormPage() {
             </Card>
           </section>
 
-          {/* Seção 2: Construtor de Blocos */}
+          {/* Seção 2: Configurações de Participação */}
+          <section className="space-y-4">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="h-8 w-1 bg-blue-500 rounded-full"></div>
+              <h2 className="text-lg font-semibold">Configurações de Participação</h2>
+            </div>
+            
+            <Card className="border-t-0 shadow-sm border-border/50">
+              <CardContent className="pt-6 space-y-6">
+                <div className="grid md:grid-cols-2 gap-8">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-muted-foreground">Identificação do Participante</label>
+                    <Select value={participantIdentificationType} onValueChange={(val: ParticipantIdentificationType) => setParticipantIdentificationType(val)}>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Selecione o tipo" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="ANONYMOUS">Anônimo (Padrão)</SelectItem>
+                        <SelectItem value="EMAIL">Exigir apenas E-mail</SelectItem>
+                        <SelectItem value="PHONE">Exigir apenas Celular</SelectItem>
+                        <SelectItem value="EMAIL_OR_PHONE">Exigir E-mail ou Celular</SelectItem>
+                        <SelectItem value="NAME_AND_EMAIL">Exigir Nome e E-mail</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Determine quais dados serão exigidos antes da pesquisa iniciar.
+                    </p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-muted-foreground">Respostas Múltiplas</label>
+                    <div className="flex items-center justify-between border rounded-md p-3">
+                      <div className="space-y-0.5">
+                        <label className="text-sm font-medium">Permitir múltiplas respostas</label>
+                        <p className="text-xs text-muted-foreground">
+                          A mesma pessoa pode responder várias vezes?
+                        </p>
+                      </div>
+                      <Switch 
+                        checked={allowMultipleResponses} 
+                        onCheckedChange={setAllowMultipleResponses} 
+                      />
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </section>
+
+          {/* Seção 3: Construtor de Blocos */}
           <section className="space-y-4">
             <div className="flex items-center gap-2 mb-4">
               <div className="h-8 w-1 bg-indigo-500 rounded-full"></div>
