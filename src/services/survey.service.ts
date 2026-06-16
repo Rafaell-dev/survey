@@ -3,6 +3,7 @@ import {
   Survey, 
   CreateSurveyDTO, 
   UpdateSurveyDTO, 
+  UpdateSurveySettingsDTO,
   SurveyPaginationResponse,
   PublicLinkInfo
 } from '../domain/survey.types';
@@ -31,6 +32,11 @@ export const surveyService = {
 
   async updateSurvey(id: string, data: UpdateSurveyDTO): Promise<Survey> {
     const response = await api.patch<Survey>(`/surveys/${id}`, data);
+    return response.data;
+  },
+
+  async updateSurveySettings(id: string, data: UpdateSurveySettingsDTO): Promise<Survey> {
+    const response = await api.patch<Survey>(`/surveys/${id}/settings`, data);
     return response.data;
   },
 

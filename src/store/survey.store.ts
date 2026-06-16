@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { Survey, CreateSurveyDTO, UpdateSurveyDTO, PublicLinkInfo } from '../domain/survey.types';
+import { Survey, CreateSurveyDTO, UpdateSurveyDTO, UpdateSurveySettingsDTO, PublicLinkInfo } from '../domain/survey.types';
 import { surveyService } from '../services/survey.service';
 
 interface SurveyState {
@@ -18,6 +18,7 @@ interface SurveyState {
   fetchSurvey: (id: string) => Promise<Survey>;
   createSurvey: (data: CreateSurveyDTO) => Promise<Survey>;
   updateSurvey: (id: string, data: UpdateSurveyDTO) => Promise<Survey>;
+  updateSurveySettings: (id: string, data: UpdateSurveySettingsDTO) => Promise<Survey>;
   deleteSurvey: (id: string) => Promise<void>;
   clearSelectedSurvey: () => void;
 
@@ -80,6 +81,20 @@ export const useSurveyStore = create<SurveyState>((set, get) => ({
     set({ loading: true });
     try {
       const survey = await surveyService.updateSurvey(id, data);
+      set((state) => ({
+        surveys: state.surveys.map(s => s.id === id ? survey : s),
+        selectedSurvey: state.selectedSurvey?.id === id ? survey : state.selectedSurvey
+      }));
+      return survey;
+    } finally {
+      set({ loading: false });
+    }
+  },
+
+  updateSurveySettings: async (id: string, data: UpdateSurveySettingsDTO) => {
+    set({ loading: true });
+    try {
+      const survey = await surveyService.updateSurveySettings(id, data);
       set((state) => ({
         surveys: state.surveys.map(s => s.id === id ? survey : s),
         selectedSurvey: state.selectedSurvey?.id === id ? survey : state.selectedSurvey

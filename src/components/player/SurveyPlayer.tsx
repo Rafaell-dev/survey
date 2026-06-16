@@ -2,22 +2,45 @@
 
 import { useSurveyPlayerStore } from "@/store/survey-player.store";
 import { QuestionRenderer } from "./QuestionRenderer";
+import { IdentificationStep } from "./IdentificationStep";
 import { Button } from "@/components/ui/button";
 import { ChevronRight, ChevronLeft, CheckCircle } from "lucide-react";
-import { useState } from "react";
 import { toast } from "sonner";
 
 export function SurveyPlayer() {
-  const { survey, currentBlockIndex, answers, setAnswer, goToNextBlock, goToPreviousBlock, history } = useSurveyPlayerStore();
-  const [finished, setFinished] = useState(false);
+  const { 
+    survey, 
+    playerStep, 
+    currentBlockIndex, 
+    answers, 
+    setAnswer, 
+    goToNextBlock, 
+    goToPreviousBlock, 
+    history,
+    finishSurvey
+  } = useSurveyPlayerStore();
 
   if (!survey) return null;
 
+  if (playerStep === 'IDENTIFICATION') {
+    return <IdentificationStep />;
+  }
+
+  if (playerStep === 'FINISHED') {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 text-center animate-in fade-in zoom-in duration-500">
+        <CheckCircle className="h-16 w-16 text-emerald-500 mb-6" />
+        <h2 className="text-3xl font-bold mb-2">Obrigado pela sua participação!</h2>
+        <p className="text-muted-foreground text-lg">Sua resposta foi registrada com sucesso.</p>
+      </div>
+    );
+  }
+
+  // playerStep === 'RESPONDING'
   const currentBlock = survey.blocks[currentBlockIndex];
-  const isLastBlock = currentBlockIndex >= survey.blocks.length - 1; // Simplificado. Com regras, pode terminar antes.
+  const isLastBlock = currentBlockIndex >= survey.blocks.length - 1;
 
   const validateBlock = () => {
-    // Verifica se todas as perguntas obrigatórias do bloco foram respondidas
     for (const question of currentBlock.questions) {
       if (question.isRequired) {
         const answer = answers[question.id];
@@ -33,9 +56,8 @@ export function SurveyPlayer() {
   const handleNext = () => {
     if (!validateBlock()) return;
 
-    // Se é o último bloco, ou a engine determinar que acabou, finaliza.
     if (isLastBlock) {
-      setFinished(true);
+      finishSurvey();
     } else {
       goToNextBlock();
     }
@@ -45,36 +67,11 @@ export function SurveyPlayer() {
     goToPreviousBlock();
   };
 
-  if (finished) {
-    return (
-      <div className="flex flex-col items-center justify-center py-20 text-center animate-in fade-in zoom-in duration-500">
-        <CheckCircle className="h-16 w-16 text-emerald-500 mb-6" />
-        <h2 className="text-3xl font-bold mb-2">Obrigado pela sua participação!</h2>
-        <p className="text-muted-foreground text-lg">Sua resposta foi registrada com sucesso.</p>
-      </div>
-    );
-  }
-
-  // Progresso
   const progressPercent = Math.round((currentBlockIndex / survey.blocks.length) * 100);
 
   return (
-    <div className="max-w-3xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-20">
+    <div className="max-w-3xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-20 mt-8">
       
-      {/* Header do Survey */}
-      <div className="space-y-4">
-        <h1 className="text-3xl font-extrabold tracking-tight">{survey.title}</h1>
-        {currentBlockIndex === 0 && survey.description && (
-          <p className="text-lg text-muted-foreground whitespace-pre-wrap">{survey.description}</p>
-        )}
-        {currentBlockIndex === 0 && survey.instructions && (
-          <div className="p-4 bg-muted/50 rounded-lg text-sm whitespace-pre-wrap mt-4 border">
-            <strong className="block mb-1">Instruções:</strong>
-            {survey.instructions}
-          </div>
-        )}
-      </div>
-
       {/* Progress Bar */}
       <div className="space-y-2">
         <div className="flex justify-between text-sm text-muted-foreground font-medium">
