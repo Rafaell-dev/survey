@@ -7,10 +7,23 @@ interface Props {
 }
 
 export function LikertQuestion({ question, value, onChange }: Props) {
+  // Caso o backend retorne sem opções (ex: escala numérica não configurada manualmente no builder)
+  const options = question.scaleOptions && question.scaleOptions.length > 0 
+    ? question.scaleOptions 
+    : Array.from({ length: (question.scaleEnd ?? 5) - (question.scaleStart ?? 1) + 1 }, (_, i) => {
+        const val = (question.scaleStart ?? 1) + i;
+        return {
+          id: `auto-${val}`,
+          value: val,
+          label: String(val),
+          orderIndex: i
+        };
+      });
+
   return (
     <div className="w-full overflow-x-auto pb-4">
       <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-end min-w-[300px] gap-2">
-        {question.scaleOptions.map((option) => (
+        {options.map((option) => (
           <div 
             key={option.id} 
             className="flex flex-col items-center flex-1 cursor-pointer group"

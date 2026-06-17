@@ -36,6 +36,9 @@ export interface SurveyQuestionDTO {
   description: string | null;
   isRequired: boolean;
   orderIndex: number;
+  scaleStart?: number | null;
+  scaleEnd?: number | null;
+  scaleVisualType?: "NUMBERS" | "EMOJIS" | "ICONS" | "TEXT_LABELS" | "SLIDER" | null;
   options: SurveyOptionDTO[];
   scaleOptions: SurveyScaleOptionDTO[];
   medias: SurveyMediaDTO[];
