@@ -13,6 +13,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 import { useSurveyStore } from "@/store/survey.store";
 import { useBuilderStore } from "@/store/builder.store";
@@ -20,6 +21,7 @@ import { BlockList } from "@/components/builder/BlockList";
 import { SurveyPublishPanel } from "@/components/builder/publish/SurveyPublishPanel";
 import { SurveyStatusBadge } from "@/components/builder/publish/SurveyStatusBadge";
 import { ParticipantIdentificationType } from "@/domain/survey.types";
+import { AnalyticsDashboard } from "@/components/analytics/AnalyticsDashboard";
 
 export default function EditFormPage() {
   const router = useRouter();
@@ -40,6 +42,8 @@ export default function EditFormPage() {
   
   const [initialLoading, setInitialLoading] = useState(true);
   const [savingSurvey, setSavingSurvey] = useState(false);
+
+  const [activeTab, setActiveTab] = useState("editor");
 
   useEffect(() => {
     Promise.all([
@@ -105,144 +109,156 @@ export default function EditFormPage() {
   const isSaving = savingSurvey || savingBlocks;
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6 pb-20 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <form onSubmit={handleSave}>
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between sticky top-0 z-20 bg-background/95 backdrop-blur-md pb-4 pt-4 border-b mb-6 gap-4">
-          <div className="flex items-center gap-3 w-full sm:w-auto">
-            <Link href="/dashboard" className="shrink-0">
-              <Button type="button" variant="ghost" size="icon" className="text-muted-foreground hover:bg-muted">
-                <ArrowLeft className="h-5 w-5" />
-              </Button>
-            </Link>
-            <div className="min-w-0 flex-1">
-              <h1 className="text-lg sm:text-xl font-semibold truncate">Construtor de Formulário</h1>
-              <SurveyStatusBadge status={status as any} />
-            </div>
+    <div className="max-w-5xl mx-auto space-y-6 pb-20 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between sticky top-0 z-20 bg-background/95 backdrop-blur-md pb-4 pt-4 border-b mb-6 gap-4">
+        <div className="flex items-center gap-3 w-full sm:w-auto">
+          <Link href="/dashboard" className="shrink-0">
+            <Button type="button" variant="ghost" size="icon" className="text-muted-foreground hover:bg-muted">
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+          </Link>
+          <div className="min-w-0 flex-1">
+            <h1 className="text-lg sm:text-xl font-semibold truncate">Construtor de Formulário</h1>
+            <SurveyStatusBadge status={status as any} />
           </div>
-          <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
-            <Dialog>
-              <DialogTrigger asChild>
-                <Button type="button" variant="outline" className="gap-2 flex-1 sm:flex-none">
-                  <Share2 className="h-4 w-4" />
-                  <span className="hidden sm:inline">Compartilhar</span>
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-md w-[95vw]">
-                <SurveyPublishPanel />
-              </DialogContent>
-            </Dialog>
+        </div>
+        <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button type="button" variant="outline" className="gap-2 flex-1 sm:flex-none">
+                <Share2 className="h-4 w-4" />
+                <span className="hidden sm:inline">Compartilhar</span>
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-md w-[95vw]">
+              <SurveyPublishPanel />
+            </DialogContent>
+          </Dialog>
 
-            <Button type="submit" className="gap-2 px-4 sm:px-8 flex-1 sm:flex-none" disabled={isSaving || !title.trim()}>
+          {activeTab === "editor" && (
+            <Button type="button" onClick={handleSave} className="gap-2 px-4 sm:px-8 flex-1 sm:flex-none" disabled={isSaving || !title.trim()}>
               {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
               {isSaving ? "Salvando..." : <span className="hidden sm:inline">Salvar Tudo</span>}
               {!isSaving && <span className="sm:hidden">Salvar</span>}
             </Button>
-          </div>
+          )}
         </div>
+      </div>
 
-        <div className="space-y-12">
-          {/* Seção 1: Configurações Básicas do Survey */}
-          <section className="space-y-4">
-            <div className="flex items-center gap-2 mb-2">
-              <div className="h-8 w-1 bg-primary rounded-full"></div>
-              <h2 className="text-lg font-semibold">Informações Gerais</h2>
-            </div>
-            
-            <Card className="border-t-0 shadow-sm border-border/50">
-              <CardContent className="pt-6 space-y-6">
-                <div className="space-y-2">
-                  <Input
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
-                    className="text-3xl font-bold h-auto px-0 border-transparent focus-visible:ring-0 focus-visible:border-b-primary rounded-none shadow-none text-foreground bg-transparent"
-                    placeholder="Título do Formulário *"
-                    required
-                  />
-                </div>
-                
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-muted-foreground">Descrição</label>
-                  <Textarea
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                    className="min-h-[100px] resize-y"
-                    placeholder="Uma breve descrição sobre o objetivo desta pesquisa (Opcional)"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-muted-foreground">Instruções Iniciais</label>
-                  <Textarea
-                    value={instructions}
-                    onChange={(e) => setInstructions(e.target.value)}
-                    className="min-h-[100px] resize-y"
-                    placeholder="Ex: Leia atentamente cada questão antes de responder... (Opcional)"
-                  />
-                </div>
-              </CardContent>
-            </Card>
-          </section>
-
-          {/* Seção 2: Configurações de Participação */}
-          <section className="space-y-4">
-            <div className="flex items-center gap-2 mb-2">
-              <div className="h-8 w-1 bg-blue-500 rounded-full"></div>
-              <h2 className="text-lg font-semibold">Configurações de Participação</h2>
-            </div>
-            
-            <Card className="border-t-0 shadow-sm border-border/50">
-              <CardContent className="pt-6 space-y-6">
-                <div className="grid md:grid-cols-2 gap-8">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList className="mb-6 grid w-full max-w-md grid-cols-2">
+          <TabsTrigger value="editor">Editor</TabsTrigger>
+          <TabsTrigger value="analytics">Resultados & Analytics</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="editor" className="focus-visible:outline-none focus-visible:ring-0">
+          <form onSubmit={handleSave} className="space-y-12">
+            {/* Seção 1: Configurações Básicas do Survey */}
+            <section className="space-y-4">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="h-8 w-1 bg-primary rounded-full"></div>
+                <h2 className="text-lg font-semibold">Informações Gerais</h2>
+              </div>
+              
+              <Card className="border-t-0 shadow-sm border-border/50">
+                <CardContent className="pt-6 space-y-6">
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-muted-foreground">Identificação do Participante</label>
-                    <Select value={participantIdentificationType} onValueChange={(val: ParticipantIdentificationType) => setParticipantIdentificationType(val)}>
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Selecione o tipo" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="ANONYMOUS">Anônimo (Padrão)</SelectItem>
-                        <SelectItem value="EMAIL">Exigir apenas E-mail</SelectItem>
-                        <SelectItem value="PHONE">Exigir apenas Celular</SelectItem>
-                        <SelectItem value="EMAIL_OR_PHONE">Exigir E-mail ou Celular</SelectItem>
-                        <SelectItem value="NAME_AND_EMAIL">Exigir Nome e E-mail</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Determine quais dados serão exigidos antes da pesquisa iniciar.
-                    </p>
+                    <Input
+                      value={title}
+                      onChange={(e) => setTitle(e.target.value)}
+                      className="text-3xl font-bold h-auto px-0 border-transparent focus-visible:ring-0 focus-visible:border-b-primary rounded-none shadow-none text-foreground bg-transparent"
+                      placeholder="Título do Formulário *"
+                      required
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-muted-foreground">Descrição</label>
+                    <Textarea
+                      value={description}
+                      onChange={(e) => setDescription(e.target.value)}
+                      className="min-h-[100px] resize-y"
+                      placeholder="Uma breve descrição sobre o objetivo desta pesquisa (Opcional)"
+                    />
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-muted-foreground">Respostas Múltiplas</label>
-                    <div className="flex items-center justify-between border rounded-md p-3">
-                      <div className="space-y-0.5">
-                        <label className="text-sm font-medium">Permitir múltiplas respostas</label>
-                        <p className="text-xs text-muted-foreground">
-                          A mesma pessoa pode responder várias vezes?
-                        </p>
+                    <label className="text-sm font-medium text-muted-foreground">Instruções Iniciais</label>
+                    <Textarea
+                      value={instructions}
+                      onChange={(e) => setInstructions(e.target.value)}
+                      className="min-h-[100px] resize-y"
+                      placeholder="Ex: Leia atentamente cada questão antes de responder... (Opcional)"
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+            </section>
+
+            {/* Seção 2: Configurações de Participação */}
+            <section className="space-y-4">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="h-8 w-1 bg-blue-500 rounded-full"></div>
+                <h2 className="text-lg font-semibold">Configurações de Participação</h2>
+              </div>
+              
+              <Card className="border-t-0 shadow-sm border-border/50">
+                <CardContent className="pt-6 space-y-6">
+                  <div className="grid md:grid-cols-2 gap-8">
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-muted-foreground">Identificação do Participante</label>
+                      <Select value={participantIdentificationType} onValueChange={(val: ParticipantIdentificationType) => setParticipantIdentificationType(val)}>
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Selecione o tipo" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="ANONYMOUS">Anônimo (Padrão)</SelectItem>
+                          <SelectItem value="EMAIL">Exigir apenas E-mail</SelectItem>
+                          <SelectItem value="PHONE">Exigir apenas Celular</SelectItem>
+                          <SelectItem value="EMAIL_OR_PHONE">Exigir E-mail ou Celular</SelectItem>
+                          <SelectItem value="NAME_AND_EMAIL">Exigir Nome e E-mail</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Determine quais dados serão exigidos antes da pesquisa iniciar.
+                      </p>
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-muted-foreground">Respostas Múltiplas</label>
+                      <div className="flex items-center justify-between border rounded-md p-3">
+                        <div className="space-y-0.5">
+                          <label className="text-sm font-medium">Permitir múltiplas respostas</label>
+                          <p className="text-xs text-muted-foreground">
+                            A mesma pessoa pode responder várias vezes?
+                          </p>
+                        </div>
+                        <Switch 
+                          checked={allowMultipleResponses} 
+                          onCheckedChange={setAllowMultipleResponses} 
+                        />
                       </div>
-                      <Switch 
-                        checked={allowMultipleResponses} 
-                        onCheckedChange={setAllowMultipleResponses} 
-                      />
                     </div>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-          </section>
+                </CardContent>
+              </Card>
+            </section>
 
-          {/* Seção 3: Construtor de Blocos */}
-          <section className="space-y-4">
-            <div className="flex items-center gap-2 mb-4">
-              <div className="h-8 w-1 bg-indigo-500 rounded-full"></div>
-              <h2 className="text-lg font-semibold">Blocos e Páginas</h2>
-            </div>
-            <BlockList />
-          </section>
-        </div>
-
-      </form>
+            {/* Seção 3: Construtor de Blocos */}
+            <section className="space-y-4">
+              <div className="flex items-center gap-2 mb-4">
+                <div className="h-8 w-1 bg-indigo-500 rounded-full"></div>
+                <h2 className="text-lg font-semibold">Blocos e Páginas</h2>
+              </div>
+              <BlockList />
+            </section>
+          </form>
+        </TabsContent>
+        
+        <TabsContent value="analytics" className="focus-visible:outline-none focus-visible:ring-0">
+          <AnalyticsDashboard surveyId={surveyId} />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
