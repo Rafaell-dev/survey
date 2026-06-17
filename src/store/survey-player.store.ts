@@ -3,8 +3,9 @@ import { SurveyPlayerDTO, ConditionalRuleDTO, SurveyQuestionDTO } from '../domai
 import { CreateParticipantDTO, ResponseSessionDTO } from '../domain/participant.types';
 import { publicSurveyService } from '../services/public-survey.service';
 import { answerService } from '../services/answer.service';
+import { trackingService } from '../services/tracking.service';
 import { SaveAnswerDTO } from '../domain/answer.types';
-
+import { SaveTrackingDTO } from '../domain/tracking.types';
 type PlayerStep = 'IDENTIFICATION' | 'RESPONDING' | 'FINISHED';
 
 interface SurveyPlayerState {
@@ -20,6 +21,10 @@ interface SurveyPlayerState {
   answers: Record<string, any>;
   history: number[]; // Guarda os índices dos blocos visitados para o botão "Anterior"
   
+  // Tracking
+  currentBlockStartedAt: number | null;
+  blockTrackings: Record<string, { orderIndex: number; timeSpentMs: number }>;
+
   savingAnswers: number;
   saveError: string | null;
 
@@ -32,6 +37,8 @@ interface SurveyPlayerState {
   goToNextBlock: () => void;
   goToPreviousBlock: () => void;
   finishSurvey: () => Promise<void>;
+  trackBlockStart: () => void;
+  trackBlockExit: () => void;
 }
 
 function evaluateRule(rule: ConditionalRuleDTO, answer: any): boolean {
@@ -80,6 +87,9 @@ export const useSurveyPlayerStore = create<SurveyPlayerState>((set, get) => ({
   answers: {},
   history: [],
   
+  currentBlockStartedAt: null,
+  blockTrackings: {},
+  
   savingAnswers: 0,
   saveError: null,
 
@@ -127,7 +137,8 @@ export const useSurveyPlayerStore = create<SurveyPlayerState>((set, get) => ({
           session,
           answers: {},
           currentBlockIndex: 0,
-          history: []
+          history: [],
+          blockTrackings: {}
         }));
       }
 
@@ -137,8 +148,11 @@ export const useSurveyPlayerStore = create<SurveyPlayerState>((set, get) => ({
         playerStep: 'RESPONDING',
         currentBlockIndex: 0,
         history: [],
-        answers: {}
+        answers: {},
+        blockTrackings: {},
+        currentBlockStartedAt: null
       });
+      get().trackBlockStart();
     } catch (err: any) {
       throw err;
     }
@@ -158,8 +172,10 @@ export const useSurveyPlayerStore = create<SurveyPlayerState>((set, get) => ({
             answers: parsed.answers || {},
             currentBlockIndex: parsed.currentBlockIndex || 0,
             history: parsed.history || [],
+            blockTrackings: parsed.blockTrackings || {},
             playerStep: 'RESPONDING'
           });
+          get().trackBlockStart();
         }
       } catch (e) {
         console.error("Erro ao restaurar sessão", e);
@@ -181,6 +197,8 @@ export const useSurveyPlayerStore = create<SurveyPlayerState>((set, get) => ({
       answers: {},
       currentBlockIndex: 0,
       history: [],
+      blockTrackings: {},
+      currentBlockStartedAt: null,
       savingAnswers: 0,
       saveError: null
     });
@@ -261,7 +279,8 @@ export const useSurveyPlayerStore = create<SurveyPlayerState>((set, get) => ({
   },
 
   goToNextBlock: () => {
-    const { survey, currentBlockIndex, answers, history } = get();
+    get().trackBlockExit();
+    const { survey, currentBlockIndex, answers, history, blockTrackings } = get();
     if (!survey || currentBlockIndex >= survey.blocks.length) return;
 
     const currentBlock = survey.blocks[currentBlockIndex];
@@ -295,6 +314,7 @@ export const useSurveyPlayerStore = create<SurveyPlayerState>((set, get) => ({
           const parsed = JSON.parse(saved);
           parsed.currentBlockIndex = nextIndex;
           parsed.history = newHistory;
+          parsed.blockTrackings = blockTrackings;
           localStorage.setItem(`survey_session_${survey.id}`, JSON.stringify(parsed));
         } catch (e) {}
       }
@@ -305,10 +325,12 @@ export const useSurveyPlayerStore = create<SurveyPlayerState>((set, get) => ({
       currentBlockIndex: nextIndex,
       saveError: null
     });
+    get().trackBlockStart();
   },
 
   goToPreviousBlock: () => {
-    const { history, survey } = get();
+    get().trackBlockExit();
+    const { history, survey, blockTrackings } = get();
     if (history.length === 0) return;
 
     const newHistory = [...history];
@@ -321,6 +343,7 @@ export const useSurveyPlayerStore = create<SurveyPlayerState>((set, get) => ({
           const parsed = JSON.parse(saved);
           parsed.currentBlockIndex = prevIndex;
           parsed.history = newHistory;
+          parsed.blockTrackings = blockTrackings;
           localStorage.setItem(`survey_session_${survey.id}`, JSON.stringify(parsed));
         } catch (e) {}
       }
@@ -331,10 +354,12 @@ export const useSurveyPlayerStore = create<SurveyPlayerState>((set, get) => ({
       currentBlockIndex: prevIndex,
       saveError: null
     });
+    get().trackBlockStart();
   },
 
   finishSurvey: async () => {
-    const { survey, responseSession } = get();
+    get().trackBlockExit();
+    const { survey, responseSession, blockTrackings } = get();
     
     if (responseSession) {
       try {
@@ -351,10 +376,55 @@ export const useSurveyPlayerStore = create<SurveyPlayerState>((set, get) => ({
         try {
           const parsed = JSON.parse(saved);
           if (parsed.session) parsed.session.status = 'COMPLETED';
+          parsed.blockTrackings = blockTrackings;
           localStorage.setItem(`survey_session_${survey.id}`, JSON.stringify(parsed));
         } catch (e) {}
       }
     }
     set({ playerStep: 'FINISHED' });
+  },
+
+  trackBlockStart: () => {
+    set({ currentBlockStartedAt: Date.now() });
+  },
+
+  trackBlockExit: () => {
+    const { currentBlockIndex, currentBlockStartedAt, blockTrackings, survey, responseSession } = get();
+    if (!survey || !currentBlockStartedAt || !responseSession) return;
+    
+    const currentBlock = survey.blocks[currentBlockIndex];
+    if (!currentBlock) return;
+
+    const timeSpent = Date.now() - currentBlockStartedAt;
+    const existingTracking = blockTrackings[currentBlock.id];
+    
+    const orderIndex = existingTracking 
+      ? existingTracking.orderIndex 
+      : Object.keys(blockTrackings).length + 1;
+
+    const updatedTracking = {
+      orderIndex,
+      timeSpentMs: (existingTracking?.timeSpentMs || 0) + timeSpent
+    };
+
+    const newBlockTrackings = {
+      ...blockTrackings,
+      [currentBlock.id]: updatedTracking
+    };
+
+    set({ blockTrackings: newBlockTrackings, currentBlockStartedAt: null });
+
+    // Enviar tracking de forma silenciosa ("fire and forget") para a API com debounce/sem bloqueio
+    const payload: SaveTrackingDTO = {
+      blocks: Object.entries(newBlockTrackings).map(([blockId, tracking]) => ({
+        blockId,
+        orderIndex: tracking.orderIndex,
+        timeSpentMs: tracking.timeSpentMs
+      }))
+    };
+
+    trackingService.saveTracking(responseSession.responseId, payload).catch((e) => {
+      console.warn("Tracking error (ignored):", e);
+    });
   }
 }));
