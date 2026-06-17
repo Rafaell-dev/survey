@@ -22,7 +22,7 @@ export function LikertQuestion({ question, value, onChange }: Props) {
         return {
           id: `auto-${val}`,
           value: val,
-          label: String(val),
+          label: null, // Deixe null para permitir o fallback do TEXT_LABELS
           orderIndex: i
         };
       });

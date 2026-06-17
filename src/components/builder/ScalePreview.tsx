@@ -93,15 +93,15 @@ export function ScalePreview({ start, end, visualType }: ScalePreviewProps) {
     };
 
     return (
-      <div className="flex items-center justify-between w-full max-w-md bg-muted/30 p-4 rounded-lg border">
+      <div className="flex items-start justify-between w-full bg-muted/30 p-4 rounded-lg border overflow-x-auto">
         {elements.map((num, i) => (
-          <div key={num} className="flex items-center flex-1 last:flex-none">
+          <div key={num} className="flex items-center flex-1 last:flex-none min-w-[60px]">
             <div className="flex flex-col items-center gap-2 text-muted-foreground text-xs text-center flex-1">
-              <div className="w-4 h-4 rounded-full border border-current opacity-50" />
+              <div className="w-4 h-4 rounded-full border border-current opacity-50 shrink-0" />
               <span className="leading-tight px-1 max-w-[80px]">{getTextLabelForIndex(i, steps)}</span>
             </div>
             {i < elements.length - 1 && (
-              <div className="flex-1 h-[1px] bg-border mx-2" />
+              <div className="flex-1 h-[1px] bg-border mx-1 sm:mx-2 min-w-[8px]" />
             )}
           </div>
         ))}
