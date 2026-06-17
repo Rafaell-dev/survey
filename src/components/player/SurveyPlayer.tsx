@@ -83,11 +83,11 @@ export function SurveyPlayer() {
   const isNavigationDisabled = savingAnswers > 0;
 
   return (
-    <div className="max-w-3xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-20 mt-8">
+    <div className="max-w-3xl mx-auto space-y-6 sm:space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-20 mt-4 sm:mt-8">
       
       {/* Progress Bar */}
-      <div className="space-y-2">
-        <div className="flex justify-between text-sm text-muted-foreground font-medium">
+      <div className="space-y-2 px-1">
+        <div className="flex justify-between text-xs sm:text-sm text-muted-foreground font-medium">
           <span>{progressPercent}% Concluído</span>
           <span>Bloco {currentBlockIndex + 1} de {survey.blocks.length}</span>
         </div>
@@ -100,15 +100,15 @@ export function SurveyPlayer() {
       </div>
 
       {/* Bloco Atual */}
-      <div className="bg-card border rounded-2xl shadow-sm p-6 sm:p-8 space-y-10 relative">
+      <div className="bg-card border rounded-xl sm:rounded-2xl shadow-sm p-5 sm:p-8 space-y-8 sm:space-y-10 relative">
         {currentBlock.title && (
           <div className="border-b pb-4">
-            <h2 className="text-2xl font-bold">{currentBlock.title}</h2>
-            {currentBlock.description && <p className="text-muted-foreground mt-2">{currentBlock.description}</p>}
+            <h2 className="text-xl sm:text-2xl font-bold">{currentBlock.title}</h2>
+            {currentBlock.description && <p className="text-sm sm:text-base text-muted-foreground mt-2">{currentBlock.description}</p>}
           </div>
         )}
 
-        <div className="space-y-12">
+        <div className="space-y-10 sm:space-y-12">
           {currentBlock.questions.map((question) => (
             <QuestionRenderer 
               key={question.id} 
@@ -124,32 +124,30 @@ export function SurveyPlayer() {
       </div>
 
       {/* Feedback de Salvamento */}
-      <div className="flex justify-end text-sm text-muted-foreground h-4">
+      <div className="flex justify-end text-sm text-muted-foreground h-4 px-1">
         {savingAnswers > 0 && (
           <span className="flex items-center gap-2 animate-pulse text-blue-500">
             <span className="h-2 w-2 bg-blue-500 rounded-full animate-ping"></span>
-            Salvando respostas...
+            <span className="text-xs sm:text-sm">Salvando respostas...</span>
           </span>
         )}
       </div>
 
       {/* Navegação */}
-      <div className="flex items-center justify-between pt-4">
+      <div className="flex items-center justify-between pt-2 sm:pt-4 px-1">
         <Button 
           variant="outline" 
-          size="lg" 
           onClick={handlePrevious} 
           disabled={history.length === 0 || isNavigationDisabled}
-          className="gap-2"
+          className="gap-1 sm:gap-2 h-10 sm:h-11 px-3 sm:px-6 text-sm sm:text-base"
         >
-          <ChevronLeft className="h-4 w-4" /> Anterior
+          <ChevronLeft className="h-4 w-4" /> <span className="hidden sm:inline">Anterior</span><span className="sm:hidden">Voltar</span>
         </Button>
 
         <Button 
-          size="lg" 
           onClick={handleNext}
           disabled={isNavigationDisabled}
-          className="gap-2 px-8"
+          className="gap-1 sm:gap-2 h-10 sm:h-11 px-6 sm:px-8 text-sm sm:text-base"
         >
           {isLastBlock ? "Finalizar" : "Próximo"}
           {!isLastBlock && <ChevronRight className="h-4 w-4" />}

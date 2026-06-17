@@ -42,7 +42,7 @@ export default function PublicSurveyPage() {
   }
 
   return (
-    <main className="min-h-screen bg-background text-foreground py-8 px-4 sm:px-6 lg:px-8">
+    <main className="min-h-screen bg-background text-foreground py-4 sm:py-8 px-3 sm:px-6 lg:px-8">
       <SurveyPlayer />
     </main>
   );

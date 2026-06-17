@@ -46,8 +46,8 @@ export function LikertQuestion({ question, value, onChange }: Props) {
   };
 
   return (
-    <div className="w-full overflow-x-auto pb-4">
-      <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-end min-w-[300px] gap-2">
+    <div className="w-full overflow-x-auto pb-4 scrollbar-thin scrollbar-thumb-muted-foreground/20 scrollbar-track-transparent">
+      <div className="flex flex-row justify-between items-end min-w-max gap-2 sm:gap-4 px-1">
         {options.map((option, index) => {
           
           let content;
