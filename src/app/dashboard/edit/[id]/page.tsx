@@ -107,34 +107,35 @@ export default function EditFormPage() {
   return (
     <div className="max-w-4xl mx-auto space-y-6 pb-20 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <form onSubmit={handleSave}>
-        <div className="flex items-center justify-between sticky top-0 z-10 bg-background/80 backdrop-blur-md pb-4 pt-2 border-b mb-6">
-          <div className="flex items-center gap-4">
-            <Link href="/dashboard">
-              <Button type="button" variant="ghost" size="icon" className="text-muted-foreground">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between sticky top-0 z-20 bg-background/95 backdrop-blur-md pb-4 pt-4 border-b mb-6 gap-4">
+          <div className="flex items-center gap-3 w-full sm:w-auto">
+            <Link href="/dashboard" className="shrink-0">
+              <Button type="button" variant="ghost" size="icon" className="text-muted-foreground hover:bg-muted">
                 <ArrowLeft className="h-5 w-5" />
               </Button>
             </Link>
-            <div>
-              <h1 className="text-xl font-semibold">Construtor de Formulário</h1>
+            <div className="min-w-0 flex-1">
+              <h1 className="text-lg sm:text-xl font-semibold truncate">Construtor de Formulário</h1>
               <SurveyStatusBadge status={status as any} />
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
             <Dialog>
               <DialogTrigger asChild>
-                <Button type="button" variant="outline" className="gap-2">
+                <Button type="button" variant="outline" className="gap-2 flex-1 sm:flex-none">
                   <Share2 className="h-4 w-4" />
-                  Compartilhar
+                  <span className="hidden sm:inline">Compartilhar</span>
                 </Button>
               </DialogTrigger>
-              <DialogContent className="sm:max-w-md">
+              <DialogContent className="sm:max-w-md w-[95vw]">
                 <SurveyPublishPanel />
               </DialogContent>
             </Dialog>
 
-            <Button type="submit" className="gap-2 px-8" disabled={isSaving || !title.trim()}>
+            <Button type="submit" className="gap-2 px-4 sm:px-8 flex-1 sm:flex-none" disabled={isSaving || !title.trim()}>
               {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-              {isSaving ? "Salvando..." : "Salvar Tudo"}
+              {isSaving ? "Salvando..." : <span className="hidden sm:inline">Salvar Tudo</span>}
+              {!isSaving && <span className="sm:hidden">Salvar</span>}
             </Button>
           </div>
         </div>
