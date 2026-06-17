@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { useSurveyPlayerStore } from "@/store/survey-player.store";
 import { QuestionRenderer } from "./QuestionRenderer";
 import { IdentificationStep } from "./IdentificationStep";
+import { CompletionPage } from "./CompletionPage";
 import { Button } from "@/components/ui/button";
 import { ChevronRight, ChevronLeft, CheckCircle } from "lucide-react";
 import { toast } from "sonner";
@@ -36,13 +37,7 @@ export function SurveyPlayer() {
   }
 
   if (playerStep === 'FINISHED') {
-    return (
-      <div className="flex flex-col items-center justify-center py-20 text-center animate-in fade-in zoom-in duration-500">
-        <CheckCircle className="h-16 w-16 text-emerald-500 mb-6" />
-        <h2 className="text-3xl font-bold mb-2">Obrigado pela sua participação!</h2>
-        <p className="text-muted-foreground text-lg">Sua resposta foi registrada com sucesso.</p>
-      </div>
-    );
+    return <CompletionPage />;
   }
 
   // playerStep === 'RESPONDING'

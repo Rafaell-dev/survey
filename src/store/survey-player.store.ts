@@ -3,6 +3,7 @@ import { SurveyPlayerDTO, ConditionalRuleDTO, SurveyQuestionDTO } from '../domai
 import { CreateParticipantDTO, ResponseSessionDTO } from '../domain/participant.types';
 import { publicSurveyService } from '../services/public-survey.service';
 import { answerService } from '../services/answer.service';
+import { responseService } from '../services/response.service';
 import { trackingService } from '../services/tracking.service';
 import { mediaTrackingService } from '../services/media-tracking.service';
 import { SaveAnswerDTO } from '../domain/answer.types';
@@ -370,13 +371,18 @@ export const useSurveyPlayerStore = create<SurveyPlayerState>((set, get) => ({
 
   finishSurvey: async () => {
     get().trackBlockExit();
-    const { survey, responseSession, blockTrackings } = get();
+    const { survey, responseSession, blockTrackings, savingAnswers } = get();
     
+    if (savingAnswers > 0) {
+      set({ saveError: 'Aguarde o salvamento das respostas antes de finalizar.' });
+      return;
+    }
+
     if (responseSession) {
       try {
-        await answerService.completeResponse(responseSession.responseId);
-      } catch (e) {
-        set({ saveError: 'Erro ao finalizar a pesquisa. Verifique sua conexão e tente novamente.' });
+        await responseService.finishResponse(responseSession.responseId);
+      } catch (e: any) {
+        set({ saveError: e.response?.data?.message || 'Erro ao finalizar a pesquisa. Verifique sua conexão e tente novamente.' });
         return; // interrompe a finalização se falhar
       }
     }

@@ -17,10 +17,4 @@ export const answerService = {
     return response.data;
   },
 
-  /**
-   * Marca a resposta como completa no backend
-   */
-  async completeResponse(responseId: string): Promise<void> {
-    await api.post(`/public/responses/${responseId}/finish`);
-  }
 };
