@@ -45,7 +45,7 @@ export function ScaleConfigurationPanel({ question, onUpdate }: ScaleConfigurati
     <div className="mt-4 pt-4 border-t border-dashed space-y-6">
       
       {/* Configurações Numéricas e Visuais */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="space-y-1.5">
           <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
             Início da Escala

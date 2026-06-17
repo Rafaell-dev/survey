@@ -67,13 +67,13 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Painel de Controle</h1>
-          <p className="text-muted-foreground">Visão geral dos seus formulários e atividades recentes.</p>
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Painel de Controle</h1>
+          <p className="text-sm sm:text-base text-muted-foreground">Visão geral dos seus formulários e atividades recentes.</p>
         </div>
-        <Link href="/dashboard/create">
-          <Button className="gap-2">
+        <Link href="/dashboard/create" className="w-full sm:w-auto">
+          <Button className="gap-2 w-full sm:w-auto">
             <Plus className="h-4 w-4" />
             Criar Formulário
           </Button>
