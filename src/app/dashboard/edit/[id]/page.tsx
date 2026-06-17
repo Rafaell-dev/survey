@@ -146,9 +146,9 @@ export default function EditFormPage() {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="mb-6 grid w-full max-w-md grid-cols-2">
-          <TabsTrigger value="editor">Editor</TabsTrigger>
-          <TabsTrigger value="analytics">Resultados & Analytics</TabsTrigger>
+        <TabsList className="mb-6 grid w-full grid-cols-2 h-16">
+          <TabsTrigger value="editor" className="h-full">Editor</TabsTrigger>
+          <TabsTrigger value="analytics" className="h-full">Resultados & Analytics</TabsTrigger>
         </TabsList>
         
         <TabsContent value="editor" className="focus-visible:outline-none focus-visible:ring-0">
