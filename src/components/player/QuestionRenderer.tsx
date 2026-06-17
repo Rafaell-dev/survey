@@ -15,6 +15,11 @@ interface Props {
 
 export function QuestionRenderer({ question, value, onChange }: Props) {
   const renderQuestionInput = () => {
+    // Fallback: se a questão é do tipo Likert mas a visualização escolhida foi Slider
+    if (question.type === "LIKERT" && question.scaleVisualType === "SLIDER") {
+      return <SliderQuestion question={question} value={value} onChange={onChange} />;
+    }
+
     switch (question.type) {
       case "SHORT_TEXT":
         return <ShortTextQuestion question={question} value={value} onChange={onChange} />;
