@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { useSurveyPlayerStore } from "@/store/survey-player.store";
 import { QuestionRenderer } from "./QuestionRenderer";
 import { IdentificationStep } from "./IdentificationStep";
@@ -17,8 +18,16 @@ export function SurveyPlayer() {
     goToNextBlock, 
     goToPreviousBlock, 
     history,
-    finishSurvey
+    finishSurvey,
+    savingAnswers,
+    saveError
   } = useSurveyPlayerStore();
+
+  useEffect(() => {
+    if (saveError) {
+      toast.error(saveError);
+    }
+  }, [saveError]);
 
   if (!survey) return null;
 
@@ -54,6 +63,7 @@ export function SurveyPlayer() {
   };
 
   const handleNext = () => {
+    if (savingAnswers > 0) return;
     if (!validateBlock()) return;
 
     if (isLastBlock) {
@@ -64,10 +74,13 @@ export function SurveyPlayer() {
   };
 
   const handlePrevious = () => {
+    if (savingAnswers > 0) return;
     goToPreviousBlock();
   };
 
   const progressPercent = Math.round((currentBlockIndex / survey.blocks.length) * 100);
+
+  const isNavigationDisabled = savingAnswers > 0;
 
   return (
     <div className="max-w-3xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-20 mt-8">
@@ -87,7 +100,7 @@ export function SurveyPlayer() {
       </div>
 
       {/* Bloco Atual */}
-      <div className="bg-card border rounded-2xl shadow-sm p-6 sm:p-8 space-y-10">
+      <div className="bg-card border rounded-2xl shadow-sm p-6 sm:p-8 space-y-10 relative">
         {currentBlock.title && (
           <div className="border-b pb-4">
             <h2 className="text-2xl font-bold">{currentBlock.title}</h2>
@@ -110,13 +123,23 @@ export function SurveyPlayer() {
         </div>
       </div>
 
+      {/* Feedback de Salvamento */}
+      <div className="flex justify-end text-sm text-muted-foreground h-4">
+        {savingAnswers > 0 && (
+          <span className="flex items-center gap-2 animate-pulse text-blue-500">
+            <span className="h-2 w-2 bg-blue-500 rounded-full animate-ping"></span>
+            Salvando respostas...
+          </span>
+        )}
+      </div>
+
       {/* Navegação */}
       <div className="flex items-center justify-between pt-4">
         <Button 
           variant="outline" 
           size="lg" 
           onClick={handlePrevious} 
-          disabled={history.length === 0}
+          disabled={history.length === 0 || isNavigationDisabled}
           className="gap-2"
         >
           <ChevronLeft className="h-4 w-4" /> Anterior
@@ -125,6 +148,7 @@ export function SurveyPlayer() {
         <Button 
           size="lg" 
           onClick={handleNext}
+          disabled={isNavigationDisabled}
           className="gap-2 px-8"
         >
           {isLastBlock ? "Finalizar" : "Próximo"}

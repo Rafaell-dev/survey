@@ -1,7 +1,9 @@
 import { create } from 'zustand';
-import { SurveyPlayerDTO, ConditionalRuleDTO } from '../domain/public-survey.types';
+import { SurveyPlayerDTO, ConditionalRuleDTO, SurveyQuestionDTO } from '../domain/public-survey.types';
 import { CreateParticipantDTO, ResponseSessionDTO } from '../domain/participant.types';
 import { publicSurveyService } from '../services/public-survey.service';
+import { answerService } from '../services/answer.service';
+import { SaveAnswerDTO } from '../domain/answer.types';
 
 type PlayerStep = 'IDENTIFICATION' | 'RESPONDING' | 'FINISHED';
 
@@ -18,14 +20,18 @@ interface SurveyPlayerState {
   answers: Record<string, any>;
   history: number[]; // Guarda os índices dos blocos visitados para o botão "Anterior"
   
+  savingAnswers: number;
+  saveError: string | null;
+
   loadSurvey: (slug: string) => Promise<void>;
   startSession: (data: CreateParticipantDTO) => Promise<void>;
   restoreSession: (surveyId: string) => void;
   clearSession: () => void;
   setAnswer: (questionId: string, value: any) => void;
+  saveAnswerToApi: (questionId: string, value: any) => void;
   goToNextBlock: () => void;
   goToPreviousBlock: () => void;
-  finishSurvey: () => void;
+  finishSurvey: () => Promise<void>;
 }
 
 function evaluateRule(rule: ConditionalRuleDTO, answer: any): boolean {
@@ -59,6 +65,8 @@ function evaluateRule(rule: ConditionalRuleDTO, answer: any): boolean {
   }
 }
 
+const debounceTimers: Record<string, NodeJS.Timeout> = {};
+
 export const useSurveyPlayerStore = create<SurveyPlayerState>((set, get) => ({
   survey: null,
   loading: true,
@@ -71,6 +79,9 @@ export const useSurveyPlayerStore = create<SurveyPlayerState>((set, get) => ({
   currentBlockIndex: 0,
   answers: {},
   history: [],
+  
+  savingAnswers: 0,
+  saveError: null,
 
   loadSurvey: async (slug: string) => {
     set({ loading: true, error: null });
@@ -169,7 +180,9 @@ export const useSurveyPlayerStore = create<SurveyPlayerState>((set, get) => ({
       playerStep: 'IDENTIFICATION',
       answers: {},
       currentBlockIndex: 0,
-      history: []
+      history: [],
+      savingAnswers: 0,
+      saveError: null
     });
   },
 
@@ -191,6 +204,60 @@ export const useSurveyPlayerStore = create<SurveyPlayerState>((set, get) => ({
 
       return { answers: newAnswers };
     });
+
+    get().saveAnswerToApi(questionId, value);
+  },
+
+  saveAnswerToApi: (questionId: string, value: any) => {
+    const { responseSession, survey } = get();
+    if (!responseSession || !survey) return;
+
+    if (debounceTimers[questionId]) clearTimeout(debounceTimers[questionId]);
+    
+    set((state) => ({ savingAnswers: state.savingAnswers + 1, saveError: null }));
+
+    debounceTimers[questionId] = setTimeout(async () => {
+      try {
+        // Encontra a pergunta para saber o tipo
+        let question: SurveyQuestionDTO | null = null;
+        for (const block of survey.blocks) {
+          const found = block.questions.find(q => q.id === questionId);
+          if (found) { question = found; break; }
+        }
+        
+        if (!question) return;
+
+        const dto: SaveAnswerDTO = {
+          questionId,
+          timeSpentMs: 0 // Tracking não é foco no momento
+        };
+
+        if (question.type === 'SHORT_TEXT' || question.type === 'LONG_TEXT') {
+          dto.textValue = String(value || '');
+        } else if (question.type === 'SINGLE_CHOICE') {
+          dto.selectedOptionId = value;
+        } else if (question.type === 'MULTIPLE_CHOICE') {
+          dto.selectedOptionsIds = Array.isArray(value) ? value : [];
+        } else if (question.type === 'LIKERT' || question.type === 'SLIDER') {
+          dto.numericValue = Number(value);
+        }
+
+        // Não salvar caso não haja resposta útil pra enviar
+        if (
+          dto.textValue === '' || 
+          dto.selectedOptionId === '' || 
+          (Array.isArray(dto.selectedOptionsIds) && dto.selectedOptionsIds.length === 0)
+        ) {
+           return;
+        }
+
+        await answerService.saveAnswer(responseSession.responseId, dto);
+      } catch (err) {
+        set({ saveError: 'Não foi possível salvar uma de suas respostas. Verifique sua conexão.' });
+      } finally {
+        set((state) => ({ savingAnswers: Math.max(0, state.savingAnswers - 1) }));
+      }
+    }, 800);
   },
 
   goToNextBlock: () => {
@@ -235,7 +302,8 @@ export const useSurveyPlayerStore = create<SurveyPlayerState>((set, get) => ({
 
     set({
       history: newHistory,
-      currentBlockIndex: nextIndex
+      currentBlockIndex: nextIndex,
+      saveError: null
     });
   },
 
@@ -260,14 +328,24 @@ export const useSurveyPlayerStore = create<SurveyPlayerState>((set, get) => ({
 
     set({
       history: newHistory,
-      currentBlockIndex: prevIndex
+      currentBlockIndex: prevIndex,
+      saveError: null
     });
   },
 
-  finishSurvey: () => {
-    const { survey } = get();
+  finishSurvey: async () => {
+    const { survey, responseSession } = get();
+    
+    if (responseSession) {
+      try {
+        await answerService.completeResponse(responseSession.responseId);
+      } catch (e) {
+        set({ saveError: 'Erro ao finalizar a pesquisa. Verifique sua conexão e tente novamente.' });
+        return; // interrompe a finalização se falhar
+      }
+    }
+
     if (survey && typeof window !== 'undefined') {
-      // Opcionalmente podemos marcar a sessão como completada no localStorage
       const saved = localStorage.getItem(`survey_session_${survey.id}`);
       if (saved) {
         try {
