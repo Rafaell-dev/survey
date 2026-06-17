@@ -36,6 +36,15 @@ export function LikertQuestion({ question, value, onChange }: Props) {
     return "😍";
   };
 
+  const getTextLabelForIndex = (index: number, total: number) => {
+    if (total === 2) return index === 0 ? "Discordo" : "Concordo";
+    if (total === 3) return index === 0 ? "Discordo" : index === 1 ? "Neutro" : "Concordo";
+    if (total === 4) return ["Discordo Totalmente", "Discordo", "Concordo", "Concordo Totalmente"][index];
+    if (total === 5) return ["Discordo Totalmente", "Discordo", "Neutro", "Concordo", "Concordo Totalmente"][index];
+    if (total === 6) return ["Discordo Fortemente", "Discordo", "Neutro/Discordo", "Neutro/Concordo", "Concordo", "Concordo Fortemente"][index];
+    return `Opção ${index + 1}`;
+  };
+
   return (
     <div className="w-full overflow-x-auto pb-4">
       <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-end min-w-[300px] gap-2">
@@ -58,8 +67,15 @@ export function LikertQuestion({ question, value, onChange }: Props) {
                 <span className="text-[10px] text-muted-foreground">{option.label || option.value}</span>
               </div>
             );
+          } else if (visualType === "TEXT_LABELS") {
+            const labelStr = option.label || getTextLabelForIndex(index, options.length);
+            content = (
+              <div className="text-[10px] sm:text-xs text-muted-foreground mb-3 h-10 flex items-center justify-center text-center px-1 font-medium transition-colors group-hover:text-foreground max-w-[80px] leading-tight">
+                {labelStr}
+              </div>
+            );
           } else {
-            // NUMBERS, TEXT_LABELS e fallback
+            // NUMBERS e fallback
             content = (
               <div className="text-xs text-muted-foreground mb-3 h-8 text-center px-1 font-medium transition-colors group-hover:text-foreground">
                 {option.label || option.value}

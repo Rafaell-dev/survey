@@ -83,22 +83,28 @@ export function ScalePreview({ start, end, visualType }: ScalePreviewProps) {
   }
 
   if (visualType === "TEXT_LABELS") {
+    const getTextLabelForIndex = (index: number, total: number) => {
+      if (total === 2) return index === 0 ? "Discordo" : "Concordo";
+      if (total === 3) return index === 0 ? "Discordo" : index === 1 ? "Neutro" : "Concordo";
+      if (total === 4) return ["Discordo Totalmente", "Discordo", "Concordo", "Concordo Totalmente"][index];
+      if (total === 5) return ["Discordo Totalmente", "Discordo", "Neutro", "Concordo", "Concordo Totalmente"][index];
+      if (total === 6) return ["Discordo Fortemente", "Discordo", "Neutro/Discordo", "Neutro/Concordo", "Concordo", "Concordo Fortemente"][index];
+      return `Opção ${index + 1}`;
+    };
+
     return (
       <div className="flex items-center justify-between w-full max-w-md bg-muted/30 p-4 rounded-lg border">
-        <div className="flex flex-col items-center gap-2 text-muted-foreground text-sm">
-          <div className="w-4 h-4 rounded-full border border-current" />
-          <span>Discordo</span>
-        </div>
-        <div className="flex-1 h-[1px] bg-border mx-2" />
-        <div className="flex flex-col items-center gap-2 text-muted-foreground text-sm">
-          <div className="w-4 h-4 rounded-full bg-primary" />
-          <span className="text-foreground font-medium">Neutro</span>
-        </div>
-        <div className="flex-1 h-[1px] bg-border mx-2" />
-        <div className="flex flex-col items-center gap-2 text-muted-foreground text-sm">
-          <div className="w-4 h-4 rounded-full border border-current" />
-          <span>Concordo</span>
-        </div>
+        {elements.map((num, i) => (
+          <div key={num} className="flex items-center flex-1 last:flex-none">
+            <div className="flex flex-col items-center gap-2 text-muted-foreground text-xs text-center flex-1">
+              <div className="w-4 h-4 rounded-full border border-current opacity-50" />
+              <span className="leading-tight px-1 max-w-[80px]">{getTextLabelForIndex(i, steps)}</span>
+            </div>
+            {i < elements.length - 1 && (
+              <div className="flex-1 h-[1px] bg-border mx-2" />
+            )}
+          </div>
+        ))}
       </div>
     );
   }

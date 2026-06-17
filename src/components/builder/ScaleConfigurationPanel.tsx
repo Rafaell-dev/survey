@@ -22,15 +22,22 @@ export function ScaleConfigurationPanel({ question, onUpdate }: ScaleConfigurati
   const end = question.scaleEnd ?? 5;
   const visualType = question.scaleVisualType ?? "NUMBERS";
 
-  // Prevenir erros de limite numérico na UI
+  // Limitar opções da escala para no mínimo 2 e máximo 6 (conforme regra de negócio)
   const handleStartChange = (val: number) => {
-    if (val >= end) return; // start não pode ultrapassar o end
+    let steps = end - val + 1;
+    if (steps < 2) val = end - 1;
+    if (steps > 6) val = end - 5;
+    if (val >= end) val = end - 1;
+    
     onUpdate(question.id, { scaleStart: val });
   };
 
   const handleEndChange = (val: number) => {
-    if (val <= start) return; // end não pode ser menor que o start
-    if (val - start > 20) return; // limite de 20 itens para não quebrar a tela
+    let steps = val - start + 1;
+    if (steps < 2) val = start + 1;
+    if (steps > 6) val = start + 5;
+    if (val <= start) val = start + 1;
+
     onUpdate(question.id, { scaleEnd: val });
   };
 
