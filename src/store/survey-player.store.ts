@@ -4,8 +4,10 @@ import { CreateParticipantDTO, ResponseSessionDTO } from '../domain/participant.
 import { publicSurveyService } from '../services/public-survey.service';
 import { answerService } from '../services/answer.service';
 import { trackingService } from '../services/tracking.service';
+import { mediaTrackingService } from '../services/media-tracking.service';
 import { SaveAnswerDTO } from '../domain/answer.types';
 import { SaveTrackingDTO } from '../domain/tracking.types';
+import { MediaInteractionType } from '../domain/media-tracking.types';
 type PlayerStep = 'IDENTIFICATION' | 'RESPONDING' | 'FINISHED';
 
 interface SurveyPlayerState {
@@ -24,6 +26,7 @@ interface SurveyPlayerState {
   // Tracking
   currentBlockStartedAt: number | null;
   blockTrackings: Record<string, { orderIndex: number; timeSpentMs: number }>;
+  trackedMediaEvents: string[];
 
   savingAnswers: number;
   saveError: string | null;
@@ -39,6 +42,7 @@ interface SurveyPlayerState {
   finishSurvey: () => Promise<void>;
   trackBlockStart: () => void;
   trackBlockExit: () => void;
+  trackMediaInteraction: (mediaId: string, type: MediaInteractionType, timeOffsetMs?: number) => void;
 }
 
 function evaluateRule(rule: ConditionalRuleDTO, answer: any): boolean {
@@ -89,6 +93,7 @@ export const useSurveyPlayerStore = create<SurveyPlayerState>((set, get) => ({
   
   currentBlockStartedAt: null,
   blockTrackings: {},
+  trackedMediaEvents: [],
   
   savingAnswers: 0,
   saveError: null,
@@ -138,7 +143,8 @@ export const useSurveyPlayerStore = create<SurveyPlayerState>((set, get) => ({
           answers: {},
           currentBlockIndex: 0,
           history: [],
-          blockTrackings: {}
+          blockTrackings: {},
+          trackedMediaEvents: []
         }));
       }
 
@@ -150,6 +156,7 @@ export const useSurveyPlayerStore = create<SurveyPlayerState>((set, get) => ({
         history: [],
         answers: {},
         blockTrackings: {},
+        trackedMediaEvents: [],
         currentBlockStartedAt: null
       });
       get().trackBlockStart();
@@ -173,6 +180,7 @@ export const useSurveyPlayerStore = create<SurveyPlayerState>((set, get) => ({
             currentBlockIndex: parsed.currentBlockIndex || 0,
             history: parsed.history || [],
             blockTrackings: parsed.blockTrackings || {},
+            trackedMediaEvents: parsed.trackedMediaEvents || [],
             playerStep: 'RESPONDING'
           });
           get().trackBlockStart();
@@ -198,6 +206,7 @@ export const useSurveyPlayerStore = create<SurveyPlayerState>((set, get) => ({
       currentBlockIndex: 0,
       history: [],
       blockTrackings: {},
+      trackedMediaEvents: [],
       currentBlockStartedAt: null,
       savingAnswers: 0,
       saveError: null
@@ -315,6 +324,7 @@ export const useSurveyPlayerStore = create<SurveyPlayerState>((set, get) => ({
           parsed.currentBlockIndex = nextIndex;
           parsed.history = newHistory;
           parsed.blockTrackings = blockTrackings;
+          parsed.trackedMediaEvents = get().trackedMediaEvents;
           localStorage.setItem(`survey_session_${survey.id}`, JSON.stringify(parsed));
         } catch (e) {}
       }
@@ -344,6 +354,7 @@ export const useSurveyPlayerStore = create<SurveyPlayerState>((set, get) => ({
           parsed.currentBlockIndex = prevIndex;
           parsed.history = newHistory;
           parsed.blockTrackings = blockTrackings;
+          parsed.trackedMediaEvents = get().trackedMediaEvents;
           localStorage.setItem(`survey_session_${survey.id}`, JSON.stringify(parsed));
         } catch (e) {}
       }
@@ -377,6 +388,7 @@ export const useSurveyPlayerStore = create<SurveyPlayerState>((set, get) => ({
           const parsed = JSON.parse(saved);
           if (parsed.session) parsed.session.status = 'COMPLETED';
           parsed.blockTrackings = blockTrackings;
+          parsed.trackedMediaEvents = get().trackedMediaEvents;
           localStorage.setItem(`survey_session_${survey.id}`, JSON.stringify(parsed));
         } catch (e) {}
       }
@@ -426,5 +438,42 @@ export const useSurveyPlayerStore = create<SurveyPlayerState>((set, get) => ({
     trackingService.saveTracking(responseSession.responseId, payload).catch((e) => {
       console.warn("Tracking error (ignored):", e);
     });
+  },
+
+  trackMediaInteraction: (mediaId: string, type: MediaInteractionType, timeOffsetMs?: number) => {
+    const { responseSession, trackedMediaEvents, survey } = get();
+    if (!responseSession || !survey) return;
+
+    // Controle local de duplicidade para eventos PLAY e END
+    const eventKey = `${mediaId}-${type}`;
+    if ((type === 'PLAY' || type === 'END') && trackedMediaEvents.includes(eventKey)) {
+      return;
+    }
+
+    const newTrackedEvents = [...trackedMediaEvents, eventKey];
+
+    // Atualiza estado e localStorage
+    set({ trackedMediaEvents: newTrackedEvents });
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem(`survey_session_${survey.id}`);
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          parsed.trackedMediaEvents = newTrackedEvents;
+          localStorage.setItem(`survey_session_${survey.id}`, JSON.stringify(parsed));
+        } catch (e) {}
+      }
+    }
+
+    // Disparo para a API (fire and forget)
+    mediaTrackingService.saveMediaInteractions(responseSession.responseId, {
+      interactions: [
+        {
+          mediaId,
+          interactionType: type,
+          timeOffsetMs: timeOffsetMs !== undefined ? Math.round(timeOffsetMs) : undefined
+        }
+      ]
+    }).catch(e => console.warn("Erro ao salvar media tracking (ignorado):", e));
   }
 }));
