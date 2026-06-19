@@ -9,7 +9,11 @@ import { SurveyStatusBadge } from "./SurveyStatusBadge";
 import { PublicLinkCard } from "./PublicLinkCard";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
-export function SurveyPublishPanel() {
+interface SurveyPublishPanelProps {
+  onBeforePublish?: () => Promise<void>;
+}
+
+export function SurveyPublishPanel({ onBeforePublish }: SurveyPublishPanelProps) {
   const { 
     selectedSurvey, 
     publicLinkInfo, 
@@ -36,6 +40,12 @@ export function SurveyPublishPanel() {
 
   const handlePublish = async () => {
     try {
+      if (onBeforePublish) {
+        toast.loading("Salvando rascunho antes de publicar...", { id: "publish-save" });
+        await onBeforePublish();
+        toast.dismiss("publish-save");
+      }
+      
       await publishSurvey(selectedSurvey.id);
       toast.success("Survey publicado com sucesso!");
       
@@ -47,6 +57,7 @@ export function SurveyPublishPanel() {
         await loadPublicLink(selectedSurvey.id);
       }
     } catch (err: any) {
+      toast.dismiss("publish-save");
       const message = err.response?.data?.message || "Erro ao publicar survey.";
       toast.error(message);
     }

@@ -50,11 +50,10 @@ export default function EditFormPage() {
     });
   }, [surveyId, fetchSurvey, fetchBlocks, router]);
 
-  const handleSave = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const saveForm = async () => {
     if (!title.trim()) {
       toast.error("O título do formulário é obrigatório.");
-      return;
+      throw new Error("O título é obrigatório");
     }
 
     setSavingSurvey(true);
@@ -73,8 +72,18 @@ export default function EditFormPage() {
     } catch (err: any) {
       console.error(err);
       toast.error(err.response?.data?.message || "Erro ao salvar as alterações.");
+      throw err;
     } finally {
       setSavingSurvey(false);
+    }
+  };
+
+  const handleSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      await saveForm();
+    } catch (e) {
+      // Já tratado dentro do saveForm
     }
   };
 
@@ -123,6 +132,21 @@ export default function EditFormPage() {
             </Button>
           </div>
         </div>
+<<<<<<< Updated upstream
+=======
+        <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button type="button" variant="outline" className="gap-2 flex-1 sm:flex-none">
+                <Share2 className="h-4 w-4" />
+                <span className="hidden sm:inline">Compartilhar</span>
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-md w-[95vw]">
+              <SurveyPublishPanel onBeforePublish={saveForm} />
+            </DialogContent>
+          </Dialog>
+>>>>>>> Stashed changes
 
         <div className="space-y-12">
           {/* Seção 1: Configurações Básicas do Survey */}
