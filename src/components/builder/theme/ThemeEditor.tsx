@@ -5,7 +5,6 @@ import { useThemeStore } from "@/store/theme.store";
 import { HeaderSettings } from "./HeaderSettings";
 import { ColorSettings } from "./ColorSettings";
 import { TypographySettings } from "./TypographySettings";
-import { LayoutSettings } from "./LayoutSettings";
 import { SurveyPreview } from "./SurveyPreview";
 import { Loader2 } from "lucide-react";
 
@@ -31,7 +30,6 @@ export function ThemeEditor({ surveyId }: { surveyId: string }) {
         <HeaderSettings surveyId={surveyId} />
         <ColorSettings surveyId={surveyId} />
         <TypographySettings surveyId={surveyId} />
-        <LayoutSettings surveyId={surveyId} />
       </div>
 
       <div className="sticky top-28 bg-muted/30 p-4 rounded-xl border overflow-hidden min-h-[600px] flex items-center justify-center">
