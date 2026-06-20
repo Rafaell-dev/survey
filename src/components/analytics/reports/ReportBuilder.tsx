@@ -96,7 +96,7 @@ export function ReportBuilder({ surveyId, onBack }: ReportBuilderProps) {
 
       {currentReport && (
         <div className="mb-4">
-          <ExportPanel surveyId={surveyId} />
+          <ExportPanel surveyId={surveyId} reportId={currentReport.id} />
         </div>
       )}
 

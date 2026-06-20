@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { ExportService } from "@/services/export.service";
 import { ExportFormat } from "@/domain/export.types";
 
-export function ExportPanel({ surveyId }: { surveyId: string }) {
+export function ExportPanel({ surveyId, reportId }: { surveyId: string, reportId?: string }) {
   const [isExporting, setIsExporting] = useState<ExportFormat | null>(null);
 
   const handleExport = async (format: ExportFormat) => {
@@ -15,7 +15,7 @@ export function ExportPanel({ surveyId }: { surveyId: string }) {
     const toastId = toast.loading(`Gerando arquivo ${format}...`);
     
     try {
-      await ExportService.downloadSurveyResults(surveyId, format);
+      await ExportService.downloadSurveyResults(surveyId, format, reportId);
       toast.success(`Arquivo ${format} gerado com sucesso!`, { id: toastId });
     } catch (error: any) {
       console.error(error);
@@ -34,7 +34,9 @@ export function ExportPanel({ surveyId }: { surveyId: string }) {
           Exportar Resultados
         </h3>
         <p className="text-xs text-muted-foreground mt-1">
-          Baixe todos os dados consolidados desta pesquisa.
+          {reportId 
+            ? "Baixe os dados consolidados utilizando os filtros deste relatório." 
+            : "Baixe todos os dados consolidados desta pesquisa."}
         </p>
       </div>
       

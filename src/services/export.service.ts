@@ -6,8 +6,10 @@ export const ExportService = {
    * Baixa os resultados do survey em formato CSV ou XLSX.
    * Utiliza `responseType: 'blob'` para receber o arquivo do backend.
    */
-  async downloadSurveyResults(surveyId: string, format: ExportFormat): Promise<void> {
-    const url = `/surveys/${surveyId}/export/${format.toLowerCase()}`;
+  async downloadSurveyResults(surveyId: string, format: ExportFormat, reportId?: string): Promise<void> {
+    const url = reportId 
+      ? `/surveys/${surveyId}/reports/${reportId}/export/${format.toLowerCase()}`
+      : `/surveys/${surveyId}/export/${format.toLowerCase()}`;
     
     const response = await api.get(url, {
       responseType: 'blob', // Importante para lidar com download de arquivos
