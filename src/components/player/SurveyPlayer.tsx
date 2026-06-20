@@ -98,7 +98,7 @@ export function SurveyPlayer() {
           <div className="w-full h-32 sm:h-48 md:h-64 rounded-xl sm:rounded-2xl overflow-hidden relative shadow-sm border">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img 
-              src={`${process.env.NEXT_PUBLIC_API_URL}${theme.headerImage}`} 
+              src={theme.headerImage.startsWith('http') ? theme.headerImage : `${process.env.NEXT_PUBLIC_API_URL}${theme.headerImage}`} 
               alt="Capa do Formulário"
               className="w-full h-full object-cover"
             />
