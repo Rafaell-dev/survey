@@ -132,11 +132,18 @@ export function ReportFilters({ filters, onChange }: { filters: any, onChange: (
                   />
                   <div className="grid gap-1.5 leading-none">
                     <Label htmlFor={`q-${q.questionId}`} className="font-medium cursor-pointer">
-                      Pergunta {q.questionId.substring(0, 8)}...
+                      {q.questionTitle || `Pergunta ${q.questionId.substring(0, 8)}...`}
                     </Label>
-                    <p className="text-xs text-muted-foreground">
-                      {q.type}
-                    </p>
+                    <div className="flex items-center gap-2 mt-1">
+                      {q.blockTitle && (
+                        <span className="text-[10px] px-1.5 py-0.5 bg-primary/10 text-primary rounded">
+                          {q.blockTitle}
+                        </span>
+                      )}
+                      <span className="text-[10px] text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
+                        {q.type}
+                      </span>
+                    </div>
                   </div>
                 </div>
               ))}

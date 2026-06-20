@@ -20,6 +20,8 @@ export interface QuestionOptionAnalytics {
 export interface QuestionAnalyticsDTO {
   questionId: string;
   type: QuestionType;
+  questionTitle?: string;
+  blockTitle?: string;
   options?: QuestionOptionAnalytics[];
   average?: number;
   minimum?: number;

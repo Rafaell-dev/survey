@@ -7,8 +7,18 @@ export function ReportTable({ data }: { data: QuestionAnalyticsDTO }) {
   return (
     <Card className="border-primary/10 shadow-sm">
       <CardHeader className="pb-3 border-b mb-4">
-        <CardTitle className="text-lg">
-          Tabela: Respostas (Pergunta {data.questionId.substring(0, 8)}...)
+        <CardTitle className="text-lg flex flex-col sm:flex-row sm:items-center gap-2">
+          <span>{data.questionTitle || `Pergunta ${data.questionId.substring(0, 8)}...`}</span>
+          <div className="flex items-center gap-2 mt-2 sm:mt-0">
+            {data.blockTitle && (
+              <span className="text-xs font-medium px-2 py-1 bg-primary/10 text-primary rounded-md">
+                {data.blockTitle}
+              </span>
+            )}
+            <span className="text-xs font-normal px-2 py-1 bg-secondary rounded-full">
+              {data.type}
+            </span>
+          </div>
         </CardTitle>
       </CardHeader>
       <CardContent>
