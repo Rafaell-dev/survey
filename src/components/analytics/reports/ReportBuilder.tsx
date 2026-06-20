@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ReportFilters } from "./ReportFilters";
 import { ReportPreview } from "./ReportPreview";
+import { ExportPanel } from "../ExportPanel";
 
 interface ReportBuilderProps {
   surveyId: string;
@@ -92,6 +93,12 @@ export function ReportBuilder({ surveyId, onBack }: ReportBuilderProps) {
           </Button>
         </div>
       </div>
+
+      {currentReport && (
+        <div className="mb-4">
+          <ExportPanel surveyId={surveyId} />
+        </div>
+      )}
 
       <Tabs defaultValue="preview" className="w-full">
         <TabsList className="mb-4">

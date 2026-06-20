@@ -8,8 +8,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 
 export function ReportFilters({ filters, onChange }: { filters: any, onChange: (f: any) => void }) {
-  const { questions } = useAnalyticsStore();
+  const { questions, navigation } = useAnalyticsStore();
   const allQuestions = questions?.questions || [];
+  const allBlocks = navigation?.blocks || [];
 
   const handleToggleQuestion = (questionId: string) => {
     const selected = filters.selectedQuestions || [];
@@ -56,6 +57,60 @@ export function ReportFilters({ filters, onChange }: { filters: any, onChange: (
                 </SelectContent>
               </Select>
             </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Data Inicial</Label>
+                <input 
+                  type="date"
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                  value={filters.dateRange?.from || ''}
+                  onChange={(e) => onChange({ ...filters, dateRange: { ...filters.dateRange, from: e.target.value } })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Data Final</Label>
+                <input 
+                  type="date"
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                  value={filters.dateRange?.to || ''}
+                  onChange={(e) => onChange({ ...filters, dateRange: { ...filters.dateRange, to: e.target.value } })}
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label>ID do Participante (Opcional)</Label>
+              <input 
+                type="text"
+                placeholder="Filtrar por participante..."
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                value={filters.participantIds?.[0] || ''}
+                onChange={(e) => onChange({ ...filters, participantIds: e.target.value ? [e.target.value] : [] })}
+              />
+            </div>
+            
+            {allBlocks.length > 0 && (
+              <div className="space-y-2">
+                <Label>Bloco Específico</Label>
+                <Select 
+                  value={filters.blockIds?.[0] || "ALL"} 
+                  onValueChange={(val) => onChange({ ...filters, blockIds: val === "ALL" ? [] : [val] })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Todos os blocos" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="ALL">Todos os blocos</SelectItem>
+                    {allBlocks.map(b => (
+                      <SelectItem key={b.blockId} value={b.blockId}>
+                        {b.title || `Bloco ${b.blockId.substring(0, 8)}...`}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
