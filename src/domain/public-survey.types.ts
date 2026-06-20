@@ -2,6 +2,7 @@ import { SurveyStatus, ParticipantIdentificationType } from './survey.types';
 import { QuestionType } from './question.types';
 import { MediaType } from './media.types';
 import { RuleOperator } from './conditional-rule.types';
+import { SurveyTheme } from './theme.types';
 
 export interface SurveyOptionDTO {
   id: string;
@@ -64,4 +65,5 @@ export interface SurveyPlayerDTO {
   publicSlug: string | null;
   publicLinkActive: boolean;
   blocks: SurveyBlockDTO[];
+  theme?: SurveyTheme | null;
 }

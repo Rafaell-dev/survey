@@ -22,6 +22,7 @@ import { SurveyPublishPanel } from "@/components/builder/publish/SurveyPublishPa
 import { SurveyStatusBadge } from "@/components/builder/publish/SurveyStatusBadge";
 import { ParticipantIdentificationType } from "@/domain/survey.types";
 import { AnalyticsDashboard } from "@/components/analytics/AnalyticsDashboard";
+import { ThemeEditor } from "@/components/builder/theme/ThemeEditor";
 
 export default function EditFormPage() {
   const router = useRouter();
@@ -146,8 +147,9 @@ export default function EditFormPage() {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="mb-6 grid w-full grid-cols-2 h-16">
+        <TabsList className="mb-6 grid w-full grid-cols-3 h-16">
           <TabsTrigger value="editor" className="h-full">Editor</TabsTrigger>
+          <TabsTrigger value="design" className="h-full">Design</TabsTrigger>
           <TabsTrigger value="analytics" className="h-full">Resultados & Analytics</TabsTrigger>
         </TabsList>
         
@@ -255,6 +257,10 @@ export default function EditFormPage() {
           </form>
         </TabsContent>
         
+        <TabsContent value="design" className="focus-visible:outline-none focus-visible:ring-0">
+          <ThemeEditor surveyId={surveyId} />
+        </TabsContent>
+
         <TabsContent value="analytics" className="focus-visible:outline-none focus-visible:ring-0">
           <AnalyticsDashboard surveyId={surveyId} />
         </TabsContent>
