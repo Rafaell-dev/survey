@@ -8,6 +8,7 @@ import { TrackingPanel } from "./TrackingPanel";
 import { Users, CheckCircle2, TrendingUp, Clock, Loader2 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
+import { ExportPanel } from "./ExportPanel";
 
 export function AnalyticsDashboard({ surveyId }: { surveyId: string }) {
   const { overview, questions, navigation, media, loading, error, loadAnalytics, reset } = useAnalyticsStore();
@@ -48,6 +49,14 @@ export function AnalyticsDashboard({ surveyId }: { surveyId: string }) {
     );
   }
 
+  const formatTime = (ms: number) => {
+    const totalSeconds = Math.round(ms / 1000);
+    if (totalSeconds < 60) return `${totalSeconds}s`;
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    return `${minutes}m ${seconds}s`;
+  };
+
   return (
     <div className="space-y-6 pb-20 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -70,11 +79,13 @@ export function AnalyticsDashboard({ surveyId }: { surveyId: string }) {
         />
         <MetricCard 
           title="Tempo Médio" 
-          value={`${Math.round(overview.averageTimeMs / 1000)}s`} 
+          value={formatTime(overview.averageTimeMs)} 
           icon={Clock} 
           description="Para chegar até o fim"
         />
       </div>
+
+      <ExportPanel surveyId={surveyId} />
 
       <Tabs defaultValue="results" className="w-full">
         <TabsList className="w-full justify-start border-b rounded-none h-auto p-0 bg-transparent mb-6">
