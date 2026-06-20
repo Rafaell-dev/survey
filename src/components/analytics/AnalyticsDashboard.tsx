@@ -49,6 +49,14 @@ export function AnalyticsDashboard({ surveyId }: { surveyId: string }) {
     );
   }
 
+  const formatTime = (ms: number) => {
+    const totalSeconds = Math.round(ms / 1000);
+    if (totalSeconds < 60) return `${totalSeconds}s`;
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    return `${minutes}m ${seconds}s`;
+  };
+
   return (
     <div className="space-y-6 pb-20 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -71,7 +79,7 @@ export function AnalyticsDashboard({ surveyId }: { surveyId: string }) {
         />
         <MetricCard 
           title="Tempo Médio" 
-          value={`${Math.round(overview.averageTimeMs / 1000)}s`} 
+          value={formatTime(overview.averageTimeMs)} 
           icon={Clock} 
           description="Para chegar até o fim"
         />
