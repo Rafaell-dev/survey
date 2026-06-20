@@ -73,12 +73,21 @@ export function QuestionResultCard({ question, index }: QuestionResultCardProps)
   return (
     <Card className="border-primary/10 shadow-sm">
       <CardHeader className="pb-3 border-b mb-4">
-        <CardTitle className="text-lg">
-          <span className="text-muted-foreground mr-2">{index + 1}.</span> 
-          Questão {question.questionId.substring(0, 8)}... {/* Idealmente o title, mas a API só retorna ID */}
-          <span className="ml-2 text-xs font-normal px-2 py-1 bg-secondary rounded-full">
-            {question.type}
-          </span>
+        <CardTitle className="text-lg flex flex-col sm:flex-row sm:items-center gap-2">
+          <div className="flex items-center">
+            <span className="text-muted-foreground mr-2">{index + 1}.</span> 
+            {question.questionTitle || `Questão ${question.questionId.substring(0, 8)}...`}
+          </div>
+          <div className="flex items-center gap-2 mt-2 sm:mt-0">
+            {question.blockTitle && (
+              <span className="text-xs font-medium px-2 py-1 bg-primary/10 text-primary rounded-md">
+                {question.blockTitle}
+              </span>
+            )}
+            <span className="text-xs font-normal px-2 py-1 bg-secondary rounded-full">
+              {question.type}
+            </span>
+          </div>
         </CardTitle>
       </CardHeader>
       <CardContent>

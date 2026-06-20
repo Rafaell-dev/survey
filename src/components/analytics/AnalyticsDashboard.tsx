@@ -9,6 +9,7 @@ import { Users, CheckCircle2, TrendingUp, Clock, Loader2 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
 import { ExportPanel } from "./ExportPanel";
+import { ReportsDashboard } from "./reports/ReportsDashboard";
 
 export function AnalyticsDashboard({ surveyId }: { surveyId: string }) {
   const { overview, questions, navigation, media, loading, error, loadAnalytics, reset } = useAnalyticsStore();
@@ -101,6 +102,12 @@ export function AnalyticsDashboard({ surveyId }: { surveyId: string }) {
           >
             Tracking (Comportamento)
           </TabsTrigger>
+          <TabsTrigger 
+            value="reports" 
+            className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-3"
+          >
+            Relatórios Personalizados
+          </TabsTrigger>
         </TabsList>
         
         <TabsContent value="results" className="mt-0 focus-visible:outline-none focus-visible:ring-0">
@@ -119,6 +126,10 @@ export function AnalyticsDashboard({ surveyId }: { surveyId: string }) {
         
         <TabsContent value="tracking" className="mt-0 focus-visible:outline-none focus-visible:ring-0">
           <TrackingPanel blocks={navigation.blocks} medias={media.medias} />
+        </TabsContent>
+
+        <TabsContent value="reports" className="mt-0 focus-visible:outline-none focus-visible:ring-0">
+          <ReportsDashboard surveyId={surveyId} />
         </TabsContent>
       </Tabs>
     </div>
