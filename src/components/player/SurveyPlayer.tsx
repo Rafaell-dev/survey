@@ -77,10 +77,35 @@ export function SurveyPlayer() {
 
   const isNavigationDisabled = savingAnswers > 0;
 
+  const theme = survey.theme;
+  const isFullPage = theme?.layout === "FULL_PAGE";
+  const isCompact = theme?.layout === "COMPACT";
+
   return (
-    <div className="max-w-3xl mx-auto space-y-6 sm:space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-20 mt-4 sm:mt-8">
-      
-      {/* Progress Bar */}
+    <div 
+      className={`w-full min-h-screen transition-colors duration-500`}
+      style={isFullPage ? { backgroundColor: theme?.backgroundColor, color: theme?.textColor, fontFamily: theme?.fontFamily || "Inter" } : { fontFamily: theme?.fontFamily || "Inter" }}
+    >
+      <div 
+        className={`mx-auto space-y-6 sm:space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-20 mt-4 sm:mt-8 ${
+          isFullPage ? "max-w-4xl px-4 py-8" :
+          isCompact ? "max-w-2xl" :
+          "max-w-3xl"
+        }`}
+      >
+        {/* Cabeçalho Customizado */}
+        {theme?.headerImage && (
+          <div className="w-full h-32 sm:h-48 md:h-64 rounded-xl sm:rounded-2xl overflow-hidden relative shadow-sm border">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img 
+              src={`${process.env.NEXT_PUBLIC_API_URL}${theme.headerImage}`} 
+              alt="Capa do Formulário"
+              className="w-full h-full object-cover"
+            />
+          </div>
+        )}
+
+        {/* Progress Bar */}
       <div className="space-y-2 px-1">
         <div className="flex justify-between text-xs sm:text-sm text-muted-foreground font-medium">
           <span>{progressPercent}% Concluído</span>
@@ -88,14 +113,17 @@ export function SurveyPlayer() {
         </div>
         <div className="h-2 w-full bg-secondary rounded-full overflow-hidden">
           <div 
-            className="h-full bg-primary transition-all duration-500 ease-out"
-            style={{ width: `${progressPercent}%` }}
+            className="h-full transition-all duration-500 ease-out"
+            style={{ width: `${progressPercent}%`, backgroundColor: theme?.primaryColor || 'hsl(var(--primary))' }}
           />
         </div>
       </div>
 
       {/* Bloco Atual */}
-      <div className="bg-card border rounded-xl sm:rounded-2xl shadow-sm p-5 sm:p-8 space-y-8 sm:space-y-10 relative">
+      <div 
+        className={`bg-card border rounded-xl sm:rounded-2xl shadow-sm p-5 sm:p-8 space-y-8 sm:space-y-10 relative transition-colors duration-500`}
+        style={!isFullPage && theme ? { backgroundColor: theme.backgroundColor, color: theme.textColor } : {}}
+      >
         {currentBlock.title && (
           <div className="border-b pb-4">
             <h2 className="text-xl sm:text-2xl font-bold">{currentBlock.title}</h2>
@@ -134,7 +162,8 @@ export function SurveyPlayer() {
           variant="outline" 
           onClick={handlePrevious} 
           disabled={history.length === 0 || isNavigationDisabled}
-          className="gap-1 sm:gap-2 h-10 sm:h-11 px-3 sm:px-6 text-sm sm:text-base"
+          className="gap-1 sm:gap-2 h-10 sm:h-11 px-3 sm:px-6 text-sm sm:text-base border-transparent shadow-none"
+          style={theme ? { color: theme.textColor, backgroundColor: "transparent" } : {}}
         >
           <ChevronLeft className="h-4 w-4" /> <span className="hidden sm:inline">Anterior</span><span className="sm:hidden">Voltar</span>
         </Button>
@@ -142,13 +171,15 @@ export function SurveyPlayer() {
         <Button 
           onClick={handleNext}
           disabled={isNavigationDisabled}
-          className="gap-1 sm:gap-2 h-10 sm:h-11 px-6 sm:px-8 text-sm sm:text-base"
+          className="gap-1 sm:gap-2 h-10 sm:h-11 px-6 sm:px-8 text-sm sm:text-base shadow-md transition-opacity hover:opacity-90"
+          style={theme ? { backgroundColor: theme.buttonColor, color: theme.backgroundColor } : {}}
         >
           {isLastBlock ? "Finalizar" : "Próximo"}
           {!isLastBlock && <ChevronRight className="h-4 w-4" />}
         </Button>
       </div>
 
+      </div>
     </div>
   );
 }
