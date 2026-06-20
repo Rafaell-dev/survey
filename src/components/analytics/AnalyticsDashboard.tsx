@@ -8,6 +8,7 @@ import { TrackingPanel } from "./TrackingPanel";
 import { Users, CheckCircle2, TrendingUp, Clock, Loader2 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
+import { ExportPanel } from "./ExportPanel";
 
 export function AnalyticsDashboard({ surveyId }: { surveyId: string }) {
   const { overview, questions, navigation, media, loading, error, loadAnalytics, reset } = useAnalyticsStore();
@@ -75,6 +76,8 @@ export function AnalyticsDashboard({ surveyId }: { surveyId: string }) {
           description="Para chegar até o fim"
         />
       </div>
+
+      <ExportPanel surveyId={surveyId} />
 
       <Tabs defaultValue="results" className="w-full">
         <TabsList className="w-full justify-start border-b rounded-none h-auto p-0 bg-transparent mb-6">
