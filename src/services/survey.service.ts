@@ -20,6 +20,11 @@ export const surveyService = {
     return response.data;
   },
 
+  async getGlobalMetrics(): Promise<{ totalResponses: number, newResponses7Days: number }> {
+    const response = await api.get<{ totalResponses: number, newResponses7Days: number }>('/surveys/metrics');
+    return response.data;
+  },
+
   async getSurveyById(id: string): Promise<Survey> {
     const response = await api.get<Survey>(`/surveys/${id}`);
     return response.data;

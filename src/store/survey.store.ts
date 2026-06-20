@@ -14,7 +14,10 @@ interface SurveyState {
   publishing: boolean;
   archiving: boolean;
 
+  globalMetrics: { totalResponses: number; newResponses7Days: number } | null;
+
   fetchSurveys: (page?: number, limit?: number, search?: string) => Promise<void>;
+  fetchGlobalMetrics: () => Promise<void>;
   fetchSurvey: (id: string) => Promise<Survey>;
   createSurvey: (data: CreateSurveyDTO) => Promise<Survey>;
   updateSurvey: (id: string, data: UpdateSurveyDTO) => Promise<Survey>;
@@ -40,6 +43,8 @@ export const useSurveyStore = create<SurveyState>((set, get) => ({
   publishing: false,
   archiving: false,
 
+  globalMetrics: null,
+
   fetchSurveys: async (page = 1, limit = 20, search = '') => {
     set({ loading: true });
     try {
@@ -52,6 +57,15 @@ export const useSurveyStore = create<SurveyState>((set, get) => ({
       });
     } finally {
       set({ loading: false });
+    }
+  },
+
+  fetchGlobalMetrics: async () => {
+    try {
+      const metrics = await surveyService.getGlobalMetrics();
+      set({ globalMetrics: metrics });
+    } catch (error) {
+      console.error("Erro ao carregar métricas globais", error);
     }
   },
 

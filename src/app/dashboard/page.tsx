@@ -11,14 +11,15 @@ import { useSurveyStore } from "@/store/survey.store";
 import { api } from "@/services/api";
 
 export default function DashboardPage() {
-  const { surveys, loading, fetchSurveys, deleteSurvey, total } = useSurveyStore();
+  const { surveys, loading, fetchSurveys, deleteSurvey, total, globalMetrics, fetchGlobalMetrics } = useSurveyStore();
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchSurveys().catch((err) => {
       toast.error("Erro ao carregar surveys.");
     });
-  }, [fetchSurveys]);
+    fetchGlobalMetrics();
+  }, [fetchSurveys, fetchGlobalMetrics]);
 
   const handleExport = async (e: React.MouseEvent, formId: string) => {
     e.stopPropagation();
@@ -61,8 +62,8 @@ export default function DashboardPage() {
 
   const stats = [
     { title: "Total de Formulários", value: total.toString(), icon: LayoutTemplate },
-    { title: "Total de Respostas", value: "0", icon: Users },
-    { title: "Tempo Médio de Conclusão", value: "0m", icon: Clock },
+    { title: "Total de Respostas", value: globalMetrics?.totalResponses.toString() || "0", icon: Users },
+    { title: "Novas Respostas (7 dias)", value: `+${globalMetrics?.newResponses7Days || 0}`, icon: Clock },
   ];
 
   return (
