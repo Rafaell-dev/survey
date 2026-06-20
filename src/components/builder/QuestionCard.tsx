@@ -90,8 +90,8 @@ export function QuestionCard({
           </Button>
         </div>
 
-        <div className="flex items-center gap-4 border-t pt-3 mt-1">
-          <div className="flex items-center gap-2">
+        <div className="flex flex-col sm:flex-row sm:items-center items-start gap-4 border-t pt-3 mt-1">
+          <div className="flex items-center gap-2 w-full sm:w-auto">
             <label className="text-xs font-medium text-muted-foreground">
               Tipo:
             </label>

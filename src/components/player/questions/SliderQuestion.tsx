@@ -8,12 +8,13 @@ interface Props {
 }
 
 export function SliderQuestion({ question, value, onChange }: Props) {
-  // Pega valor mínimo e máximo pelas scaleOptions (se existirem)
-  const minOpt = question.scaleOptions[0];
-  const maxOpt = question.scaleOptions[question.scaleOptions.length - 1];
+  // Pega valor mínimo e máximo pelas scaleOptions ou via propriedades diretas
+  const scaleOptions = question.scaleOptions || [];
+  const minOpt = scaleOptions[0];
+  const maxOpt = scaleOptions[scaleOptions.length - 1];
 
-  const min = minOpt ? minOpt.value : 0;
-  const max = maxOpt ? maxOpt.value : 100;
+  const min = minOpt?.value ?? question.scaleStart ?? 0;
+  const max = maxOpt?.value ?? question.scaleEnd ?? 100;
   
   const currentValue = typeof value === 'number' ? value : min;
 

@@ -2,6 +2,7 @@ import { SurveyStatus, ParticipantIdentificationType } from './survey.types';
 import { QuestionType } from './question.types';
 import { MediaType } from './media.types';
 import { RuleOperator } from './conditional-rule.types';
+import { SurveyTheme } from './theme.types';
 
 export interface SurveyOptionDTO {
   id: string;
@@ -36,6 +37,9 @@ export interface SurveyQuestionDTO {
   description: string | null;
   isRequired: boolean;
   orderIndex: number;
+  scaleStart?: number | null;
+  scaleEnd?: number | null;
+  scaleVisualType?: "NUMBERS" | "EMOJIS" | "ICONS" | "TEXT_LABELS" | "SLIDER" | null;
   options: SurveyOptionDTO[];
   scaleOptions: SurveyScaleOptionDTO[];
   medias: SurveyMediaDTO[];
@@ -61,4 +65,5 @@ export interface SurveyPlayerDTO {
   publicSlug: string | null;
   publicLinkActive: boolean;
   blocks: SurveyBlockDTO[];
+  theme?: SurveyTheme | null;
 }
