@@ -58,6 +58,24 @@ export default function EditFormPage() {
 
   const [activeTab, setActiveTab] = useState("editor");
 
+  const [isScrollingDown, setIsScrollingDown] = useState(false);
+  const [lastScrollY, setLastScrollY] = useState(0);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      if (currentScrollY > 80 && currentScrollY > lastScrollY) {
+        setIsScrollingDown(true);
+      } else if (currentScrollY < lastScrollY) {
+        setIsScrollingDown(false);
+      }
+      setLastScrollY(currentScrollY);
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [lastScrollY]);
+
   useEffect(() => {
     Promise.all([fetchSurvey(surveyId), fetchBlocks(surveyId)])
       .then(([survey]) => {
@@ -135,8 +153,12 @@ export default function EditFormPage() {
 
   return (
     <div className="max-w-5xl mx-auto space-y-6 pb-20 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      {/* Barra de Navegação: Altura aumentada em ~50% pelas margens internas (padding) */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between sticky top-0 z-20 bg-background/95 backdrop-blur-md pb-6 pt-6 border-b mb-6 gap-4">
+      {/* Barra de Navegação: Oculta ao rolar para baixo e reaparece ao rolar para cima */}
+      <div 
+        className={`flex flex-col sm:flex-row items-start sm:items-center justify-between sticky top-0 z-30 bg-background/95 backdrop-blur-md pb-6 pt-6 border-b mb-6 gap-4 transition-transform duration-300 ${
+          isScrollingDown ? "-translate-y-full" : "translate-y-0"
+        }`}
+      >
         <div className="flex items-center gap-3 w-full sm:w-auto">
           <Link href="/dashboard" className="shrink-0">
             <Button
