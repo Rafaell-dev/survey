@@ -43,7 +43,7 @@ export default function DashboardLayout({
       <header className="md:hidden flex items-center justify-between p-4 border-b bg-background sticky top-0 z-20 shadow-sm">
         <div className="flex items-center gap-2 text-primary font-bold text-xl">
           <LayoutDashboard className="h-6 w-6" />
-          <span>SurveyApp</span>
+          <span>LingSurvey</span>
         </div>
         <button
           onClick={handleLogout}
@@ -59,7 +59,7 @@ export default function DashboardLayout({
         <div className="p-6 border-b">
           <div className="flex items-center gap-2 text-primary font-bold text-xl">
             <LayoutDashboard />
-            <span>SurveyApp</span>
+            <span>LingSurvey</span>
           </div>
         </div>
         <div className="flex-1 py-6 px-4 space-y-1 overflow-y-auto">
