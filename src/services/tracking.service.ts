@@ -3,7 +3,7 @@ import { SaveTrackingDTO } from '../domain/tracking.types';
 
 export const trackingService = {
   saveTracking: async (responseId: string, data: SaveTrackingDTO) => {
-    const response = await api.post(`/responses/${responseId}/tracking`, data);
+    const response = await api.post(`/public/responses/${responseId}/tracking`, data);
     return response.data;
   }
 };
