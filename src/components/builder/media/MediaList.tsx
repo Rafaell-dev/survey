@@ -60,7 +60,7 @@ export function MediaList({ questionId, isNew }: MediaListProps) {
               <Button 
                 variant="destructive" 
                 size="icon" 
-                className="h-8 w-8 shadow-lg bg-destructive/90 hover:bg-destructive"
+                className="h-8 w-8 shadow-lg bg-destructive/90 hover:bg-destructive text-white"
                 disabled={deletingId === media.id}
                 onClick={async () => {
                   if (!confirm("Tem certeza que deseja excluir permanentemente esta mídia?")) return;
