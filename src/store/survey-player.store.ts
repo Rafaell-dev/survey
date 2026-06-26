@@ -240,7 +240,10 @@ export const useSurveyPlayerStore = create<SurveyPlayerState>((set, get) => ({
     const { responseSession, survey } = get();
     if (!responseSession || !survey) return;
 
-    if (debounceTimers[questionId]) clearTimeout(debounceTimers[questionId]);
+    if (debounceTimers[questionId]) {
+      clearTimeout(debounceTimers[questionId]);
+      set((state) => ({ savingAnswers: Math.max(0, state.savingAnswers - 1) }));
+    }
     
     set((state) => ({ savingAnswers: state.savingAnswers + 1, saveError: null }));
 
