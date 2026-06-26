@@ -16,6 +16,7 @@ export function MediaList({ questionId, isNew }: MediaListProps) {
   const mediaList = mediaByQuestion[questionId] || [];
   const [loading, setLoading] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!isNew && !mediaByQuestion[questionId]) {
@@ -61,13 +62,7 @@ export function MediaList({ questionId, isNew }: MediaListProps) {
                 variant="destructive" 
                 size="icon" 
                 className="h-8 w-8 shadow-lg bg-destructive/90 hover:bg-destructive text-white"
-                disabled={deletingId === media.id}
-                onClick={async () => {
-                  if (!confirm("Tem certeza que deseja excluir permanentemente esta mídia?")) return;
-                  setDeletingId(media.id);
-                  await removeMedia(questionId, media.id).catch(() => {});
-                  setDeletingId(null);
-                }}
+                onClick={() => setDeleteConfirmId(media.id)}
               >
                 {deletingId === media.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
               </Button>
@@ -81,6 +76,33 @@ export function MediaList({ questionId, isNew }: MediaListProps) {
           </div>
         ))}
       </div>
+
+      {deleteConfirmId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in">
+          <div className="bg-background w-full max-w-md rounded-xl p-6 shadow-xl animate-in zoom-in-95">
+            <h3 className="text-xl font-bold mb-2">Tem certeza absoluta?</h3>
+            <p className="text-muted-foreground mb-6">
+              Esta ação irá excluir permanentemente esta mídia do seu formulário. Essa ação não pode ser desfeita.
+            </p>
+            <div className="flex justify-end gap-3">
+              <Button variant="outline" onClick={() => setDeleteConfirmId(null)}>Cancelar</Button>
+              <Button 
+                variant="destructive" 
+                onClick={async () => {
+                  const mediaId = deleteConfirmId;
+                  setDeleteConfirmId(null);
+                  setDeletingId(mediaId);
+                  await removeMedia(questionId, mediaId).catch(() => {});
+                  setDeletingId(null);
+                }} 
+                className="gap-2"
+              >
+                <Trash2 className="h-4 w-4" /> Sim, excluir
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
