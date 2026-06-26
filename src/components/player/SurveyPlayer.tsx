@@ -21,8 +21,37 @@ export function SurveyPlayer() {
     history,
     finishSurvey,
     savingAnswers,
-    saveError
+    saveError,
+    trackBlockExit,
+    trackBlockStart
   } = useSurveyPlayerStore();
+
+  // Garante que o tracking de tempo seja salvo quando o usuário sair da aba ou fechar no celular/PC
+  useEffect(() => {
+    if (playerStep !== 'RESPONDING') return;
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') {
+        trackBlockExit();
+      } else if (document.visibilityState === 'visible') {
+        trackBlockStart();
+      }
+    };
+
+    const handleUnload = () => {
+      trackBlockExit();
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    window.addEventListener("beforeunload", handleUnload);
+    window.addEventListener("pagehide", handleUnload);
+
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.removeEventListener("beforeunload", handleUnload);
+      window.removeEventListener("pagehide", handleUnload);
+    };
+  }, [playerStep, trackBlockExit, trackBlockStart]);
 
   useEffect(() => {
     if (saveError) {
