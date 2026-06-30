@@ -32,8 +32,8 @@ export default function RegisterPage() {
 
     try {
       await register({ name, email, password });
-      toast.success("Conta criada! Autenticação realizada com sucesso.");
-      router.push("/dashboard");
+      toast.success("Conta criada com sucesso!");
+      router.push("/pending-approval");
     } catch (err: unknown) {
       if (isAxiosError(err)) {
         toast.error(err.response?.data?.message || "Ocorreu um erro ao criar a conta");

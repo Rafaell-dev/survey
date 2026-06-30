@@ -3,7 +3,7 @@
 import { useAuthStore } from "@/store/auth.store";
 import { useRouter, usePathname } from "next/navigation";
 import { useEffect } from "react";
-import { LayoutDashboard, LogOut } from "lucide-react";
+import { LayoutDashboard, LogOut, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 
@@ -35,6 +35,10 @@ export default function DashboardLayout({
   const navItems = [
     { name: "Painel de Controle", href: "/dashboard", icon: LayoutDashboard },
   ];
+
+  if (user?.role === 'ADMIN') {
+    navItems.push({ name: "Usuários", href: "/dashboard/users", icon: Users });
+  }
 
   return (
     <div className="flex flex-col md:flex-row min-h-screen bg-muted/20">
