@@ -2,6 +2,8 @@ export interface User {
   id: string;
   name: string;
   email: string;
+  role: 'ADMIN' | 'USER';
+  status: 'ACTIVE' | 'BLOCKED';
 }
 
 export interface RegisterRequestDTO {

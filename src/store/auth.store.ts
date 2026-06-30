@@ -56,8 +56,7 @@ export const useAuthStore = create<AuthState>()(
         try {
           // Fase 1: Cadastro
           await authService.register(data);
-          // Fase 2: Login Automático
-          await get().login({ email: data.email, password: data.password });
+          // O login automático foi removido pois a conta nasce como BLOCKED
         } finally {
           set({ loading: false });
         }
