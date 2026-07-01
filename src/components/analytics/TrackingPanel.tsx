@@ -56,8 +56,8 @@ export function TrackingPanel({ blocks, medias }: TrackingPanelProps) {
             {medias.map(media => (
               <Card key={media.mediaId} className="border-border/50 shadow-sm">
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-mono text-muted-foreground">
-                    Mídia: {media.mediaId.substring(0, 8)}...
+                  <CardTitle className="text-sm font-mono text-muted-foreground truncate" title={media.fileName || media.mediaId}>
+                    {media.fileName || `Mídia: ${media.mediaId.substring(0, 8)}...`}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>

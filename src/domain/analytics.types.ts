@@ -46,6 +46,7 @@ export interface NavigationAnalyticsResponseDTO {
 
 export interface MediaAnalyticsItem {
   mediaId: string;
+  fileName?: string | null;
   plays: number;
   pauses: number;
   ends: number;

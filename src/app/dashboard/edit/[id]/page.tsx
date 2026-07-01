@@ -190,7 +190,7 @@ export default function EditFormPage() {
               </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-md w-[95vw]">
-              <SurveyPublishPanel />
+              <SurveyPublishPanel onBeforePublish={saveForm} />
             </DialogContent>
           </Dialog>
 
