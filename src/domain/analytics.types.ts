@@ -20,6 +20,10 @@ export interface QuestionVisualization {
   showTable: boolean;
   showValues: boolean;
   showPercentage: boolean;
+  sortEnabled: boolean;
+  sortDirection: "ASC" | "DESC";
+  displayMode: "COUNT" | "PERCENTAGE";
+  legendPosition: "RIGHT" | "BOTTOM" | "NONE";
 }
 
 export interface AnalyticsOverviewDTO {

@@ -11,8 +11,31 @@ export default function HorizontalBarChart({ question, visualization }: Question
   }
 
   try {
-    // Ordenar opções do maior para o menor
-    const sortedOptions = [...question.options].sort((a, b) => a.count - b.count);
+    // 1. Sorting
+    let sortedOptions = [...question.options];
+    if (visualization.sortEnabled) {
+      // Para Horizontal, a ordem no ECharts é de baixo para cima, então invertemos a lógica natural
+      sortedOptions = sortedOptions.sort((a, b) => 
+        visualization.sortDirection === 'ASC' ? b.count - a.count : a.count - b.count
+      );
+    }
+
+    // 2. Display Mode (Escala)
+    const isPercentage = visualization.displayMode === 'PERCENTAGE';
+    const dataValues = sortedOptions.map(o => isPercentage ? o.percentage : o.count);
+
+    // 3. Legend Position
+    const legendConfig: any = {
+      show: visualization.showLegend && visualization.legendPosition !== 'NONE',
+    };
+    if (visualization.legendPosition === 'BOTTOM') {
+      legendConfig.bottom = 0;
+      legendConfig.orient = 'horizontal';
+    } else if (visualization.legendPosition === 'RIGHT') {
+      legendConfig.right = 0;
+      legendConfig.top = 'middle';
+      legendConfig.orient = 'vertical';
+    }
 
     const option = {
       tooltip: {
@@ -30,14 +53,11 @@ export default function HorizontalBarChart({ question, visualization }: Question
           `;
         }
       },
-      legend: {
-        show: visualization.showLegend,
-        bottom: 0,
-      },
+      legend: legendConfig,
       grid: {
         left: '3%',
-        right: '4%',
-        bottom: '10%',
+        right: visualization.legendPosition === 'RIGHT' ? '15%' : '4%',
+        bottom: visualization.legendPosition === 'BOTTOM' ? '15%' : '10%',
         top: '3%',
         containLabel: true
       },
@@ -62,17 +82,20 @@ export default function HorizontalBarChart({ question, visualization }: Question
         {
           name: 'Respostas',
           type: 'bar',
-          data: sortedOptions.map(o => o.count),
+          data: dataValues,
           itemStyle: {
             color: '#3b82f6', // Tailwind blue-500
             borderRadius: [0, 4, 4, 0]
           },
           label: {
-            show: visualization.showPercentage,
+            show: visualization.showValues || visualization.showPercentage,
             position: 'right',
             formatter: (params: any) => {
               const opt = sortedOptions[params.dataIndex];
-              return `${opt.percentage}%`;
+              const parts = [];
+              if (visualization.showValues) parts.push(opt.count);
+              if (visualization.showPercentage) parts.push(`${opt.percentage}%`);
+              return parts.join(' / ');
             },
             color: '#6b7280'
           }

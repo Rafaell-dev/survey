@@ -11,13 +11,34 @@ export default function PieChart({ question, visualization }: QuestionChartProps
   }
 
   try {
-    const options = question.options;
+    // 1. Sorting
+    let sortedOptions = [...question.options];
+    if (visualization.sortEnabled) {
+      sortedOptions = sortedOptions.sort((a, b) => 
+        visualization.sortDirection === 'ASC' ? a.count - b.count : b.count - a.count
+      );
+    }
+
+    // 2. Legend Position
+    const legendConfig: any = {
+      show: visualization.showLegend && visualization.legendPosition !== 'NONE',
+      type: 'scroll'
+    };
+    if (visualization.legendPosition === 'BOTTOM') {
+      legendConfig.bottom = 0;
+      legendConfig.orient = 'horizontal';
+      legendConfig.left = 'center';
+    } else if (visualization.legendPosition === 'RIGHT') {
+      legendConfig.right = 10;
+      legendConfig.top = 'middle';
+      legendConfig.orient = 'vertical';
+    }
 
     const option = {
       tooltip: {
         trigger: 'item',
         formatter: (params: any) => {
-          const opt = options[params.dataIndex];
+          const opt = sortedOptions[params.dataIndex];
           return `
             <div class="font-sans text-sm">
               <strong>${opt.label}</strong><br/>
@@ -27,21 +48,14 @@ export default function PieChart({ question, visualization }: QuestionChartProps
           `;
         }
       },
-      legend: {
-        show: visualization.showLegend,
-        type: 'scroll',
-        orient: 'vertical',
-        right: 10,
-        top: 20,
-        bottom: 20,
-      },
+      legend: legendConfig,
       series: [
         {
           name: 'Respostas',
           type: 'pie',
           radius: '70%',
-          center: ['40%', '50%'],
-          data: options.map(o => ({ value: o.count, name: o.label })),
+          center: visualization.legendPosition === 'RIGHT' ? ['40%', '50%'] : ['50%', '45%'],
+          data: sortedOptions.map(o => ({ value: o.count, name: o.label })),
           emphasis: {
             itemStyle: {
               shadowBlur: 10,
@@ -52,9 +66,10 @@ export default function PieChart({ question, visualization }: QuestionChartProps
           label: {
             show: visualization.showPercentage || visualization.showValues,
             formatter: (params: any) => {
+              const opt = sortedOptions[params.dataIndex];
               const parts = [];
-              if (visualization.showValues) parts.push(params.value);
-              if (visualization.showPercentage) parts.push(`${options[params.dataIndex].percentage}%`);
+              if (visualization.showValues) parts.push(opt.count);
+              if (visualization.showPercentage) parts.push(`${opt.percentage}%`);
               return parts.join(' / ');
             }
           },

@@ -1,6 +1,7 @@
 import dynamic from "next/dynamic";
 import { ChartType, QuestionAnalyticsDTO, QuestionVisualization } from "@/domain/analytics.types";
 import { Loader2 } from "lucide-react";
+import { ChartDataTable } from "../charts/ChartDataTable";
 
 interface QuestionChartRendererProps {
   question: QuestionAnalyticsDTO;
@@ -44,38 +45,46 @@ export function QuestionChartRenderer({ question, visualization }: QuestionChart
   }
 
   // 2. Roteamento de Gráficos ECharts
+  // Função helper para englobar os gráficos na tabela (caso ela deva ser mostrada)
+  const withTable = (ChartComponent: React.FC<any>) => (
+    <div className="flex flex-col w-full">
+      <ChartComponent {...chartProps} />
+      <ChartDataTable {...chartProps} />
+    </div>
+  );
+
   switch (visualization.chartType) {
     case ChartType.BAR_HORIZONTAL:
-      return <HorizontalBarChart {...chartProps} />;
+      return withTable(HorizontalBarChart);
     
     case ChartType.BAR_VERTICAL:
-      return <VerticalBarChart {...chartProps} />;
+      return withTable(VerticalBarChart);
       
     case ChartType.PIE:
-      return <PieChart {...chartProps} />;
+      return withTable(PieChart);
       
     case ChartType.DONUT:
-      return <DonutChart {...chartProps} />;
+      return withTable(DonutChart);
       
     case ChartType.LINE:
-      return <LineChart {...chartProps} />;
+      return withTable(LineChart);
       
     case ChartType.AREA:
-      return <AreaChart {...chartProps} />;
+      return withTable(AreaChart);
       
     case ChartType.RADAR:
-      return <RadarChart {...chartProps} />;
+      return withTable(RadarChart);
       
     case ChartType.HISTOGRAM:
-      return <HistogramChart {...chartProps} />;
+      return withTable(HistogramChart);
       
     case ChartType.BOX_PLOT:
-      return <BoxPlotChart {...chartProps} />;
+      return withTable(BoxPlotChart);
       
     case ChartType.VIOLIN:
-      return <ViolinChart {...chartProps} />;
+      return withTable(ViolinChart);
       
     default:
-      return <UnsupportedChart {...chartProps} />;
+      return withTable(UnsupportedChart);
   }
 }

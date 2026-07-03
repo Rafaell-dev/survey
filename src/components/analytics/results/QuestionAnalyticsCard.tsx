@@ -2,6 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartType, QuestionAnalyticsDTO, QuestionVisualization } from "@/domain/analytics.types";
 import { QuestionChartRenderer } from "./QuestionChartRenderer";
 import { ChartSelector } from "./selector/ChartSelector";
+import { ChartSettings } from "./settings/ChartSettings";
 import { useState } from "react";
 
 interface QuestionAnalyticsCardProps {
@@ -38,6 +39,10 @@ export function QuestionAnalyticsCard({ question, index }: QuestionAnalyticsCard
     showTable: false,
     showValues: true,
     showPercentage: true,
+    sortEnabled: true,
+    sortDirection: "DESC",
+    displayMode: "COUNT",
+    legendPosition: "RIGHT",
   });
 
   return (
@@ -66,8 +71,12 @@ export function QuestionAnalyticsCard({ question, index }: QuestionAnalyticsCard
             </div>
           </div>
           
-          <div className="shrink-0 self-end sm:self-auto mt-2 sm:mt-0">
+          <div className="shrink-0 self-end sm:self-auto mt-2 sm:mt-0 flex items-center gap-2">
             <ChartSelector 
+              visualization={visualization}
+              onVisualizationChange={setVisualization}
+            />
+            <ChartSettings 
               visualization={visualization}
               onVisualizationChange={setVisualization}
             />

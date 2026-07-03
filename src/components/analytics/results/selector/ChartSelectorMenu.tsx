@@ -1,6 +1,5 @@
 import { ChartType, QuestionVisualization } from "@/domain/analytics.types";
 import { ChartOptionCard } from "./ChartOptionCard";
-import { ChartDisplayOptions } from "./ChartDisplayOptions";
 import { 
   BarChart3, 
   BarChartHorizontal, 
@@ -102,22 +101,9 @@ export function ChartSelectorMenu({ visualization, onVisualizationChange }: Char
       </div>
 
       <div className="h-px w-full bg-border my-4" />
-
-      <ChartDisplayOptions 
-        showLegend={visualization.showLegend}
-        setShowLegend={(val) => onVisualizationChange({ ...visualization, showLegend: val })}
-        showTable={visualization.showTable}
-        setShowTable={(val) => onVisualizationChange({ ...visualization, showTable: val })}
-        showValues={visualization.showValues}
-        setShowValues={(val) => onVisualizationChange({ ...visualization, showValues: val })}
-        showPercentage={visualization.showPercentage}
-        setShowPercentage={(val) => onVisualizationChange({ ...visualization, showPercentage: val })}
-      />
-
-      <div className="h-px w-full bg-border my-4" />
       
       <Button variant="ghost" className="w-full text-muted-foreground text-sm font-normal justify-start px-2" disabled>
-        Mais opções...
+        Mais gráficos em breve...
       </Button>
     </div>
   );

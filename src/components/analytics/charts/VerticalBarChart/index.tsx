@@ -11,7 +11,30 @@ export default function VerticalBarChart({ question, visualization }: QuestionCh
   }
 
   try {
-    const options = question.options;
+    // 1. Sorting
+    let sortedOptions = [...question.options];
+    if (visualization.sortEnabled) {
+      sortedOptions = sortedOptions.sort((a, b) => 
+        visualization.sortDirection === 'ASC' ? a.count - b.count : b.count - a.count
+      );
+    }
+
+    // 2. Display Mode (Escala)
+    const isPercentage = visualization.displayMode === 'PERCENTAGE';
+    const dataValues = sortedOptions.map(o => isPercentage ? o.percentage : o.count);
+
+    // 3. Legend Position
+    const legendConfig: any = {
+      show: visualization.showLegend && visualization.legendPosition !== 'NONE',
+    };
+    if (visualization.legendPosition === 'BOTTOM') {
+      legendConfig.bottom = 0;
+      legendConfig.orient = 'horizontal';
+    } else if (visualization.legendPosition === 'RIGHT') {
+      legendConfig.right = 0;
+      legendConfig.top = 'middle';
+      legendConfig.orient = 'vertical';
+    }
 
     const option = {
       tooltip: {
@@ -19,7 +42,7 @@ export default function VerticalBarChart({ question, visualization }: QuestionCh
         axisPointer: { type: 'shadow' },
         formatter: (params: any) => {
           const data = params[0];
-          const opt = options[data.dataIndex];
+          const opt = sortedOptions[data.dataIndex];
           return `
             <div class="font-sans text-sm">
               <strong>${opt.label}</strong><br/>
@@ -29,20 +52,17 @@ export default function VerticalBarChart({ question, visualization }: QuestionCh
           `;
         }
       },
-      legend: {
-        show: visualization.showLegend,
-        bottom: 0,
-      },
+      legend: legendConfig,
       grid: {
         left: '3%',
-        right: '4%',
-        bottom: '10%',
+        right: visualization.legendPosition === 'RIGHT' ? '15%' : '4%',
+        bottom: visualization.legendPosition === 'BOTTOM' ? '15%' : '10%',
         top: '10%',
         containLabel: true
       },
       xAxis: {
         type: 'category',
-        data: options.map(o => o.label),
+        data: sortedOptions.map(o => o.label),
         axisLabel: { 
           width: 80, 
           overflow: 'truncate',
@@ -63,18 +83,21 @@ export default function VerticalBarChart({ question, visualization }: QuestionCh
         {
           name: 'Respostas',
           type: 'bar',
-          data: options.map(o => o.count),
+          data: dataValues,
           barMaxWidth: 60,
           itemStyle: {
             color: '#3b82f6', // Tailwind blue-500
             borderRadius: [4, 4, 0, 0]
           },
           label: {
-            show: visualization.showPercentage,
+            show: visualization.showValues || visualization.showPercentage,
             position: 'top',
             formatter: (params: any) => {
-              const opt = options[params.dataIndex];
-              return `${opt.percentage}%`;
+              const opt = sortedOptions[params.dataIndex];
+              const parts = [];
+              if (visualization.showValues) parts.push(opt.count);
+              if (visualization.showPercentage) parts.push(`${opt.percentage}%`);
+              return parts.join(' / ');
             },
             color: '#6b7280'
           }

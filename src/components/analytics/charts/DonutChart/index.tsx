@@ -11,14 +11,36 @@ export default function DonutChart({ question, visualization }: QuestionChartPro
   }
 
   try {
-    const options = question.options;
-    const totalResponses = options.reduce((sum, opt) => sum + opt.count, 0);
+    // 1. Sorting
+    let sortedOptions = [...question.options];
+    if (visualization.sortEnabled) {
+      sortedOptions = sortedOptions.sort((a, b) => 
+        visualization.sortDirection === 'ASC' ? a.count - b.count : b.count - a.count
+      );
+    }
+
+    // 2. Legend Position
+    const legendConfig: any = {
+      show: visualization.showLegend && visualization.legendPosition !== 'NONE',
+      type: 'scroll'
+    };
+    if (visualization.legendPosition === 'BOTTOM') {
+      legendConfig.bottom = 0;
+      legendConfig.orient = 'horizontal';
+      legendConfig.left = 'center';
+    } else if (visualization.legendPosition === 'RIGHT') {
+      legendConfig.right = 10;
+      legendConfig.top = 'middle';
+      legendConfig.orient = 'vertical';
+    }
+
+    const totalResponses = sortedOptions.reduce((sum, opt) => sum + opt.count, 0);
 
     const option = {
       tooltip: {
         trigger: 'item',
         formatter: (params: any) => {
-          const opt = options[params.dataIndex];
+          const opt = sortedOptions[params.dataIndex];
           return `
             <div class="font-sans text-sm">
               <strong>${opt.label}</strong><br/>
@@ -28,14 +50,7 @@ export default function DonutChart({ question, visualization }: QuestionChartPro
           `;
         }
       },
-      legend: {
-        show: visualization.showLegend,
-        type: 'scroll',
-        orient: 'vertical',
-        right: 10,
-        top: 20,
-        bottom: 20,
-      },
+      legend: legendConfig,
       title: {
         text: totalResponses.toString(),
         subtext: 'Respostas',
@@ -57,7 +72,7 @@ export default function DonutChart({ question, visualization }: QuestionChartPro
           name: 'Respostas',
           type: 'pie',
           radius: ['45%', '70%'],
-          center: ['40%', '50%'],
+          center: visualization.legendPosition === 'RIGHT' ? ['40%', '50%'] : ['50%', '45%'],
           avoidLabelOverlap: false,
           itemStyle: {
             borderRadius: 6,
@@ -73,9 +88,10 @@ export default function DonutChart({ question, visualization }: QuestionChartPro
               fontSize: '14',
               fontWeight: 'bold',
               formatter: (params: any) => {
+                const opt = sortedOptions[params.dataIndex];
                 const parts = [];
-                if (visualization.showValues) parts.push(params.value);
-                if (visualization.showPercentage) parts.push(`${options[params.dataIndex].percentage}%`);
+                if (visualization.showValues) parts.push(opt.count);
+                if (visualization.showPercentage) parts.push(`${opt.percentage}%`);
                 return parts.join(' / ');
               }
             }
@@ -83,7 +99,7 @@ export default function DonutChart({ question, visualization }: QuestionChartPro
           labelLine: {
             show: false
           },
-          data: options.map(o => ({ value: o.count, name: o.label }))
+          data: sortedOptions.map(o => ({ value: o.count, name: o.label }))
         }
       ]
     };
