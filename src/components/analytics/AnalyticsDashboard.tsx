@@ -89,24 +89,24 @@ export function AnalyticsDashboard({ surveyId }: { surveyId: string }) {
       <ExportPanel surveyId={surveyId} />
 
       <Tabs defaultValue="results" className="w-full">
-        <TabsList className="w-full justify-start border-b rounded-none h-auto p-0 bg-transparent mb-6">
+        <TabsList className="w-full flex justify-start border-b rounded-none h-auto p-0 bg-transparent mb-6 overflow-x-auto flex-nowrap hide-scrollbar">
           <TabsTrigger 
             value="results" 
             className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-3"
           >
-            Resultados (Respostas)
+            Resultados Consolidados
+          </TabsTrigger>
+          <TabsTrigger 
+            value="reports" 
+            className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-3"
+          >
+            Respostas Individuais
           </TabsTrigger>
           <TabsTrigger 
             value="tracking" 
             className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-3"
           >
             Tracking (Comportamento)
-          </TabsTrigger>
-          <TabsTrigger 
-            value="reports" 
-            className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-3"
-          >
-            Relatórios Personalizados
           </TabsTrigger>
         </TabsList>
         
@@ -124,12 +124,12 @@ export function AnalyticsDashboard({ surveyId }: { surveyId: string }) {
           )}
         </TabsContent>
         
-        <TabsContent value="tracking" className="mt-0 focus-visible:outline-none focus-visible:ring-0">
-          <TrackingPanel blocks={navigation.blocks} medias={media.medias} />
-        </TabsContent>
-
         <TabsContent value="reports" className="mt-0 focus-visible:outline-none focus-visible:ring-0">
           <ReportsDashboard surveyId={surveyId} />
+        </TabsContent>
+        
+        <TabsContent value="tracking" className="mt-0 focus-visible:outline-none focus-visible:ring-0">
+          <TrackingPanel blocks={navigation.blocks} medias={media.medias} />
         </TabsContent>
       </Tabs>
     </div>
