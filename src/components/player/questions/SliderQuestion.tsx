@@ -13,8 +13,8 @@ export function SliderQuestion({ question, value, onChange }: Props) {
   const minOpt = scaleOptions[0];
   const maxOpt = scaleOptions[scaleOptions.length - 1];
 
-  const min = minOpt?.value ?? question.scaleStart ?? 0;
-  const max = maxOpt?.value ?? question.scaleEnd ?? 100;
+  const min = minOpt?.value ?? (minOpt as any)?.numericValue ?? question.scaleStart ?? 0;
+  const max = maxOpt?.value ?? (maxOpt as any)?.numericValue ?? question.scaleEnd ?? 100;
   
   const currentValue = typeof value === 'number' ? value : min;
 

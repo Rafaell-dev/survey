@@ -16,7 +16,7 @@ export function LikertQuestion({ question, value, onChange }: Props) {
 
   // Fallback
   const options = question.scaleOptions && question.scaleOptions.length > 0 
-    ? question.scaleOptions 
+    ? question.scaleOptions.map((opt: any) => ({ ...opt, value: opt.value ?? opt.numericValue }))
     : Array.from({ length: steps }, (_, i) => {
         const val = start + i;
         return {
@@ -57,14 +57,14 @@ export function LikertQuestion({ question, value, onChange }: Props) {
                 <span className="text-3xl grayscale opacity-70 group-hover:grayscale-0 group-hover:opacity-100 transition-all cursor-pointer">
                   {getEmojiForIndex(index, options.length)}
                 </span>
-                <span className="text-[10px] text-muted-foreground">{option.label || option.value}</span>
+                <span className="text-[10px] text-muted-foreground">{option.label || option.value || (option as any).numericValue}</span>
               </div>
             );
           } else if (visualType === "ICONS") {
             content = (
               <div className="flex flex-col items-center gap-1">
                 <Star className={`w-8 h-8 transition-colors ${value === option.value ? 'text-yellow-400 fill-yellow-400' : 'text-muted-foreground/30 fill-muted-foreground/10 group-hover:text-yellow-400/50 group-hover:fill-yellow-400/50'}`} />
-                <span className="text-[10px] text-muted-foreground">{option.label || option.value}</span>
+                <span className="text-[10px] text-muted-foreground">{option.label || option.value || (option as any).numericValue}</span>
               </div>
             );
           } else if (visualType === "TEXT_LABELS") {
@@ -78,7 +78,7 @@ export function LikertQuestion({ question, value, onChange }: Props) {
             // NUMBERS e fallback
             content = (
               <div className="text-xs text-muted-foreground mb-3 h-8 text-center px-1 font-medium transition-colors group-hover:text-foreground">
-                {option.label || option.value}
+                {option.label || option.value || (option as any).numericValue}
               </div>
             );
           }
