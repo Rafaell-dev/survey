@@ -6,9 +6,10 @@ import { ChartSelectorMenu } from "./ChartSelectorMenu";
 interface ChartSelectorProps {
   visualization: QuestionVisualization;
   onVisualizationChange: (val: QuestionVisualization) => void;
+  questionType: string;
 }
 
-export function ChartSelector({ visualization, onVisualizationChange }: ChartSelectorProps) {
+export function ChartSelector({ visualization, onVisualizationChange, questionType }: ChartSelectorProps) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -19,6 +20,7 @@ export function ChartSelector({ visualization, onVisualizationChange }: ChartSel
         <ChartSelectorMenu 
           visualization={visualization} 
           onVisualizationChange={onVisualizationChange} 
+          questionType={questionType}
         />
       </DropdownMenuContent>
     </DropdownMenu>

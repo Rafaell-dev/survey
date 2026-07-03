@@ -5,6 +5,7 @@ import { useAnalyticsStore } from "@/store/analytics.store";
 import { MetricCard } from "./MetricCard";
 import { SurveyResultsPage } from "./results/SurveyResultsPage";
 import { TrackingPanel } from "./TrackingPanel";
+import { AnalyticsPreferencesProvider } from "@/contexts/AnalyticsPreferencesContext";
 import { Users, CheckCircle2, TrendingUp, Clock, Loader2 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
@@ -111,7 +112,9 @@ export function AnalyticsDashboard({ surveyId }: { surveyId: string }) {
         </TabsList>
         
         <TabsContent value="results" className="mt-0 focus-visible:outline-none focus-visible:ring-0">
-          <SurveyResultsPage questionsData={questions} />
+          <AnalyticsPreferencesProvider surveyId={surveyId}>
+            <SurveyResultsPage questionsData={questions} />
+          </AnalyticsPreferencesProvider>
         </TabsContent>
         
         <TabsContent value="reports" className="mt-0 focus-visible:outline-none focus-visible:ring-0">

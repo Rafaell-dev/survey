@@ -9,13 +9,13 @@ export const ChartSettingsButton = React.forwardRef<HTMLButtonElement, ChartSett
     return (
       <Button 
         ref={ref}
-        variant="ghost" 
+        variant="outline" 
         size="icon" 
         className={`h-8 w-8 text-muted-foreground hover:text-foreground ${className || ''}`}
         title="Configurações"
         {...props}
       >
-        <Settings className="h-4 w-4" />
+        <Settings className="h-2 w-2" />
       </Button>
     );
   }

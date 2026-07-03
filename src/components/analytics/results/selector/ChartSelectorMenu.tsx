@@ -9,19 +9,77 @@ import {
   Activity, 
   ListOrdered,
   BoxSelect,
-  Waves
+  Radar, 
+  Waves,
+  List,
+  Table,
+  Cloud,
+  BarChart,
+  BrainCircuit,
+  Smile,
+  CalendarDays
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface ChartSelectorMenuProps {
   visualization: QuestionVisualization;
   onVisualizationChange: (val: QuestionVisualization) => void;
+  questionType?: string;
 }
 
-export function ChartSelectorMenu({ visualization, onVisualizationChange }: ChartSelectorMenuProps) {
+export function ChartSelectorMenu({ visualization, onVisualizationChange, questionType }: ChartSelectorMenuProps) {
   const handleTypeSelect = (chartType: ChartType) => {
     onVisualizationChange({ ...visualization, chartType });
   };
+
+  const isTextQuestion = questionType === 'SHORT_TEXT' || questionType === 'LONG_TEXT';
+
+  if (isTextQuestion) {
+    return (
+      <div className="w-full sm:w-[280px] p-2 max-h-[80vh] overflow-y-auto">
+        <h4 className="px-2 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+          Visualizações de Texto
+        </h4>
+        <div className="grid grid-cols-1 gap-1">
+          <ChartOptionCard 
+            type={ChartType.TEXT_RESPONSE_LIST} 
+            label="Lista de Respostas" 
+            icon={<List className="h-5 w-5" />}
+            selected={visualization.chartType === ChartType.TEXT_RESPONSE_LIST}
+            onSelect={handleTypeSelect}
+          />
+          <ChartOptionCard 
+            type={ChartType.TEXT_TABLE} 
+            label="Tabela de Dados" 
+            icon={<Table className="h-5 w-5" />}
+            selected={visualization.chartType === ChartType.TEXT_TABLE}
+            onSelect={handleTypeSelect}
+          />
+          <ChartOptionCard 
+            type={ChartType.TEXT_WORD_CLOUD} 
+            label="Nuvem de Palavras" 
+            icon={<Cloud className="h-5 w-5" />}
+            selected={visualization.chartType === ChartType.TEXT_WORD_CLOUD}
+            onSelect={handleTypeSelect}
+          />
+          <ChartOptionCard 
+            type={ChartType.TEXT_WORD_FREQUENCY} 
+            label="Frequência" 
+            icon={<BarChart className="h-5 w-5" />}
+            selected={visualization.chartType === ChartType.TEXT_WORD_FREQUENCY}
+            onSelect={handleTypeSelect}
+          />
+          <ChartOptionCard 
+            type={ChartType.TEXT_TIMELINE} 
+            label="Timeline" 
+            icon={<CalendarDays className="h-5 w-5" />}
+            selected={visualization.chartType === ChartType.TEXT_TIMELINE}
+            onSelect={handleTypeSelect}
+          />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full sm:w-[320px] p-4">

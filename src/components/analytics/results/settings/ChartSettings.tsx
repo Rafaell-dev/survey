@@ -6,9 +6,10 @@ import { ChartSettingsMenu } from "./ChartSettingsMenu";
 interface ChartSettingsProps {
   visualization: QuestionVisualization;
   onVisualizationChange: (val: QuestionVisualization) => void;
+  onRestore: () => void;
 }
 
-export function ChartSettings({ visualization, onVisualizationChange }: ChartSettingsProps) {
+export function ChartSettings({ visualization, onVisualizationChange, onRestore }: ChartSettingsProps) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -19,6 +20,7 @@ export function ChartSettings({ visualization, onVisualizationChange }: ChartSet
         <ChartSettingsMenu 
           visualization={visualization} 
           onVisualizationChange={onVisualizationChange} 
+          onRestore={onRestore}
         />
       </DropdownMenuContent>
     </DropdownMenu>
