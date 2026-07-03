@@ -1,5 +1,27 @@
 import { QuestionType } from "./question.types";
 
+export enum ChartType {
+  BAR_HORIZONTAL = 'BAR_HORIZONTAL',
+  BAR_VERTICAL = 'BAR_VERTICAL',
+  PIE = 'PIE',
+  DONUT = 'DONUT',
+  LINE = 'LINE',
+  AREA = 'AREA',
+  RADAR = 'RADAR',
+  HISTOGRAM = 'HISTOGRAM',
+  BOX_PLOT = 'BOX_PLOT',
+  VIOLIN = 'VIOLIN'
+}
+
+export interface QuestionVisualization {
+  questionId: string;
+  chartType: ChartType;
+  showLegend: boolean;
+  showTable: boolean;
+  showValues: boolean;
+  showPercentage: boolean;
+}
+
 export interface AnalyticsOverviewDTO {
   surveyId: string;
   participants: number;
