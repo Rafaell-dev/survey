@@ -17,6 +17,7 @@ export enum ChartType {
   HISTOGRAM = 'HISTOGRAM',
   BOX_PLOT = 'BOX_PLOT',
   VIOLIN = 'VIOLIN',
+  NUMERIC_STATS = 'NUMERIC_STATS',
   
   // Text Visualizations
   TEXT_RESPONSE_LIST = 'TEXT_RESPONSE_LIST',

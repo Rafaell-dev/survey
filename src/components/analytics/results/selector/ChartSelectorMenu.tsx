@@ -33,6 +33,7 @@ export function ChartSelectorMenu({ visualization, onVisualizationChange, questi
   };
 
   const isTextQuestion = questionType === 'SHORT_TEXT' || questionType === 'LONG_TEXT';
+  const isNumericQuestion = questionType === 'LIKERT' || questionType === 'SLIDER';
 
   if (isTextQuestion) {
     return (
@@ -135,27 +136,38 @@ export function ChartSelectorMenu({ visualization, onVisualizationChange, questi
           selected={visualization.chartType === ChartType.RADAR}
           onSelect={handleTypeSelect}
         />
-        <ChartOptionCard 
-          type={ChartType.HISTOGRAM} 
-          label="Histograma" 
-          icon={<ListOrdered className="h-5 w-5" />}
-          selected={visualization.chartType === ChartType.HISTOGRAM}
-          onSelect={handleTypeSelect}
-        />
-        <ChartOptionCard 
-          type={ChartType.BOX_PLOT} 
-          label="Box Plot" 
-          icon={<BoxSelect className="h-5 w-5" />}
-          selected={visualization.chartType === ChartType.BOX_PLOT}
-          onSelect={handleTypeSelect}
-        />
-        <ChartOptionCard 
-          type={ChartType.VIOLIN} 
-          label="Violino" 
-          icon={<Waves className="h-5 w-5" />}
-          selected={visualization.chartType === ChartType.VIOLIN}
-          onSelect={handleTypeSelect}
-        />
+        {isNumericQuestion && (
+          <>
+            <ChartOptionCard 
+              type={ChartType.HISTOGRAM} 
+              label="Histograma" 
+              icon={<ListOrdered className="h-5 w-5" />}
+              selected={visualization.chartType === ChartType.HISTOGRAM}
+              onSelect={handleTypeSelect}
+            />
+            <ChartOptionCard 
+              type={ChartType.BOX_PLOT} 
+              label="Box Plot" 
+              icon={<BoxSelect className="h-5 w-5" />}
+              selected={visualization.chartType === ChartType.BOX_PLOT}
+              onSelect={handleTypeSelect}
+            />
+            <ChartOptionCard 
+              type={ChartType.VIOLIN} 
+              label="Violino" 
+              icon={<Waves className="h-5 w-5" />}
+              selected={visualization.chartType === ChartType.VIOLIN}
+              onSelect={handleTypeSelect}
+            />
+            <ChartOptionCard 
+              type={ChartType.NUMERIC_STATS} 
+              label="Estatísticas" 
+              icon={<ListOrdered className="h-5 w-5" />}
+              selected={visualization.chartType === ChartType.NUMERIC_STATS}
+              onSelect={handleTypeSelect}
+            />
+          </>
+        )}
       </div>
 
       <div className="h-px w-full bg-border my-4" />

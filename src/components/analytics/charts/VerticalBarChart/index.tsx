@@ -67,7 +67,7 @@ export default function VerticalBarChart({ question, visualization }: QuestionCh
           width: 80, 
           overflow: 'truncate',
           interval: 0,
-          rotate: options.length > 5 ? 45 : 0,
+          rotate: sortedOptions.length > 5 ? 45 : 0,
           color: '#6b7280'
         },
         axisTick: { show: false },

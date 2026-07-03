@@ -40,9 +40,8 @@ export function QuestionChartRenderer({ question, visualization }: QuestionChart
     return <TextResponsesChart {...chartProps} />;
   }
 
-  if (question.type === 'LIKERT' || question.type === 'SLIDER') {
-    return <NumericStatsChart {...chartProps} />;
-  }
+  // Removido o bypass forçado para que os gráficos selecionados funcionem
+  // O NumericStatsChart agora é uma opção no Menu e no Switch
 
   // 2. Roteamento de Gráficos ECharts
   // Função helper para englobar os gráficos na tabela (caso ela deva ser mostrada)
@@ -84,7 +83,14 @@ export function QuestionChartRenderer({ question, visualization }: QuestionChart
     case ChartType.VIOLIN:
       return withTable(ViolinChart);
       
+    case ChartType.NUMERIC_STATS:
+      return <NumericStatsChart {...chartProps} />;
+      
     default:
+      // Fallback para numéricos se não houver opção válida selecionada e cair no default
+      if (question.type === 'LIKERT' || question.type === 'SLIDER') {
+         return <NumericStatsChart {...chartProps} />;
+      }
       return withTable(UnsupportedChart);
   }
 }
