@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { useAnalyticsStore } from "@/store/analytics.store";
 import { MetricCard } from "./MetricCard";
-import { QuestionResultCard } from "./QuestionResultCard";
+import { SurveyResultsPage } from "./results/SurveyResultsPage";
 import { TrackingPanel } from "./TrackingPanel";
 import { Users, CheckCircle2, TrendingUp, Clock, Loader2 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -111,17 +111,7 @@ export function AnalyticsDashboard({ surveyId }: { surveyId: string }) {
         </TabsList>
         
         <TabsContent value="results" className="mt-0 focus-visible:outline-none focus-visible:ring-0">
-          {questions.questions.length === 0 ? (
-            <Card className="p-12 text-center text-muted-foreground border-dashed">
-              Não há dados de respostas estruturadas para exibir.
-            </Card>
-          ) : (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {questions.questions.map((q, i) => (
-                <QuestionResultCard key={q.questionId} question={q} index={i} />
-              ))}
-            </div>
-          )}
+          <SurveyResultsPage questionsData={questions} />
         </TabsContent>
         
         <TabsContent value="reports" className="mt-0 focus-visible:outline-none focus-visible:ring-0">

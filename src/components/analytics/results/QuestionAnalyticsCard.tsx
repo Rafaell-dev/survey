@@ -1,0 +1,62 @@
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { QuestionAnalyticsDTO } from "@/domain/analytics.types";
+import { QuestionAnalyticsContent } from "./QuestionAnalyticsContent";
+
+interface QuestionAnalyticsCardProps {
+  question: QuestionAnalyticsDTO;
+  index: number;
+}
+
+export function QuestionAnalyticsCard({ question, index }: QuestionAnalyticsCardProps) {
+  const getQuestionTypeLabel = (type: string) => {
+    const types: Record<string, string> = {
+      'SHORT_TEXT': 'Texto Curto',
+      'LONG_TEXT': 'Texto Longo',
+      'SINGLE_CHOICE': 'Múltipla Escolha (Única)',
+      'MULTIPLE_CHOICE': 'Múltipla Escolha (Múltipla)',
+      'LIKERT': 'Escala Likert',
+      'SLIDER': 'Slider Numérico',
+      'MEDIA_ONLY': 'Apenas Mídia'
+    };
+    return types[type] || type;
+  };
+
+  const getResponsesCount = () => {
+    if (Array.isArray(question.responses)) return question.responses.length;
+    if (typeof question.responses === 'number') return question.responses;
+    return null; // Não temos a contagem exata para as de múltipla escolha ainda
+  };
+
+  const responsesCount = getResponsesCount();
+
+  return (
+    <Card className="border-primary/10 shadow-sm flex flex-col">
+      <CardHeader className="pb-3 border-b mb-4">
+        <CardTitle className="text-lg flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-2">
+            <span className="text-muted-foreground">{index + 1}.</span> 
+            <span>{question.questionTitle || `Questão ${question.questionId.substring(0, 8)}...`}</span>
+          </div>
+          <div className="flex items-center gap-2 mt-2 sm:mt-0 shrink-0">
+            {question.blockTitle && (
+              <span className="text-xs font-medium px-2 py-1 bg-primary/10 text-primary rounded-md">
+                {question.blockTitle}
+              </span>
+            )}
+            <span className="text-xs font-normal px-2 py-1 bg-secondary rounded-full">
+              {getQuestionTypeLabel(question.type)}
+            </span>
+            {responsesCount !== null && (
+              <span className="text-xs font-medium px-2 py-1 bg-muted rounded-full">
+                {responsesCount} resposta{responsesCount !== 1 ? 's' : ''}
+              </span>
+            )}
+          </div>
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="flex-1">
+        <QuestionAnalyticsContent question={question} />
+      </CardContent>
+    </Card>
+  );
+}

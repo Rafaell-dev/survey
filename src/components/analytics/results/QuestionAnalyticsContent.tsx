@@ -1,12 +1,10 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { QuestionAnalyticsDTO } from "@/domain/analytics.types";
 
-interface QuestionResultCardProps {
+interface QuestionAnalyticsContentProps {
   question: QuestionAnalyticsDTO;
-  index: number;
 }
 
-export function QuestionResultCard({ question, index }: QuestionResultCardProps) {
+export function QuestionAnalyticsContent({ question }: QuestionAnalyticsContentProps) {
   const renderOptionsChart = () => {
     if (!question.options || question.options.length === 0) {
       return <p className="text-sm text-muted-foreground">Nenhuma opção registrada.</p>;
@@ -47,9 +45,6 @@ export function QuestionResultCard({ question, index }: QuestionResultCardProps)
           <p className="text-xs text-muted-foreground uppercase">Máximo</p>
           <p className="text-xl font-bold">{question.maximum}</p>
         </div>
-        <div className="col-span-3 text-sm text-muted-foreground mt-2">
-          Baseado em {question.responses} respostas
-        </div>
       </div>
     );
   };
@@ -70,34 +65,13 @@ export function QuestionResultCard({ question, index }: QuestionResultCardProps)
     );
   };
 
-  return (
-    <Card className="border-primary/10 shadow-sm">
-      <CardHeader className="pb-3 border-b mb-4">
-        <CardTitle className="text-lg flex flex-col sm:flex-row sm:items-center gap-2">
-          <div className="flex items-center">
-            <span className="text-muted-foreground mr-2">{index + 1}.</span> 
-            {question.questionTitle || `Questão ${question.questionId.substring(0, 8)}...`}
-          </div>
-          <div className="flex items-center gap-2 mt-2 sm:mt-0">
-            {question.blockTitle && (
-              <span className="text-xs font-medium px-2 py-1 bg-primary/10 text-primary rounded-md">
-                {question.blockTitle}
-              </span>
-            )}
-            <span className="text-xs font-normal px-2 py-1 bg-secondary rounded-full">
-              {question.type}
-            </span>
-          </div>
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        {question.type === 'SINGLE_CHOICE' || question.type === 'MULTIPLE_CHOICE' 
-          ? renderOptionsChart()
-          : question.type === 'LIKERT' || question.type === 'SLIDER'
-          ? renderNumericStats()
-          : renderTextResponses()
-        }
-      </CardContent>
-    </Card>
-  );
+  if (question.type === 'SINGLE_CHOICE' || question.type === 'MULTIPLE_CHOICE') {
+    return renderOptionsChart();
+  }
+
+  if (question.type === 'LIKERT' || question.type === 'SLIDER') {
+    return renderNumericStats();
+  }
+
+  return renderTextResponses();
 }
