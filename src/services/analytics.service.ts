@@ -3,7 +3,8 @@ import {
   AnalyticsOverviewDTO, 
   QuestionsAnalyticsResponseDTO, 
   NavigationAnalyticsResponseDTO, 
-  MediaAnalyticsResponseDTO 
+  MediaAnalyticsResponseDTO,
+  ResponsesAnalyticsDTO
 } from '../domain/analytics.types';
 
 export const analyticsService = {
@@ -24,6 +25,12 @@ export const analyticsService = {
 
   async getMedia(surveyId: string): Promise<MediaAnalyticsResponseDTO> {
     const response = await api.get(`/surveys/${surveyId}/analytics/media`);
+    return response.data;
+  },
+
+  async getResponses(surveyId: string, filters?: any): Promise<ResponsesAnalyticsDTO> {
+    const query = filters ? `?filters=${encodeURIComponent(JSON.stringify(filters))}` : '';
+    const response = await api.get(`/surveys/${surveyId}/analytics/responses${query}`);
     return response.data;
   }
 };

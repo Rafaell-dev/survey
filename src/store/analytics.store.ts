@@ -4,7 +4,8 @@ import {
   AnalyticsOverviewDTO, 
   QuestionsAnalyticsResponseDTO, 
   NavigationAnalyticsResponseDTO, 
-  MediaAnalyticsResponseDTO 
+  MediaAnalyticsResponseDTO,
+  ResponsesAnalyticsDTO
 } from '../domain/analytics.types';
 
 interface AnalyticsState {
@@ -13,10 +14,14 @@ interface AnalyticsState {
   navigation: NavigationAnalyticsResponseDTO | null;
   media: MediaAnalyticsResponseDTO | null;
   
+  individualResponses: ResponsesAnalyticsDTO | null;
+  loadingResponses: boolean;
+  
   loading: boolean;
   error: string | null;
 
   loadAnalytics: (surveyId: string) => Promise<void>;
+  loadIndividualResponses: (surveyId: string, filters?: any) => Promise<void>;
   reset: () => void;
 }
 
@@ -25,6 +30,9 @@ export const useAnalyticsStore = create<AnalyticsState>((set) => ({
   questions: null,
   navigation: null,
   media: null,
+  
+  individualResponses: null,
+  loadingResponses: false,
   
   loading: false,
   error: null,
@@ -54,13 +62,28 @@ export const useAnalyticsStore = create<AnalyticsState>((set) => ({
     }
   },
 
+  loadIndividualResponses: async (surveyId: string, filters?: any) => {
+    set({ loadingResponses: true, error: null });
+    try {
+      const data = await analyticsService.getResponses(surveyId, filters);
+      set({ individualResponses: data, loadingResponses: false });
+    } catch (err: any) {
+      set({ 
+        error: err.response?.data?.message || 'Erro ao carregar respostas individuais.',
+        loadingResponses: false
+      });
+    }
+  },
+
   reset: () => {
     set({
       overview: null,
       questions: null,
       navigation: null,
       media: null,
+      individualResponses: null,
       loading: false,
+      loadingResponses: false,
       error: null
     });
   }

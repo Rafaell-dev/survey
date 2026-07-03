@@ -56,3 +56,14 @@ export interface MediaAnalyticsItem {
 export interface MediaAnalyticsResponseDTO {
   medias: MediaAnalyticsItem[];
 }
+
+export interface ResponseHeader {
+  key: string;
+  label: string;
+  questionType?: string;
+}
+
+export interface ResponsesAnalyticsDTO {
+  headers: ResponseHeader[];
+  rows: Record<string, any>[];
+}
