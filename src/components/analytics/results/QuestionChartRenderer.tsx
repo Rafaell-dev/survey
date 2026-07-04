@@ -17,19 +17,19 @@ const ChartLoadingFallback = () => (
 );
 
 // Dynamic Imports: Lazy loading dos gráficos individualmente
-const HorizontalBarChart = dynamic(() => import("../charts/HorizontalBarChart"), { loading: ChartLoadingFallback });
-const VerticalBarChart = dynamic(() => import("../charts/VerticalBarChart"), { loading: ChartLoadingFallback });
-const PieChart = dynamic(() => import("../charts/PieChart"), { loading: ChartLoadingFallback });
-const DonutChart = dynamic(() => import("../charts/DonutChart"), { loading: ChartLoadingFallback });
-const LineChart = dynamic(() => import("../charts/LineChart"), { loading: ChartLoadingFallback });
-const AreaChart = dynamic(() => import("../charts/AreaChart"), { loading: ChartLoadingFallback });
-const RadarChart = dynamic(() => import("../charts/RadarChart"), { loading: ChartLoadingFallback });
-const HistogramChart = dynamic(() => import("../charts/HistogramChart"), { loading: ChartLoadingFallback });
-const BoxPlotChart = dynamic(() => import("../charts/BoxPlotChart"), { loading: ChartLoadingFallback });
-const ViolinChart = dynamic(() => import("../charts/ViolinChart"), { loading: ChartLoadingFallback });
-const UnsupportedChart = dynamic(() => import("../charts/UnsupportedChart"), { loading: ChartLoadingFallback });
-const TextResponsesChart = dynamic(() => import("../charts/TextResponsesChart"), { loading: ChartLoadingFallback });
-const NumericStatsChart = dynamic(() => import("../charts/NumericStatsChart"), { loading: ChartLoadingFallback });
+const HorizontalBarChart = dynamic(() => import("../charts/HorizontalBarChart"), { ssr: false, loading: ChartLoadingFallback });
+const VerticalBarChart = dynamic(() => import("../charts/VerticalBarChart"), { ssr: false, loading: ChartLoadingFallback });
+const PieChart = dynamic(() => import("../charts/PieChart"), { ssr: false, loading: ChartLoadingFallback });
+const DonutChart = dynamic(() => import("../charts/DonutChart"), { ssr: false, loading: ChartLoadingFallback });
+const LineChart = dynamic(() => import("../charts/LineChart"), { ssr: false, loading: ChartLoadingFallback });
+const AreaChart = dynamic(() => import("../charts/AreaChart"), { ssr: false, loading: ChartLoadingFallback });
+const RadarChart = dynamic(() => import("../charts/RadarChart"), { ssr: false, loading: ChartLoadingFallback });
+const HistogramChart = dynamic(() => import("../charts/HistogramChart"), { ssr: false, loading: ChartLoadingFallback });
+const BoxPlotChart = dynamic(() => import("../charts/BoxPlotChart"), { ssr: false, loading: ChartLoadingFallback });
+const ViolinChart = dynamic(() => import("../charts/ViolinChart"), { ssr: false, loading: ChartLoadingFallback });
+const UnsupportedChart = dynamic(() => import("../charts/UnsupportedChart"), { ssr: false, loading: ChartLoadingFallback });
+const TextResponsesChart = dynamic(() => import("../charts/TextResponsesChart"), { ssr: false, loading: ChartLoadingFallback });
+const NumericStatsChart = dynamic(() => import("../charts/NumericStatsChart"), { ssr: false, loading: ChartLoadingFallback });
 
 export function QuestionChartRenderer({ question, visualization }: QuestionChartRendererProps) {
   const chartProps = { question, visualization };
