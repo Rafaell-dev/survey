@@ -1,10 +1,12 @@
 import { create } from 'zustand';
 import { analyticsService } from '../services/analytics.service';
 import { 
+  AnalyticsOverviewDTO,
   QuestionsAnalyticsResponseDTO, 
   NavigationAnalyticsResponseDTO, 
   MediaAnalyticsResponseDTO,
-  ResponsesAnalyticsDTO
+  ResponsesAnalyticsDTO,
+  AnalyticsFilter
 } from '../domain/analytics.types';
 
 interface AnalyticsState {
@@ -21,7 +23,9 @@ interface AnalyticsState {
 
   loadAnalytics: (surveyId: string) => Promise<void>;
   loadIndividualResponses: (surveyId: string, filters?: any) => Promise<void>;
+  setFilters: (surveyId: string, filters: AnalyticsFilter[]) => void;
   reset: () => void;
+  activeFilters: AnalyticsFilter[];
 }
 
 export const useAnalyticsStore = create<AnalyticsState>((set) => ({
@@ -35,6 +39,7 @@ export const useAnalyticsStore = create<AnalyticsState>((set) => ({
   
   loading: false,
   error: null,
+  activeFilters: [],
 
   loadAnalytics: async (surveyId: string) => {
     set({ loading: true, error: null });
@@ -74,6 +79,12 @@ export const useAnalyticsStore = create<AnalyticsState>((set) => ({
     }
   },
 
+  setFilters: (surveyId: string, filters: AnalyticsFilter[]) => {
+    set({ activeFilters: filters });
+    // Dispara o recarregamento com os novos filtros
+    useAnalyticsStore.getState().loadIndividualResponses(surveyId, filters);
+  },
+
   reset: () => {
     set({
       overview: null,
@@ -83,7 +94,8 @@ export const useAnalyticsStore = create<AnalyticsState>((set) => ({
       individualResponses: null,
       loading: false,
       loadingResponses: false,
-      error: null
+      error: null,
+      activeFilters: []
     });
   }
 }));

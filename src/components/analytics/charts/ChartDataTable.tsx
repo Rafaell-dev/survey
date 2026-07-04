@@ -1,4 +1,4 @@
-import { QuestionChartProps } from "../types";
+import { QuestionChartProps } from "./types";
 
 export function ChartDataTable({ question, visualization }: QuestionChartProps) {
   if (!visualization.showTable || !question.options || question.options.length === 0) {

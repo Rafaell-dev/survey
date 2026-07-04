@@ -3,7 +3,8 @@ import {
   AnalyticsOverviewDTO, 
   NavigationAnalyticsResponseDTO, 
   MediaAnalyticsResponseDTO,
-  ResponsesAnalyticsDTO
+  ResponsesAnalyticsDTO,
+  QuestionsAnalyticsResponseDTO
 } from '../domain/analytics.types';
 
 export const analyticsService = {

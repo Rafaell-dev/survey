@@ -89,8 +89,8 @@ export default function DonutChart({ question, visualization }: QuestionChartPro
               fontWeight: 'bold',
               formatter: (params: any) => {
                 const opt = sortedOptions[params.dataIndex];
-                const parts = [];
-                if (visualization.showValues) parts.push(opt.count);
+                const parts: string[] = [];
+                if (visualization.showValues) parts.push(String(opt.count));
                 if (visualization.showPercentage) parts.push(`${opt.percentage}%`);
                 return parts.join(' / ');
               }

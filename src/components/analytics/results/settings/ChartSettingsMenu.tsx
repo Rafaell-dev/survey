@@ -1,5 +1,6 @@
 import { ChartDisplayOptions, DisplayModeOptions, LegendOptions, SortingOptions } from "./options";
 import { RestoreVisualizationButton } from "./RestoreVisualizationButton";
+import { QuestionVisualization } from "@/domain/analytics.types";
 
 interface ChartSettingsMenuProps {
   visualization: QuestionVisualization;

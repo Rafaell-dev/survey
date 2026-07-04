@@ -45,7 +45,7 @@ export function QuestionChartRenderer({ question, visualization }: QuestionChart
 
   // 2. Roteamento de Gráficos ECharts
   // Função helper para englobar os gráficos na tabela (caso ela deva ser mostrada)
-  const withTable = (ChartComponent: React.FC<any>) => (
+  const withTable = (ChartComponent: React.ComponentType<any>) => (
     <div className="flex flex-col w-full">
       <ChartComponent {...chartProps} />
       <ChartDataTable {...chartProps} />
