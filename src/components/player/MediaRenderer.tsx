@@ -26,7 +26,12 @@ export function MediaRenderer({ media }: { media: SurveyMediaDTO }) {
           controls 
           className="w-full max-h-[500px]" 
           onPlay={(e) => trackMediaInteraction(media.id, 'PLAY', e.currentTarget.currentTime * 1000)}
-          onPause={(e) => trackMediaInteraction(media.id, 'PAUSE', e.currentTarget.currentTime * 1000)}
+          onPause={(e) => {
+            if (!e.currentTarget.seeking) {
+              trackMediaInteraction(media.id, 'PAUSE', e.currentTarget.currentTime * 1000);
+            }
+          }}
+          onSeeked={(e) => trackMediaInteraction(media.id, 'CLICK', e.currentTarget.currentTime * 1000)}
           onEnded={(e) => trackMediaInteraction(media.id, 'END', e.currentTarget.currentTime * 1000)}
         />
       </div>
@@ -41,7 +46,12 @@ export function MediaRenderer({ media }: { media: SurveyMediaDTO }) {
           controls 
           className="w-full" 
           onPlay={(e) => trackMediaInteraction(media.id, 'PLAY', e.currentTarget.currentTime * 1000)}
-          onPause={(e) => trackMediaInteraction(media.id, 'PAUSE', e.currentTarget.currentTime * 1000)}
+          onPause={(e) => {
+            if (!e.currentTarget.seeking) {
+              trackMediaInteraction(media.id, 'PAUSE', e.currentTarget.currentTime * 1000);
+            }
+          }}
+          onSeeked={(e) => trackMediaInteraction(media.id, 'CLICK', e.currentTarget.currentTime * 1000)}
           onEnded={(e) => trackMediaInteraction(media.id, 'END', e.currentTarget.currentTime * 1000)}
         />
       </div>

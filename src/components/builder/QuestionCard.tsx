@@ -17,13 +17,12 @@ interface QuestionCardProps {
   onDelete: (id: string) => void;
 }
 
-const QUESTION_TYPES: Omit<Record<QuestionType, string>, "SLIDER"> = {
+const QUESTION_TYPES: Omit<Record<QuestionType, string>, "SLIDER" | "MEDIA_ONLY"> = {
   SHORT_TEXT: "Texto Curto",
   LONG_TEXT: "Texto Longo",
   MULTIPLE_CHOICE: "Múltipla Escolha",
   SINGLE_CHOICE: "Escolha Única",
   LIKERT: "Escala Likert",
-  MEDIA_ONLY: "Apenas Mídia",
 };
 
 export function QuestionCard({
