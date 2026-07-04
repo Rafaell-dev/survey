@@ -39,7 +39,7 @@ export default function BoxPlotChart({ question, visualization }: QuestionChartP
   try {
     const sortedVals = getNumericDistribution(question.options);
     
-    let boxData = [];
+    let boxData: number[][] = [];
     if (sortedVals.length > 0) {
       const min = sortedVals[0];
       const q1 = quantile(sortedVals, 0.25);

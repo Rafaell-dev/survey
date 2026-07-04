@@ -67,8 +67,8 @@ export default function PieChart({ question, visualization }: QuestionChartProps
             show: visualization.showPercentage || visualization.showValues,
             formatter: (params: any) => {
               const opt = sortedOptions[params.dataIndex];
-              const parts = [];
-              if (visualization.showValues) parts.push(opt.count);
+              const parts: string[] = [];
+              if (visualization.showValues) parts.push(String(opt.count));
               if (visualization.showPercentage) parts.push(`${opt.percentage}%`);
               return parts.join(' / ');
             }

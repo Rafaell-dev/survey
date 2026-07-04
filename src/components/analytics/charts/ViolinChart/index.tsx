@@ -56,7 +56,7 @@ export default function ViolinChart({ question, visualization }: QuestionChartPr
     const pointsCount = 100;
     const step = (max - min) / pointsCount;
     
-    const densityData = [];
+    const densityData: [number, number][] = [];
     let maxDensity = 0;
     
     // Create points with some padding (10% on each side)
@@ -76,7 +76,7 @@ export default function ViolinChart({ question, visualization }: QuestionChartPr
       const scale = (width / 2) / maxDensity;
 
       // Build the polygon path
-      const points = [];
+      const points: [number, number][] = [];
       
       // Right side (top to bottom)
       for (let i = densityData.length - 1; i >= 0; i--) {
