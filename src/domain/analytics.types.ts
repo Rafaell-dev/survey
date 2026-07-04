@@ -86,13 +86,23 @@ export interface NavigationAnalyticsResponseDTO {
   blocks: BlockNavigationAnalytics[];
 }
 
+export interface MediaInteractionDetail {
+  participantIdentification: string;
+  interactionType: 'PLAY' | 'PAUSE' | 'END' | 'CLICK';
+  timestamp: string;
+  timeOffsetMs?: number;
+}
+
 export interface MediaAnalyticsItem {
   mediaId: string;
   fileName?: string | null;
+  questionId: string;
+  questionTitle: string;
   plays: number;
   pauses: number;
   ends: number;
   clicks: number;
+  interactionsList: MediaInteractionDetail[];
 }
 
 export interface MediaAnalyticsResponseDTO {
