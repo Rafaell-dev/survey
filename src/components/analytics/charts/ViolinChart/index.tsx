@@ -54,7 +54,8 @@ export default function ViolinChart({ question, visualization }: QuestionChartPr
     
     // Generate density points for the custom polygon
     const pointsCount = 100;
-    const step = (max - min) / pointsCount;
+    const range = (max - min) > 0 ? (max - min) : 1;
+    const step = range / pointsCount;
     
     const densityData: [number, number][] = [];
     let maxDensity = 0;
