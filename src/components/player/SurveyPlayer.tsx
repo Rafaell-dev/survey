@@ -1,13 +1,14 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useSurveyPlayerStore } from "@/store/survey-player.store";
 import { QuestionRenderer } from "./QuestionRenderer";
 import { IdentificationStep } from "./IdentificationStep";
 import { CompletionPage } from "./CompletionPage";
 import { Button } from "@/components/ui/button";
-import { ChevronRight, ChevronLeft, CheckCircle } from "lucide-react";
+import { ChevronRight, ChevronLeft, CheckCircle, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 export function SurveyPlayer() {
   const { 
@@ -25,6 +26,8 @@ export function SurveyPlayer() {
     trackBlockExit,
     trackBlockStart
   } = useSurveyPlayerStore();
+
+  const [showLeaveModal, setShowLeaveModal] = useState(false);
 
   // Garante que o tracking de tempo seja salvo quando o usuário sair da aba ou fechar no celular/PC
   useEffect(() => {
@@ -52,6 +55,22 @@ export function SurveyPlayer() {
       window.removeEventListener("pagehide", handleUnload);
     };
   }, [playerStep, trackBlockExit, trackBlockStart]);
+
+  useEffect(() => {
+    if (playerStep !== 'RESPONDING') return;
+
+    // Empurra um estado no histórico para reter o usuário na página
+    window.history.pushState(null, '', window.location.href);
+
+    const handlePopState = () => {
+      // Impede o back normal, empurra outro estado e abre o modal
+      window.history.pushState(null, '', window.location.href);
+      setShowLeaveModal(true);
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [playerStep]);
 
   useEffect(() => {
     if (saveError) {
@@ -209,6 +228,28 @@ export function SurveyPlayer() {
       </div>
 
       </div>
+
+      <Dialog open={showLeaveModal} onOpenChange={setShowLeaveModal}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-destructive">
+              <AlertTriangle className="h-5 w-5" />
+              Sair da Pesquisa?
+            </DialogTitle>
+            <DialogDescription>
+              Você tem certeza que deseja sair? Ao prosseguir, você retornará ao início da pesquisa e perderá seu progresso atual.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex gap-2 sm:justify-end mt-4">
+            <Button variant="outline" onClick={() => setShowLeaveModal(false)}>
+              Ficar na pesquisa
+            </Button>
+            <Button variant="destructive" onClick={() => window.location.reload()}>
+              Sair e recarregar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
