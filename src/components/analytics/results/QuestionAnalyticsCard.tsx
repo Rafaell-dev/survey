@@ -5,6 +5,7 @@ import { QuestionChartRenderer } from "./QuestionChartRenderer";
 import { TextVisualizationRenderer } from "../text-visualizations/TextVisualizationRenderer";
 import { ChartSelector } from "./selector/ChartSelector";
 import { ChartSettings } from "./settings/ChartSettings";
+import { PerceptionTestRenderer } from "./PerceptionTestRenderer";
 import { useAnalyticsPreferences } from "@/contexts/AnalyticsPreferencesContext";
 import { QuestionExportMenu } from "../export/QuestionExportMenu";
 
@@ -15,6 +16,7 @@ interface QuestionAnalyticsCardProps {
 
 export function QuestionAnalyticsCard({ question, index }: QuestionAnalyticsCardProps) {
   const isTextQuestion = question.type === 'SHORT_TEXT' || question.type === 'LONG_TEXT';
+  const isPerceptionTest = question.type === 'PERCEPTION_TEST';
   
   const { preferences, savePreference, restoreDefault, isLoaded } = useAnalyticsPreferences();
   
@@ -67,7 +69,8 @@ export function QuestionAnalyticsCard({ question, index }: QuestionAnalyticsCard
       'MULTIPLE_CHOICE': 'Múltipla Escolha (Múltipla)',
       'LIKERT': 'Escala Likert',
       'SLIDER': 'Slider Numérico',
-      'MEDIA_ONLY': 'Apenas Mídia'
+      'MEDIA_ONLY': 'Apenas Mídia',
+      'PERCEPTION_TEST': 'Teste de Percepção'
     };
     return types[type] || type;
   };
@@ -107,23 +110,29 @@ export function QuestionAnalyticsCard({ question, index }: QuestionAnalyticsCard
           </div>
           
           <div className="shrink-0 self-start sm:self-auto flex items-center gap-2">
-            <ChartSettings 
-              visualization={visualization}
-              onVisualizationChange={handleVisualizationChange}
-              onRestore={handleRestore}
-            />
-            <ChartSelector 
-              visualization={visualization}
-              onVisualizationChange={handleVisualizationChange}
-              questionType={question.type}
-            />
+            {!isPerceptionTest && (
+              <>
+                <ChartSettings 
+                  visualization={visualization}
+                  onVisualizationChange={handleVisualizationChange}
+                  onRestore={handleRestore}
+                />
+                <ChartSelector 
+                  visualization={visualization}
+                  onVisualizationChange={handleVisualizationChange}
+                  questionType={question.type}
+                />
+              </>
+            )}
             <QuestionExportMenu question={question} cardRef={cardRef} />
           </div>
         </CardTitle>
       </CardHeader>
       <CardContent className="flex-1 pt-0">
         <div className="w-full min-h-[300px] flex items-center justify-center overflow-x-auto relative">
-          {isTextQuestion ? (
+          {isPerceptionTest ? (
+            <PerceptionTestRenderer question={question} />
+          ) : isTextQuestion ? (
             <TextVisualizationRenderer 
               question={question} 
               visualization={visualization} 

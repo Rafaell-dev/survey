@@ -7,6 +7,7 @@ export class ExportExcelService {
   static async export(surveyName: string, question: QuestionAnalyticsDTO) {
     const filename = `survey-${sanitizeFilename(question.questionTitle || question.blockTitle || "dados")}.xlsx`;
     const isTextQuestion = question.type === 'SHORT_TEXT' || question.type === 'LONG_TEXT';
+    const isPerceptionTest = question.type === 'PERCEPTION_TEST';
     
     const workbook = new ExcelJS.Workbook();
     workbook.creator = "Plataforma de Pesquisas";
@@ -15,7 +16,30 @@ export class ExportExcelService {
     // 1. Aba de Dados
     const dataSheet = workbook.addWorksheet("Dados");
     
-    if (isTextQuestion) {
+    if (isPerceptionTest) {
+      dataSheet.columns = [
+        { header: 'Tempo do Video (s)', key: 'time', width: 20 },
+        { header: 'Resposta', key: 'response', width: 80 }
+      ];
+      
+      const responses = question.responses || [];
+      responses.forEach((responseObj: any) => {
+        const rawText = typeof responseObj === 'string' ? responseObj : responseObj.textValue || responseObj.value || responseObj;
+        if (typeof rawText === 'string') {
+          try {
+            const parsed = JSON.parse(rawText);
+            if (Array.isArray(parsed)) {
+              parsed.forEach((int: any) => {
+                dataSheet.addRow({
+                  time: int.timeOffsetMs ? (int.timeOffsetMs / 1000).toFixed(1) : '-',
+                  response: String(int.answer || "-")
+                });
+              });
+            }
+          } catch (e) {}
+        }
+      });
+    } else if (isTextQuestion) {
       dataSheet.columns = [
         { header: 'Participante', key: 'participant', width: 25 },
         { header: 'Data', key: 'date', width: 20 },

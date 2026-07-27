@@ -5,7 +5,8 @@ export type QuestionType =
   | "SINGLE_CHOICE"
   | "LIKERT"
   | "SLIDER"
-  | "MEDIA_ONLY";
+  | "MEDIA_ONLY"
+  | "PERCEPTION_TEST";
 
 export type ScaleVisualType =
   | "NUMBERS"

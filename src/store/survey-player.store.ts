@@ -263,7 +263,7 @@ export const useSurveyPlayerStore = create<SurveyPlayerState>((set, get) => ({
           timeSpentMs: 0 // Tracking não é foco no momento
         };
 
-        if (question.type === 'SHORT_TEXT' || question.type === 'LONG_TEXT') {
+        if (question.type === 'SHORT_TEXT' || question.type === 'LONG_TEXT' || question.type === 'PERCEPTION_TEST') {
           dto.textValue = String(value || '');
         } else if (question.type === 'SINGLE_CHOICE') {
           dto.selectedOptionId = value;

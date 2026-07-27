@@ -10,6 +10,7 @@ import { OptionList } from "./OptionList";
 import { ScaleConfigurationPanel } from "./ScaleConfigurationPanel";
 import { MediaSection } from "./media/MediaSection";
 import { RuleSection } from "./rules/RuleSection";
+import { PerceptionTestConfig } from "./PerceptionTestConfig";
 
 interface QuestionCardProps {
   question: LocalQuestion;
@@ -23,6 +24,7 @@ const QUESTION_TYPES: Omit<Record<QuestionType, string>, "SLIDER" | "MEDIA_ONLY"
   MULTIPLE_CHOICE: "Múltipla Escolha",
   SINGLE_CHOICE: "Escolha Única",
   LIKERT: "Escala Likert",
+  PERCEPTION_TEST: "Teste de Percepção",
 };
 
 export function QuestionCard({
@@ -124,7 +126,11 @@ export function QuestionCard({
           </label>
         </div>
 
-        <MediaSection questionId={question.id} isNew={question.isNew} />
+        <MediaSection 
+          questionId={question.id} 
+          isNew={question.isNew} 
+          maxMediaCount={question.type === "PERCEPTION_TEST" ? 1 : undefined}
+        />
 
         {["SINGLE_CHOICE", "MULTIPLE_CHOICE"].includes(question.type) && (
           <OptionList questionId={question.id} />
@@ -134,7 +140,11 @@ export function QuestionCard({
           <ScaleConfigurationPanel question={question} onUpdate={onUpdate} />
         )}
 
-        {["SINGLE_CHOICE", "MULTIPLE_CHOICE", "LIKERT", "SLIDER"].includes(question.type) && (
+        {question.type === "PERCEPTION_TEST" && (
+          <PerceptionTestConfig question={question} />
+        )}
+
+        {["SINGLE_CHOICE", "MULTIPLE_CHOICE", "LIKERT", "SLIDER", "PERCEPTION_TEST"].includes(question.type) && (
           <RuleSection questionId={question.id} blockId={question.blockId} isNew={question.isNew} />
         )}
       </div>

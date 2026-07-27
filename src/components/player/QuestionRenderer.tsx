@@ -5,6 +5,7 @@ import { SingleChoiceQuestion } from "./questions/SingleChoiceQuestion";
 import { MultipleChoiceQuestion } from "./questions/MultipleChoiceQuestion";
 import { LikertQuestion } from "./questions/LikertQuestion";
 import { SliderQuestion } from "./questions/SliderQuestion";
+import { PerceptionTestQuestion } from "./questions/PerceptionTestQuestion";
 import { MediaRenderer } from "./MediaRenderer";
 
 interface Props {
@@ -35,6 +36,8 @@ export function QuestionRenderer({ question, value, onChange }: Props) {
         return <SliderQuestion question={question} value={value} onChange={onChange} />;
       case "MEDIA_ONLY":
         return null; // Apenas renderiza a mídia principal
+      case "PERCEPTION_TEST":
+        return <PerceptionTestQuestion question={question} value={value} onChange={onChange} />;
       default:
         return <div className="text-destructive text-sm">Tipo de questão não suportado</div>;
     }
@@ -42,8 +45,8 @@ export function QuestionRenderer({ question, value, onChange }: Props) {
 
   return (
     <div className="space-y-6">
-      {/* Mídias da questão */}
-      {question.medias?.length > 0 && (
+      {/* Mídias da questão (ocultas no PERCEPTION_TEST pois ele renderiza seu próprio player) */}
+      {question.type !== "PERCEPTION_TEST" && question.medias?.length > 0 && (
         <div className="space-y-4">
           {question.medias.map(media => (
             <MediaRenderer key={media.id} media={media} />
