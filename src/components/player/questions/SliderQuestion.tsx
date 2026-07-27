@@ -30,7 +30,6 @@ export function SliderQuestion({ question, value, onChange }: Props) {
       />
       <div className="flex justify-between text-sm text-muted-foreground font-medium">
         <span>{minOpt?.label || min}</span>
-        <span className="text-foreground text-base bg-muted px-3 py-1 rounded-md">{currentValue}</span>
         <span>{maxOpt?.label || max}</span>
       </div>
     </div>

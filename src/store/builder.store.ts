@@ -21,6 +21,8 @@ interface BuilderState {
   options: LocalOption[];
   deletedOptionIds: string[];
 
+  deletedScaleOptionIds: string[];
+
   loading: boolean;
   saving: boolean;
   mediaByQuestion: Record<string, Media[]>;
@@ -70,6 +72,8 @@ export const useBuilderStore = create<BuilderState>((set, get) => ({
   options: [],
   deletedOptionIds: [],
 
+  deletedScaleOptionIds: [],
+
   loading: false,
   saving: false,
   mediaByQuestion: {},
@@ -105,6 +109,12 @@ export const useBuilderStore = create<BuilderState>((set, get) => ({
         scaleStart: q.scaleStart,
         scaleEnd: q.scaleEnd,
         scaleVisualType: q.scaleVisualType,
+        scaleOptions: q.scaleOptions?.map((so: any) => ({
+          id: so.id,
+          numericValue: so.numericValue,
+          label: so.label,
+          isNew: false
+        })),
         isNew: false
       }));
       set({ questions: localQuestions });
@@ -177,12 +187,21 @@ export const useBuilderStore = create<BuilderState>((set, get) => ({
     const remainingQuestions = questions.filter(q => q.blockId !== id);
     const remainingOptions = options.filter(o => !questionIdsToDelete.includes(o.questionId));
     
+    // Deleta os scaleOptions das questions
+    const newDeletedScaleOptionIds = get().deletedScaleOptionIds;
+    questionsToDelete.forEach(q => {
+      q.scaleOptions?.forEach(so => {
+        if (!so.isNew) newDeletedScaleOptionIds.push(so.id);
+      });
+    });
+
     set({ 
       blocks: reorderedBlocks, 
       questions: remainingQuestions, 
       options: remainingOptions,
       deletedQuestionIds: newDeletedQuestionIds,
-      deletedOptionIds: newDeletedOptionIds
+      deletedOptionIds: newDeletedOptionIds,
+      deletedScaleOptionIds: newDeletedScaleOptionIds
     });
   },
 
@@ -248,6 +267,13 @@ export const useBuilderStore = create<BuilderState>((set, get) => ({
       if (!o.isNew) newDeletedOptionIds.push(o.id);
     });
     
+    const newDeletedScaleOptionIds = get().deletedScaleOptionIds;
+    if (questionToDelete?.scaleOptions) {
+      questionToDelete.scaleOptions.forEach(so => {
+        if (!so.isNew) newDeletedScaleOptionIds.push(so.id);
+      });
+    }
+
     const remainingQuestions = questions.filter(q => q.id !== id);
     const remainingOptions = options.filter(o => o.questionId !== id);
 
@@ -259,9 +285,9 @@ export const useBuilderStore = create<BuilderState>((set, get) => ({
         .map((q, index) => ({ ...q, orderIndex: index }));
       
       const otherQuestions = remainingQuestions.filter(q => q.blockId !== blockId);
-      set({ questions: [...otherQuestions, ...blockQuestions], options: remainingOptions, deletedOptionIds: newDeletedOptionIds });
+      set({ questions: [...otherQuestions, ...blockQuestions], options: remainingOptions, deletedOptionIds: newDeletedOptionIds, deletedScaleOptionIds: newDeletedScaleOptionIds });
     } else {
-      set({ questions: remainingQuestions, options: remainingOptions, deletedOptionIds: newDeletedOptionIds });
+      set({ questions: remainingQuestions, options: remainingOptions, deletedOptionIds: newDeletedOptionIds, deletedScaleOptionIds: newDeletedScaleOptionIds });
     }
   },
 
@@ -327,7 +353,7 @@ export const useBuilderStore = create<BuilderState>((set, get) => ({
   // === SINCRONIZAÇÃO EM BATCH OTIMIZADA (TREE SYNC) ===
 
   saveAllBlocks: async (surveyId: string) => {
-    const { blocks, deletedBlockIds, questions, deletedQuestionIds, options, deletedOptionIds } = get();
+    const { blocks, deletedBlockIds, questions, deletedQuestionIds, options, deletedOptionIds, deletedScaleOptionIds } = get();
     set({ saving: true });
 
     try {
@@ -336,6 +362,7 @@ export const useBuilderStore = create<BuilderState>((set, get) => ({
         deletedBlockIds,
         deletedQuestionIds,
         deletedOptionIds,
+        deletedScaleOptionIds,
         blocks: blocks.map(b => ({
           id: b.id,
           isNew: b.isNew,
@@ -359,6 +386,13 @@ export const useBuilderStore = create<BuilderState>((set, get) => ({
               label: o.label,
               value: o.value,
               orderIndex: o.orderIndex
+            })),
+            scaleOptions: q.scaleOptions?.map((so, index) => ({
+              id: so.id,
+              isNew: so.isNew,
+              label: so.label || null,
+              numericValue: so.numericValue,
+              orderIndex: index
             }))
           }))
         }))
@@ -387,6 +421,12 @@ export const useBuilderStore = create<BuilderState>((set, get) => ({
         scaleStart: q.scaleStart,
         scaleEnd: q.scaleEnd,
         scaleVisualType: q.scaleVisualType,
+        scaleOptions: q.scaleOptions?.map((so: any) => ({
+          id: so.id,
+          numericValue: so.numericValue,
+          label: so.label,
+          isNew: false
+        })),
         isNew: false
       }));
 
@@ -405,7 +445,8 @@ export const useBuilderStore = create<BuilderState>((set, get) => ({
         options: newOptions,
         deletedBlockIds: [],
         deletedQuestionIds: [],
-        deletedOptionIds: []
+        deletedOptionIds: [],
+        deletedScaleOptionIds: []
       });
 
     } finally {

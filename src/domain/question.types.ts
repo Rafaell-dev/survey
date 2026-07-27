@@ -63,4 +63,5 @@ export interface LocalQuestion extends Partial<Question> {
   blockId: string;
   orderIndex: number;
   isNew?: boolean;
+  scaleOptions?: { id: string; numericValue: number; label?: string; isNew?: boolean }[];
 }

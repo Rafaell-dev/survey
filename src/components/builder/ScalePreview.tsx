@@ -7,9 +7,10 @@ interface ScalePreviewProps {
   start: number;
   end: number;
   visualType: ScaleVisualType;
+  scaleOptions?: { numericValue: number; label?: string }[];
 }
 
-export function ScalePreview({ start, end, visualType }: ScalePreviewProps) {
+export function ScalePreview({ start, end, visualType, scaleOptions = [] }: ScalePreviewProps) {
   const steps = Math.max(1, end - start + 1);
   const elements = Array.from({ length: steps }, (_, i) => start + i);
 
@@ -74,9 +75,9 @@ export function ScalePreview({ start, end, visualType }: ScalePreviewProps) {
           className="w-full accent-primary" 
           disabled
         />
-        <div className="flex justify-between text-xs text-muted-foreground mt-2">
-          <span>{start}</span>
-          <span>{end}</span>
+        <div className="flex justify-between text-xs text-muted-foreground mt-2 font-medium">
+          <span>{scaleOptions.find(o => o.numericValue === start)?.label || start}</span>
+          <span>{scaleOptions.find(o => o.numericValue === end)?.label || end}</span>
         </div>
       </div>
     );
@@ -98,7 +99,9 @@ export function ScalePreview({ start, end, visualType }: ScalePreviewProps) {
           <div key={num} className="flex items-center flex-1 last:flex-none min-w-[60px]">
             <div className="flex flex-col items-center gap-2 text-muted-foreground text-xs text-center flex-1">
               <div className="w-4 h-4 rounded-full border border-current opacity-50 shrink-0" />
-              <span className="leading-tight px-1 max-w-[80px]">{getTextLabelForIndex(i, steps)}</span>
+              <span className="leading-tight px-1 max-w-[80px]">
+                {scaleOptions.find(o => o.numericValue === num)?.label || getTextLabelForIndex(i, steps)}
+              </span>
             </div>
             {i < elements.length - 1 && (
               <div className="flex-1 h-[1px] bg-border mx-1 sm:mx-2 min-w-[8px]" />

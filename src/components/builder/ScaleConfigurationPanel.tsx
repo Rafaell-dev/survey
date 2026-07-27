@@ -41,6 +41,20 @@ export function ScaleConfigurationPanel({ question, onUpdate }: ScaleConfigurati
     onUpdate(question.id, { scaleEnd: val });
   };
 
+  const handleLabelChange = (numericValue: number, label: string) => {
+    const currentOptions = question.scaleOptions || [];
+    const index = currentOptions.findIndex(o => o.numericValue === numericValue);
+    
+    let newOptions = [...currentOptions];
+    if (index >= 0) {
+      newOptions[index] = { ...newOptions[index], label };
+    } else {
+      newOptions.push({ id: crypto.randomUUID(), numericValue, label, isNew: true });
+    }
+    
+    onUpdate(question.id, { scaleOptions: newOptions });
+  };
+
   return (
     <div className="mt-4 pt-4 border-t border-dashed space-y-6">
       
@@ -86,13 +100,65 @@ export function ScaleConfigurationPanel({ question, onUpdate }: ScaleConfigurati
         </div>
       </div>
 
+      {/* Rótulos Customizados para Text Labels e Slider */}
+      {visualType === "TEXT_LABELS" && (
+        <div className="space-y-3 pt-2">
+          <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+            Rótulos das Opções
+          </label>
+          <div className="space-y-2">
+            {Array.from({ length: end - start + 1 }, (_, i) => start + i).map(num => {
+              const opt = question.scaleOptions?.find(o => o.numericValue === num);
+              return (
+                <div key={num} className="flex items-center gap-3">
+                  <span className="w-8 text-center text-sm font-medium bg-muted/50 rounded-md py-1">{num}</span>
+                  <Input 
+                    placeholder={`Ex: Opção ${num}`}
+                    value={opt?.label || ""}
+                    onChange={(e) => handleLabelChange(num, e.target.value)}
+                    className="h-8 flex-1"
+                  />
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {visualType === "SLIDER" && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+          <div className="space-y-1.5">
+            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+              Rótulo Mínimo ({start})
+            </label>
+            <Input 
+              placeholder="Ex: Pouco"
+              value={question.scaleOptions?.find(o => o.numericValue === start)?.label || ""}
+              onChange={(e) => handleLabelChange(start, e.target.value)}
+              className="h-8 shadow-none focus-visible:ring-1"
+            />
+          </div>
+          <div className="space-y-1.5">
+            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+              Rótulo Máximo ({end})
+            </label>
+            <Input 
+              placeholder="Ex: Muito"
+              value={question.scaleOptions?.find(o => o.numericValue === end)?.label || ""}
+              onChange={(e) => handleLabelChange(end, e.target.value)}
+              className="h-8 shadow-none focus-visible:ring-1"
+            />
+          </div>
+        </div>
+      )}
+
       {/* Preview em Tempo Real */}
       <div className="bg-muted/10 p-4 rounded-lg border">
         <h5 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-4">
           Visualização (Preview)
         </h5>
         <div className="flex justify-center w-full">
-          <ScalePreview start={start} end={end} visualType={visualType} />
+          <ScalePreview start={start} end={end} visualType={visualType} scaleOptions={question.scaleOptions} />
         </div>
       </div>
 
