@@ -19,6 +19,7 @@ export function QuestionExportMenu({ question, cardRef }: QuestionExportMenuProp
   const [isExporting, setIsExporting] = useState(false);
   const isTextQuestion = question.type === 'SHORT_TEXT' || question.type === 'LONG_TEXT';
   const isPerceptionTest = question.type === 'PERCEPTION_TEST';
+  const isMonitoredReading = question.type === 'MONITORED_READING';
 
   const handleExport = async (format: 'PNG' | 'PDF' | 'EXCEL' | 'CSV' | 'JSON') => {
     setIsExporting(true);
@@ -68,7 +69,7 @@ export function QuestionExportMenu({ question, cardRef }: QuestionExportMenuProp
         <DropdownMenuLabel>Exportar Pergunta</DropdownMenuLabel>
         <DropdownMenuSeparator />
         
-        {!isTextQuestion && !isPerceptionTest && (
+        {!isTextQuestion && !isPerceptionTest && !isMonitoredReading && (
           <DropdownMenuItem onClick={() => handleExport('PNG')}>
             <FileImage className="mr-2 h-4 w-4 text-blue-500" />
             <span>Imagem (PNG)</span>

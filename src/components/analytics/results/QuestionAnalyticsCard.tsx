@@ -6,6 +6,7 @@ import { TextVisualizationRenderer } from "../text-visualizations/TextVisualizat
 import { ChartSelector } from "./selector/ChartSelector";
 import { ChartSettings } from "./settings/ChartSettings";
 import { PerceptionTestRenderer } from "./PerceptionTestRenderer";
+import { MonitoredReadingRenderer } from "./MonitoredReadingRenderer";
 import { useAnalyticsPreferences } from "@/contexts/AnalyticsPreferencesContext";
 import { QuestionExportMenu } from "../export/QuestionExportMenu";
 
@@ -17,6 +18,7 @@ interface QuestionAnalyticsCardProps {
 export function QuestionAnalyticsCard({ question, index }: QuestionAnalyticsCardProps) {
   const isTextQuestion = question.type === 'SHORT_TEXT' || question.type === 'LONG_TEXT';
   const isPerceptionTest = question.type === 'PERCEPTION_TEST';
+  const isMonitoredReading = question.type === 'MONITORED_READING';
   
   const { preferences, savePreference, restoreDefault, isLoaded } = useAnalyticsPreferences();
   
@@ -70,7 +72,8 @@ export function QuestionAnalyticsCard({ question, index }: QuestionAnalyticsCard
       'LIKERT': 'Escala Likert',
       'SLIDER': 'Slider Numérico',
       'MEDIA_ONLY': 'Apenas Mídia',
-      'PERCEPTION_TEST': 'Teste de Percepção'
+      'PERCEPTION_TEST': 'Teste de Percepção',
+      'MONITORED_READING': 'Leitura Monitorada'
     };
     return types[type] || type;
   };
@@ -110,7 +113,7 @@ export function QuestionAnalyticsCard({ question, index }: QuestionAnalyticsCard
           </div>
           
           <div className="shrink-0 self-start sm:self-auto flex items-center gap-2">
-            {!isPerceptionTest && (
+            {!isPerceptionTest && !isMonitoredReading && (
               <>
                 <ChartSettings 
                   visualization={visualization}
@@ -132,6 +135,8 @@ export function QuestionAnalyticsCard({ question, index }: QuestionAnalyticsCard
         <div className="w-full min-h-[300px] flex items-center justify-center overflow-x-auto relative">
           {isPerceptionTest ? (
             <PerceptionTestRenderer question={question} />
+          ) : isMonitoredReading ? (
+            <MonitoredReadingRenderer question={question} />
           ) : isTextQuestion ? (
             <TextVisualizationRenderer 
               question={question} 

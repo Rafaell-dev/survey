@@ -6,7 +6,8 @@ export type QuestionType =
   | "LIKERT"
   | "SLIDER"
   | "MEDIA_ONLY"
-  | "PERCEPTION_TEST";
+  | "PERCEPTION_TEST"
+  | "MONITORED_READING";
 
 export type ScaleVisualType =
   | "NUMBERS"

@@ -2,7 +2,7 @@
 
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { GripVertical, Trash2 } from "lucide-react";
+import { GripVertical, Trash2, Type, CheckSquare, List, BarChart, SlidersHorizontal, Image as ImageIcon, Eye, BookOpen } from "lucide-react";
 import { LocalQuestion, QuestionType } from "@/domain/question.types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,6 +11,7 @@ import { ScaleConfigurationPanel } from "./ScaleConfigurationPanel";
 import { MediaSection } from "./media/MediaSection";
 import { RuleSection } from "./rules/RuleSection";
 import { PerceptionTestConfig } from "./PerceptionTestConfig";
+import { MonitoredReadingConfig } from "./MonitoredReadingConfig";
 
 interface QuestionCardProps {
   question: LocalQuestion;
@@ -18,13 +19,16 @@ interface QuestionCardProps {
   onDelete: (id: string) => void;
 }
 
-const QUESTION_TYPES: Omit<Record<QuestionType, string>, "SLIDER" | "MEDIA_ONLY"> = {
-  SHORT_TEXT: "Texto Curto",
-  LONG_TEXT: "Texto Longo",
-  MULTIPLE_CHOICE: "Múltipla Escolha",
-  SINGLE_CHOICE: "Escolha Única",
-  LIKERT: "Escala Likert",
-  PERCEPTION_TEST: "Teste de Percepção",
+const QUESTION_TYPES: Record<string, { icon: any, label: string, color: string }> = {
+  SHORT_TEXT: { icon: Type, label: 'Texto Curto', color: 'text-zinc-500' },
+  LONG_TEXT: { icon: Type, label: 'Texto Longo', color: 'text-zinc-500' },
+  MULTIPLE_CHOICE: { icon: CheckSquare, label: 'Múltipla Escolha', color: 'text-blue-500' },
+  SINGLE_CHOICE: { icon: List, label: 'Escolha Única', color: 'text-emerald-500' },
+  LIKERT: { icon: BarChart, label: 'Escala Likert', color: 'text-orange-500' },
+  SLIDER: { icon: SlidersHorizontal, label: 'Escala Slider', color: 'text-pink-500' },
+  'MEDIA_ONLY': { icon: ImageIcon, label: 'Apenas Mídia', color: 'text-zinc-500' },
+  'PERCEPTION_TEST': { icon: Eye, label: 'Teste de Percepção', color: 'text-indigo-500' },
+  'MONITORED_READING': { icon: BookOpen, label: 'Leitura Monitorada', color: 'text-amber-600' }
 };
 
 export function QuestionCard({
@@ -103,7 +107,7 @@ export function QuestionCard({
               }
               className="text-sm bg-muted/50 border-transparent rounded px-2 py-1 focus:ring-1 focus:ring-primary outline-none"
             >
-              {Object.entries(QUESTION_TYPES).map(([val, label]) => (
+              {Object.entries(QUESTION_TYPES).map(([val, { label }]) => (
                 <option key={val} value={val}>
                   {label}
                 </option>
@@ -132,8 +136,12 @@ export function QuestionCard({
           maxMediaCount={question.type === "PERCEPTION_TEST" ? 1 : undefined}
         />
 
-        {["SINGLE_CHOICE", "MULTIPLE_CHOICE"].includes(question.type) && (
+        {(question.type === 'SINGLE_CHOICE' || question.type === 'MULTIPLE_CHOICE') && (
           <OptionList questionId={question.id} />
+        )}
+
+        {question.type === 'MONITORED_READING' && (
+          <MonitoredReadingConfig questionId={question.id} />
         )}
 
         {["LIKERT", "SLIDER"].includes(question.type) && (

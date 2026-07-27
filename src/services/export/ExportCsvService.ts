@@ -8,6 +8,7 @@ export class ExportCsvService {
     let csvContent = "";
     const isTextQuestion = question.type === 'SHORT_TEXT' || question.type === 'LONG_TEXT';
     const isPerceptionTest = question.type === 'PERCEPTION_TEST';
+    const isMonitoredReading = question.type === 'MONITORED_READING';
 
     if (isPerceptionTest) {
       csvContent = "Tempo do Video (s),Resposta\n";
@@ -22,6 +23,26 @@ export class ExportCsvService {
                 const escapedText = String(int.answer || "-").replace(/"/g, '""');
                 const time = int.timeOffsetMs ? (int.timeOffsetMs / 1000).toFixed(1) : '-';
                 csvContent += `"${time}","${escapedText}"\n`;
+              });
+            }
+          } catch (e) {}
+        }
+      });
+    } else if (isMonitoredReading) {
+      csvContent = "Trecho,Palavras Lidas,Tempo Gasto (s),Velocidade (PPM)\n";
+      const responses = question.responses || [];
+      responses.forEach((responseObj: any) => {
+        const rawText = typeof responseObj === 'string' ? responseObj : responseObj.textValue || responseObj.value || responseObj;
+        if (typeof rawText === 'string') {
+          try {
+            const parsed = JSON.parse(rawText);
+            if (Array.isArray(parsed)) {
+              parsed.forEach((segment: any) => {
+                const trecho = `Parte ${segment.segmentIndex + 1}`;
+                const palavras = segment.wordCount || 0;
+                const time = segment.timeSpentMs ? (segment.timeSpentMs / 1000).toFixed(1) : '-';
+                const ppm = segment.timeSpentMs > 0 ? Math.round(palavras / (segment.timeSpentMs / 1000 / 60)) : 0;
+                csvContent += `"${trecho}","${palavras}","${time}","${ppm}"\n`;
               });
             }
           } catch (e) {}

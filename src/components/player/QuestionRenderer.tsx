@@ -6,6 +6,7 @@ import { MultipleChoiceQuestion } from "./questions/MultipleChoiceQuestion";
 import { LikertQuestion } from "./questions/LikertQuestion";
 import { SliderQuestion } from "./questions/SliderQuestion";
 import { PerceptionTestQuestion } from "./questions/PerceptionTestQuestion";
+import { MonitoredReadingQuestion } from "./questions/MonitoredReadingQuestion";
 import { MediaRenderer } from "./MediaRenderer";
 
 interface Props {
@@ -34,10 +35,12 @@ export function QuestionRenderer({ question, value, onChange }: Props) {
         return <LikertQuestion question={question} value={value} onChange={onChange} />;
       case "SLIDER":
         return <SliderQuestion question={question} value={value} onChange={onChange} />;
-      case "MEDIA_ONLY":
-        return null; // Apenas renderiza a mídia principal
       case "PERCEPTION_TEST":
         return <PerceptionTestQuestion question={question} value={value} onChange={onChange} />;
+      case "MONITORED_READING":
+        return <MonitoredReadingQuestion question={question} value={value} onChange={onChange} />;
+      case "MEDIA_ONLY":
+        return <div className="text-sm text-muted-foreground italic text-center p-4">Observe a mídia acima e prossiga.</div>;
       default:
         return <div className="text-destructive text-sm">Tipo de questão não suportado</div>;
     }

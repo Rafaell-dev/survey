@@ -32,7 +32,11 @@ export interface ConditionalRuleDTO {
 
 export interface SurveyQuestionDTO {
   id: string;
-  type: "SHORT_TEXT" | "LONG_TEXT" | "SINGLE_CHOICE" | "MULTIPLE_CHOICE" | "LIKERT" | "SLIDER" | "MEDIA_ONLY" | "PERCEPTION_TEST";
+  type: "SHORT_TEXT" | "LONG_TEXT" | "SINGLE_CHOICE" | "MULTIPLE_CHOICE"  | "LIKERT"
+  | "SLIDER"
+  | "MEDIA_ONLY"
+  | "PERCEPTION_TEST"
+  | "MONITORED_READING";
   title: string;
   description: string | null;
   isRequired: boolean;

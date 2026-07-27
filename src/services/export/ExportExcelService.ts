@@ -8,6 +8,7 @@ export class ExportExcelService {
     const filename = `survey-${sanitizeFilename(question.questionTitle || question.blockTitle || "dados")}.xlsx`;
     const isTextQuestion = question.type === 'SHORT_TEXT' || question.type === 'LONG_TEXT';
     const isPerceptionTest = question.type === 'PERCEPTION_TEST';
+    const isMonitoredReading = question.type === 'MONITORED_READING';
     
     const workbook = new ExcelJS.Workbook();
     workbook.creator = "Plataforma de Pesquisas";
@@ -33,6 +34,35 @@ export class ExportExcelService {
                 dataSheet.addRow({
                   time: int.timeOffsetMs ? (int.timeOffsetMs / 1000).toFixed(1) : '-',
                   response: String(int.answer || "-")
+                });
+              });
+            }
+          } catch (e) {}
+        }
+      });
+    } else if (isMonitoredReading) {
+      dataSheet.columns = [
+        { header: 'Trecho', key: 'trecho', width: 20 },
+        { header: 'Palavras Lidas', key: 'palavras', width: 20 },
+        { header: 'Tempo Gasto (s)', key: 'time', width: 20 },
+        { header: 'Velocidade (PPM)', key: 'ppm', width: 20 }
+      ];
+      
+      const responses = question.responses || [];
+      responses.forEach((responseObj: any) => {
+        const rawText = typeof responseObj === 'string' ? responseObj : responseObj.textValue || responseObj.value || responseObj;
+        if (typeof rawText === 'string') {
+          try {
+            const parsed = JSON.parse(rawText);
+            if (Array.isArray(parsed)) {
+              parsed.forEach((segment: any) => {
+                const palavras = segment.wordCount || 0;
+                const ppm = segment.timeSpentMs > 0 ? Math.round(palavras / (segment.timeSpentMs / 1000 / 60)) : 0;
+                dataSheet.addRow({
+                  trecho: `Parte ${segment.segmentIndex + 1}`,
+                  palavras: palavras,
+                  time: segment.timeSpentMs ? (segment.timeSpentMs / 1000).toFixed(1) : '-',
+                  ppm: ppm
                 });
               });
             }
