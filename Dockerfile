@@ -16,6 +16,8 @@ ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 # Copy source code and build
 COPY . .
 
+# Aumenta o limite de memória do Node para 4GB durante o build
+ENV NODE_OPTIONS="--max-old-space-size=4096"
 RUN npm run build
 
 # Stage 2: Serve with Node (Next.js standalone)
