@@ -113,6 +113,7 @@ export const useBuilderStore = create<BuilderState>((set, get) => ({
           id: so.id,
           numericValue: so.numericValue,
           label: so.label,
+          orderIndex: so.orderIndex,
           isNew: false
         })),
         isNew: false

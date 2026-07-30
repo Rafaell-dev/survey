@@ -7,7 +7,7 @@ interface ScalePreviewProps {
   start: number;
   end: number;
   visualType: ScaleVisualType;
-  scaleOptions?: { numericValue: number; label?: string }[];
+  scaleOptions?: { numericValue: number; label?: string | null; id?: string; emoji?: string | null; icon?: string | null; orderIndex?: number; isNew?: boolean }[];
 }
 
 export function ScalePreview({ start, end, visualType, scaleOptions = [] }: ScalePreviewProps) {

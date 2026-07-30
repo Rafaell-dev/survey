@@ -29,6 +29,7 @@ export interface Question {
   blockId: string;
   createdAt: string;
   updatedAt: string;
+  scaleOptions?: { id: string; numericValue: number; label?: string | null; emoji?: string | null; icon?: string | null; orderIndex: number }[];
 }
 
 export interface CreateQuestionDTO {
@@ -65,5 +66,5 @@ export interface LocalQuestion extends Partial<Question> {
   blockId: string;
   orderIndex: number;
   isNew?: boolean;
-  scaleOptions?: { id: string; numericValue: number; label?: string; isNew?: boolean }[];
+  scaleOptions?: { id: string; numericValue: number; label?: string | null; emoji?: string | null; icon?: string | null; orderIndex: number; isNew?: boolean }[];
 }

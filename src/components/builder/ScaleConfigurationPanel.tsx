@@ -49,7 +49,7 @@ export function ScaleConfigurationPanel({ question, onUpdate }: ScaleConfigurati
     if (index >= 0) {
       newOptions[index] = { ...newOptions[index], label };
     } else {
-      newOptions.push({ id: crypto.randomUUID(), numericValue, label, isNew: true });
+      newOptions.push({ id: crypto.randomUUID(), numericValue, label, isNew: true, orderIndex: numericValue });
     }
     
     onUpdate(question.id, { scaleOptions: newOptions });
