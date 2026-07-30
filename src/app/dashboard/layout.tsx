@@ -36,8 +36,9 @@ export default function DashboardLayout({
     { name: "Painel de Controle", href: "/dashboard", icon: LayoutDashboard },
   ];
 
+  navItems.push({ name: "Portfólio Institucional", href: "/dashboard/portfolio", icon: Globe });
+
   if (user?.role === 'ADMIN') {
-    navItems.push({ name: "Portfólio Institucional", href: "/dashboard/portfolio", icon: Globe });
     navItems.push({ name: "Usuários", href: "/dashboard/users", icon: Users });
   }
 
