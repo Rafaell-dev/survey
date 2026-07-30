@@ -23,6 +23,7 @@ interface SurveyState {
   updateSurvey: (id: string, data: UpdateSurveyDTO) => Promise<Survey>;
   updateSurveySettings: (id: string, data: UpdateSurveySettingsDTO) => Promise<Survey>;
   deleteSurvey: (id: string) => Promise<void>;
+  toggleHighlight: (id: string, currentStatus: boolean) => Promise<void>;
   clearSelectedSurvey: () => void;
 
   publishSurvey: (id: string) => Promise<void>;
@@ -129,6 +130,18 @@ export const useSurveyStore = create<SurveyState>((set, get) => ({
       }));
     } finally {
       set({ loading: false });
+    }
+  },
+
+  toggleHighlight: async (id: string, currentStatus: boolean) => {
+    try {
+      const survey = await surveyService.updateSurvey(id, { isHighlighted: !currentStatus });
+      set((state) => ({
+        surveys: state.surveys.map(s => s.id === id ? { ...s, isHighlighted: survey.isHighlighted } : s),
+        selectedSurvey: state.selectedSurvey?.id === id ? { ...state.selectedSurvey, isHighlighted: survey.isHighlighted } : state.selectedSurvey
+      }));
+    } catch (error) {
+      console.error("Erro ao alterar destaque", error);
     }
   },
 

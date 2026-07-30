@@ -18,6 +18,7 @@ export interface Survey {
   allowMultipleResponses: boolean;
   publicSlug: string | null;
   publicLinkActive: boolean;
+  isHighlighted?: boolean;
   researcherId: string;
   createdAt: string;
   updatedAt: string;
@@ -36,6 +37,7 @@ export interface UpdateSurveyDTO {
   title?: string;
   description?: string;
   instructions?: string;
+  isHighlighted?: boolean;
 }
 
 export interface UpdateSurveySettingsDTO {

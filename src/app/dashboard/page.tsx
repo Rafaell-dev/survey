@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Plus, Users, LayoutTemplate, Clock, Download, ExternalLink, Trash2 } from "lucide-react";
+import { Plus, Users, LayoutTemplate, Clock, Download, ExternalLink, Trash2, Star } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,7 +11,7 @@ import { useSurveyStore } from "@/store/survey.store";
 import { api } from "@/services/api";
 
 export default function DashboardPage() {
-  const { surveys, loading, fetchSurveys, deleteSurvey, total, globalMetrics, fetchGlobalMetrics } = useSurveyStore();
+  const { surveys, loading, fetchSurveys, deleteSurvey, total, globalMetrics, fetchGlobalMetrics, toggleHighlight } = useSurveyStore();
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -137,6 +137,13 @@ export default function DashboardPage() {
                       <div className="flex items-center gap-1" onClick={(e) => e.preventDefault()}>
                         {survey.status === 'PUBLISHED' && (
                           <>
+                            <Button variant="ghost" size="icon" className={`h-8 w-8 ${survey.isHighlighted ? 'text-amber-400 hover:text-amber-500' : 'text-muted-foreground hover:text-amber-400'}`} onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              toggleHighlight(survey.id, !!survey.isHighlighted);
+                            }} title={survey.isHighlighted ? "Remover Destaque" : "Destacar Pesquisa no Portfólio"}>
+                              <Star className={`h-4 w-4 ${survey.isHighlighted ? 'fill-current' : ''}`} />
+                            </Button>
                             {survey.publicSlug && (
                               <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-primary" onClick={(e) => {
                                 e.preventDefault();
