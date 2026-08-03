@@ -19,6 +19,21 @@ export default function PortfolioDashboardPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
 
+  // Tracking deleted items for bulk save
+  const [deletedInterests, setDeletedInterests] = useState<string[]>([]);
+  const [deletedEducations, setDeletedEducations] = useState<string[]>([]);
+
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (isDirty) {
+        e.preventDefault();
+        e.returnValue = "Você possui alterações não salvas. Deseja realmente sair?";
+      }
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [isDirty]);
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -45,18 +60,71 @@ export default function PortfolioDashboardPage() {
   };
 
   const handleSaveChanges = async () => {
-    setIsSaving(true);
-    try {
-      const updated = await portfolioService.updateProfile(profile);
-      setProfile(updated);
-      setIsDirty(false);
-      alert("Alterações salvas com sucesso!");
-    } catch (error) {
-      console.error("Failed to update profile", error);
-      alert("Erro ao salvar alterações. Verifique os campos.");
-    } finally {
-      setIsSaving(false);
+    // 1. Force blur on active element to trigger any pending validations
+    if (document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur();
     }
+
+    // 2. Validate visually
+    setTimeout(async () => {
+      const errorElement = document.querySelector('[aria-invalid="true"]');
+      if (errorElement) {
+        errorElement.scrollIntoView({ behavior: "smooth", block: "center" });
+        alert("Existem informações inválidas antes de salvar o portfólio.");
+        return;
+      }
+
+      setIsSaving(true);
+      try {
+        // Bulk save logic
+        await portfolioService.updateProfile(profile);
+
+        // Process Interests
+        for (const id of deletedInterests) {
+          if (!id.startsWith("temp-")) await portfolioService.deleteInterest(id);
+        }
+        for (const int of interests) {
+          if (int.id.startsWith("temp-")) {
+            await portfolioService.createInterest({ namePt: int.namePt, nameEn: int.nameEn });
+          } else {
+            await portfolioService.updateInterest(int.id, { namePt: int.namePt, nameEn: int.nameEn, orderIndex: int.orderIndex });
+          }
+        }
+
+        // Process Educations
+        for (const id of deletedEducations) {
+          if (!id.startsWith("temp-")) await portfolioService.deleteEducation(id);
+        }
+        for (const edu of educations) {
+          if (edu.id.startsWith("temp-")) {
+            await portfolioService.createEducation({ degreePt: edu.degreePt, degreeEn: edu.degreeEn, institution: edu.institution, year: edu.year });
+          } else {
+            await portfolioService.updateEducation(edu.id, { degreePt: edu.degreePt, degreeEn: edu.degreeEn, institution: edu.institution, year: edu.year, orderIndex: edu.orderIndex });
+          }
+        }
+
+        // Reload fresh data to get correct IDs
+        const [profData, intData, eduData] = await Promise.all([
+          portfolioService.getProfile(),
+          portfolioService.getInterests(),
+          portfolioService.getEducations(),
+        ]);
+        setProfile(profData as Partial<PortfolioProfile>);
+        setInterests(intData);
+        setEducations(eduData);
+        setDeletedInterests([]);
+        setDeletedEducations([]);
+        
+        setIsDirty(false);
+        // Alert handled by Sonner usually, but we use native for now
+        alert("Portfólio atualizado com sucesso.");
+      } catch (error) {
+        console.error("Failed to update profile", error);
+        alert("Não foi possível salvar. Tente novamente em alguns instantes.");
+      } finally {
+        setIsSaving(false);
+      }
+    }, 100);
   };
 
   const handleAvatarUpload = async (file: File) => {
@@ -68,63 +136,59 @@ export default function PortfolioDashboardPage() {
     }
   };
 
-  const handleAddInterest = async () => {
-    try {
-      const newInterest = await portfolioService.createInterest({ namePt: "Novo Interesse", nameEn: "New Interest" });
-      setInterests([...interests, newInterest]);
-    } catch (error) {
-      console.error(error);
-    }
+  const handleAddInterest = () => {
+    const newInterest = { id: `temp-${Date.now()}`, namePt: "Novo Interesse", nameEn: "New Interest", orderIndex: interests.length } as PortfolioInterest;
+    setInterests([...interests, newInterest]);
+    setIsDirty(true);
   };
 
-  const handleUpdateInterest = async (id: string, data: Partial<PortfolioInterest>) => {
+  const handleUpdateInterest = (id: string, data: Partial<PortfolioInterest>) => {
     setInterests(prev => prev.map(i => i.id === id ? { ...i, ...data } : i));
-    try {
-      await portfolioService.updateInterest(id, data);
-    } catch (error) {
-      console.error(error);
+    setIsDirty(true);
+  };
+
+  const handleDeleteInterest = (id: string) => {
+    if (confirm("Remover este interesse?")) {
+      setInterests(prev => prev.filter(i => i.id !== id));
+      setDeletedInterests([...deletedInterests, id]);
+      setIsDirty(true);
     }
   };
 
-  const handleDeleteInterest = async (id: string) => {
-    setInterests(prev => prev.filter(i => i.id !== id));
-    try {
-      await portfolioService.deleteInterest(id);
-    } catch (error) {
-      console.error(error);
-    }
+  const handleAddEducation = () => {
+    const newEdu = {
+      id: `temp-${Date.now()}`,
+      degreePt: "Nova Formação",
+      degreeEn: "New Education",
+      institution: "Instituição",
+      year: new Date().getFullYear(),
+      orderIndex: educations.length
+    } as PortfolioEducation;
+    setEducations([...educations, newEdu]);
+    setIsDirty(true);
   };
 
-  const handleAddEducation = async () => {
-    try {
-      const newEdu = await portfolioService.createEducation({
-        degreePt: "Nova Formação",
-        degreeEn: "New Education",
-        institution: "Instituição",
-        year: new Date().getFullYear(),
-      });
-      setEducations([...educations, newEdu]);
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
-  const handleUpdateEducation = async (id: string, data: Partial<PortfolioEducation>) => {
+  const handleUpdateEducation = (id: string, data: Partial<PortfolioEducation>) => {
     setEducations(prev => prev.map(e => e.id === id ? { ...e, ...data } : e));
-    try {
-      await portfolioService.updateEducation(id, data);
-    } catch (error) {
-      console.error(error);
+    setIsDirty(true);
+  };
+
+  const handleDeleteEducation = (id: string) => {
+    if (confirm("Remover esta formação?")) {
+      setEducations(prev => prev.filter(e => e.id !== id));
+      setDeletedEducations([...deletedEducations, id]);
+      setIsDirty(true);
     }
   };
 
-  const handleDeleteEducation = async (id: string) => {
-    setEducations(prev => prev.filter(e => e.id !== id));
-    try {
-      await portfolioService.deleteEducation(id);
-    } catch (error) {
-      console.error(error);
-    }
+  const handleReorderInterests = (newOrder: PortfolioInterest[]) => {
+    setInterests(newOrder);
+    setIsDirty(true);
+  };
+
+  const handleReorderEducations = (newOrder: PortfolioEducation[]) => {
+    setEducations(newOrder);
+    setIsDirty(true);
   };
 
   if (loading) {
@@ -150,6 +214,8 @@ export default function PortfolioDashboardPage() {
         onAddEducation={handleAddEducation}
         onUpdateEducation={handleUpdateEducation}
         onDeleteEducation={handleDeleteEducation}
+        onReorderInterests={handleReorderInterests}
+        onReorderEducations={handleReorderEducations}
       />
 
       {/* Floating Action Bar */}

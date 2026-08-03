@@ -2,8 +2,9 @@ import { PortfolioProfile } from "@/services/portfolio.service";
 import { EditableField } from "./EditableField";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Code, Briefcase, Mail, GraduationCap, Camera } from "lucide-react";
-import { useRef } from "react";
-import { Input } from "@/components/ui/input";
+import { useRef, useState } from "react";
+import { portfolioProfileSchema, normalizeGithubUrl, normalizeLinkedinUrl, normalizeLattesUrl } from "@/lib/portfolio-validators";
+import { AlertCircle } from "lucide-react";
 
 interface PortfolioSidebarProps {
   profile: Partial<PortfolioProfile>;
@@ -15,6 +16,8 @@ interface PortfolioSidebarProps {
 export function PortfolioSidebar({ profile, isEditing, onUpdate, onAvatarUpload }: PortfolioSidebarProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const [avatarError, setAvatarError] = useState<string | null>(null);
+
   const handleAvatarClick = () => {
     if (isEditing && fileInputRef.current) {
       fileInputRef.current.click();
@@ -22,10 +25,35 @@ export function PortfolioSidebar({ profile, isEditing, onUpdate, onAvatarUpload 
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setAvatarError(null);
     const file = e.target.files?.[0];
-    if (file && onAvatarUpload) {
-      onAvatarUpload(file);
+    if (!file) return;
+
+    // 1. Validate format
+    const validTypes = ["image/jpeg", "image/png", "image/webp"];
+    if (!validTypes.includes(file.type)) {
+      setAvatarError("Formato não suportado. Use JPG, PNG ou WEBP.");
+      return;
     }
+
+    // 2. Validate size (5MB max)
+    if (file.size > 5 * 1024 * 1024) {
+      setAvatarError("Arquivo maior que 5 MB.");
+      return;
+    }
+
+    // 3. Validate dimensions (min 300x300)
+    const img = new window.Image();
+    const objectUrl = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(objectUrl);
+      if (img.width < 300 || img.height < 300) {
+        setAvatarError("Imagem muito pequena. Mínimo: 300x300.");
+      } else {
+        if (onAvatarUpload) onAvatarUpload(file);
+      }
+    };
+    img.src = objectUrl;
   };
 
   const initials = profile.name
@@ -47,6 +75,12 @@ export function PortfolioSidebar({ profile, isEditing, onUpdate, onAvatarUpload 
             <Camera className="w-8 h-8 text-white" />
           </div>
         )}
+        {avatarError && (
+          <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 whitespace-nowrap text-xs text-destructive flex items-center gap-1 bg-background/80 px-2 py-1 rounded">
+            <AlertCircle className="w-3 h-3" />
+            {avatarError}
+          </div>
+        )}
         <input 
           type="file" 
           ref={fileInputRef} 
@@ -58,25 +92,34 @@ export function PortfolioSidebar({ profile, isEditing, onUpdate, onAvatarUpload 
 
       <div className="w-full space-y-1">
         <EditableField
+          id="profile-name"
           isEditing={isEditing}
           value={profile.name || ""}
           onSave={(v) => onUpdate({ name: v })}
           placeholder="Seu nome completo"
           className="text-2xl font-bold tracking-tight text-center md:text-left"
+          validator={portfolioProfileSchema.shape.name}
+          maxLength={100}
         />
         <EditableField
+          id="profile-title"
           isEditing={isEditing}
           value={profile.title || ""}
           onSave={(v) => onUpdate({ title: v })}
           placeholder="Seu Cargo / Título (ex: Professora de Linguística)"
           className="text-lg text-muted-foreground text-center md:text-left"
+          validator={portfolioProfileSchema.shape.title}
+          maxLength={100}
         />
         <EditableField
+          id="profile-institution"
           isEditing={isEditing}
           value={profile.institution || ""}
           onSave={(v) => onUpdate({ institution: v })}
           placeholder="Instituição (ex: Universidade de São Paulo)"
           className="text-md text-muted-foreground text-center md:text-left"
+          validator={portfolioProfileSchema.shape.institution}
+          maxLength={100}
         />
       </div>
 
@@ -110,43 +153,63 @@ export function PortfolioSidebar({ profile, isEditing, onUpdate, onAvatarUpload 
             <h4 className="text-sm font-semibold mb-2">Links & Redes (Visíveis)</h4>
             
             <div className="flex items-center gap-2">
-              <Mail className="w-4 h-4 text-muted-foreground shrink-0" />
-              <Input 
-                placeholder="Email..." 
-                value={profile.email || ""} 
-                onChange={(e) => onUpdate({ email: e.target.value })} 
-                className="h-8 text-sm"
-              />
+              <Mail className="w-4 h-4 text-muted-foreground shrink-0 mt-2" />
+              <div className="flex-1">
+                <EditableField
+                  id="profile-email"
+                  isEditing={isEditing}
+                  value={profile.email || ""}
+                  onSave={(v) => onUpdate({ email: v })}
+                  placeholder="Email..."
+                  className="h-8 text-sm"
+                  validator={portfolioProfileSchema.shape.email}
+                />
+              </div>
             </div>
             
             <div className="flex items-center gap-2">
-              <GraduationCap className="w-4 h-4 text-muted-foreground shrink-0" />
-              <Input 
-                placeholder="Link Currículo Lattes..." 
-                value={profile.lattesUrl || ""} 
-                onChange={(e) => onUpdate({ lattesUrl: e.target.value })} 
-                className="h-8 text-sm"
-              />
+              <GraduationCap className="w-4 h-4 text-muted-foreground shrink-0 mt-2" />
+              <div className="flex-1">
+                <EditableField
+                  id="profile-lattes"
+                  isEditing={isEditing}
+                  value={profile.lattesUrl || ""}
+                  onSave={(v) => onUpdate({ lattesUrl: normalizeLattesUrl(v) })}
+                  placeholder="Link Currículo Lattes..."
+                  className="h-8 text-sm"
+                  validator={portfolioProfileSchema.shape.lattesUrl}
+                />
+              </div>
             </div>
 
             <div className="flex items-center gap-2">
-              <Code className="w-4 h-4 text-muted-foreground shrink-0" />
-              <Input 
-                placeholder="Link GitHub..." 
-                value={profile.githubUrl || ""} 
-                onChange={(e) => onUpdate({ githubUrl: e.target.value })} 
-                className="h-8 text-sm"
-              />
+              <Code className="w-4 h-4 text-muted-foreground shrink-0 mt-2" />
+              <div className="flex-1">
+                <EditableField
+                  id="profile-github"
+                  isEditing={isEditing}
+                  value={profile.githubUrl || ""}
+                  onSave={(v) => onUpdate({ githubUrl: normalizeGithubUrl(v) })}
+                  placeholder="Link GitHub..."
+                  className="h-8 text-sm"
+                  validator={portfolioProfileSchema.shape.githubUrl}
+                />
+              </div>
             </div>
 
             <div className="flex items-center gap-2">
-              <Briefcase className="w-4 h-4 text-muted-foreground shrink-0" />
-              <Input 
-                placeholder="Link LinkedIn..." 
-                value={profile.linkedinUrl || ""} 
-                onChange={(e) => onUpdate({ linkedinUrl: e.target.value })} 
-                className="h-8 text-sm"
-              />
+              <Briefcase className="w-4 h-4 text-muted-foreground shrink-0 mt-2" />
+              <div className="flex-1">
+                <EditableField
+                  id="profile-linkedin"
+                  isEditing={isEditing}
+                  value={profile.linkedinUrl || ""}
+                  onSave={(v) => onUpdate({ linkedinUrl: normalizeLinkedinUrl(v) })}
+                  placeholder="Link LinkedIn..."
+                  className="h-8 text-sm"
+                  validator={portfolioProfileSchema.shape.linkedinUrl}
+                />
+              </div>
             </div>
           </div>
         )}
