@@ -8,13 +8,16 @@ import {
   PortfolioInterest, 
   PortfolioEducation 
 } from "@/services/portfolio.service";
-import { Loader2 } from "lucide-react";
+import { Loader2, Save, ExternalLink } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 export default function PortfolioDashboardPage() {
   const [profile, setProfile] = useState<Partial<PortfolioProfile>>({});
   const [interests, setInterests] = useState<PortfolioInterest[]>([]);
   const [educations, setEducations] = useState<PortfolioEducation[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isDirty, setIsDirty] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -36,14 +39,23 @@ export default function PortfolioDashboardPage() {
     fetchData();
   }, []);
 
-  const handleUpdateProfile = async (data: Partial<PortfolioProfile>) => {
-    // Optimistic update
+  const handleUpdateProfile = (data: Partial<PortfolioProfile>) => {
     setProfile(prev => ({ ...prev, ...data }));
+    setIsDirty(true);
+  };
+
+  const handleSaveChanges = async () => {
+    setIsSaving(true);
     try {
-      const updated = await portfolioService.updateProfile(data);
+      const updated = await portfolioService.updateProfile(profile);
       setProfile(updated);
+      setIsDirty(false);
+      alert("Alterações salvas com sucesso!");
     } catch (error) {
       console.error("Failed to update profile", error);
+      alert("Erro ao salvar alterações. Verifique os campos.");
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -124,19 +136,43 @@ export default function PortfolioDashboardPage() {
   }
 
   return (
-    <PortfolioLayout
-      isEditing={true}
-      profile={profile}
-      interests={interests}
-      educations={educations}
-      onUpdateProfile={handleUpdateProfile}
-      onAvatarUpload={handleAvatarUpload}
-      onAddInterest={handleAddInterest}
-      onUpdateInterest={handleUpdateInterest}
-      onDeleteInterest={handleDeleteInterest}
-      onAddEducation={handleAddEducation}
-      onUpdateEducation={handleUpdateEducation}
-      onDeleteEducation={handleDeleteEducation}
-    />
+    <>
+      <PortfolioLayout
+        isEditing={true}
+        profile={profile}
+        interests={interests}
+        educations={educations}
+        onUpdateProfile={handleUpdateProfile}
+        onAvatarUpload={handleAvatarUpload}
+        onAddInterest={handleAddInterest}
+        onUpdateInterest={handleUpdateInterest}
+        onDeleteInterest={handleDeleteInterest}
+        onAddEducation={handleAddEducation}
+        onUpdateEducation={handleUpdateEducation}
+        onDeleteEducation={handleDeleteEducation}
+      />
+
+      {/* Floating Action Bar */}
+      <div className="fixed bottom-0 left-0 right-0 p-4 bg-background/80 backdrop-blur-md border-t shadow-lg z-50 flex items-center justify-between md:justify-end gap-4 px-4 sm:px-8">
+        <Button 
+          variant="outline" 
+          asChild 
+          className="gap-2"
+        >
+          <a href={`/p/${profile.slug}`} target="_blank" rel="noopener noreferrer">
+            Página Pública <ExternalLink className="w-4 h-4" />
+          </a>
+        </Button>
+
+        <Button 
+          onClick={handleSaveChanges} 
+          disabled={!isDirty || isSaving}
+          className="gap-2"
+        >
+          {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+          {isSaving ? "Salvando..." : "Salvar Alterações"}
+        </Button>
+      </div>
+    </>
   );
 }

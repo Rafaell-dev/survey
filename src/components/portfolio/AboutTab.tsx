@@ -55,10 +55,13 @@ export function AboutTab({
         <section>
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-2xl font-semibold tracking-tight">Interesses</h3>
-            {isEditing && (
+            {isEditing && interests.length < 5 && (
               <Button variant="outline" size="sm" onClick={onAddInterest} className="h-8 gap-1">
                 <Plus className="w-4 h-4" /> Add
               </Button>
+            )}
+            {isEditing && interests.length >= 5 && (
+              <span className="text-xs text-muted-foreground">Máx 5 itens</span>
             )}
           </div>
           
@@ -94,10 +97,13 @@ export function AboutTab({
         <section>
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-2xl font-semibold tracking-tight">Formação</h3>
-            {isEditing && (
+            {isEditing && educations.length < 5 && (
               <Button variant="outline" size="sm" onClick={onAddEducation} className="h-8 gap-1">
                 <Plus className="w-4 h-4" /> Add
               </Button>
+            )}
+            {isEditing && educations.length >= 5 && (
+              <span className="text-xs text-muted-foreground">Máx 5 itens</span>
             )}
           </div>
 
