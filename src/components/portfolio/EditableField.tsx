@@ -55,7 +55,7 @@ export function EditableField({
           placeholder={placeholder}
           maxLength={maxLength}
           className={cn(
-            "resize-none bg-transparent border-transparent hover:border-input focus:border-input focus:bg-background transition-colors min-h-[120px] p-2 shadow-none focus-visible:ring-1",
+            "resize-none bg-transparent border-dashed border-muted-foreground/30 hover:border-input focus:border-input focus:bg-background transition-colors min-h-[120px] p-2 shadow-none focus-visible:ring-1",
             className
           )}
         />
@@ -67,7 +67,7 @@ export function EditableField({
           placeholder={placeholder}
           maxLength={maxLength}
           className={cn(
-            "bg-transparent border-transparent hover:border-input focus:border-input focus:bg-background transition-colors p-2 h-auto rounded-sm shadow-none focus-visible:ring-1 truncate",
+            "bg-transparent border-dashed border-muted-foreground/30 hover:border-input focus:border-input focus:bg-background transition-colors p-2 h-auto rounded-sm shadow-none focus-visible:ring-1 truncate",
             className
           )}
         />

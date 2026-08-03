@@ -57,7 +57,7 @@ export function AboutTab({
             <h3 className="text-2xl font-semibold tracking-tight">Interesses</h3>
             {isEditing && interests.length < 5 && (
               <Button variant="outline" size="sm" onClick={onAddInterest} className="h-8 gap-1">
-                <Plus className="w-4 h-4" /> Add
+                <Plus className="w-4 h-4" /> Adicionar
               </Button>
             )}
             {isEditing && interests.length >= 5 && (
@@ -99,7 +99,7 @@ export function AboutTab({
             <h3 className="text-2xl font-semibold tracking-tight">Formação</h3>
             {isEditing && educations.length < 5 && (
               <Button variant="outline" size="sm" onClick={onAddEducation} className="h-8 gap-1">
-                <Plus className="w-4 h-4" /> Add
+                <Plus className="w-4 h-4" /> Adicionar
               </Button>
             )}
             {isEditing && educations.length >= 5 && (
