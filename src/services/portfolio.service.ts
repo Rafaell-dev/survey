@@ -4,6 +4,8 @@ export interface PortfolioProfile {
   id: string;
   slug: string;
   name: string;
+  title?: string | null;
+  institution?: string | null;
   avatarUrl: string | null;
   aboutPt: string | null;
   aboutEn: string | null;

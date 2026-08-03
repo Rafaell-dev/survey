@@ -1,44 +1,142 @@
 "use client";
 
-import { useState } from "react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ProfileTab } from "./components/ProfileTab";
-import { CurriculumTab } from "./components/CurriculumTab";
-import { SurveysTab } from "./components/SurveysTab";
+import { useEffect, useState } from "react";
+import { PortfolioLayout } from "@/components/portfolio/PortfolioLayout";
+import { 
+  portfolioService, 
+  PortfolioProfile, 
+  PortfolioInterest, 
+  PortfolioEducation 
+} from "@/services/portfolio.service";
+import { Loader2 } from "lucide-react";
 
 export default function PortfolioDashboardPage() {
-  const [activeTab, setActiveTab] = useState("profile");
+  const [profile, setProfile] = useState<Partial<PortfolioProfile>>({});
+  const [interests, setInterests] = useState<PortfolioInterest[]>([]);
+  const [educations, setEducations] = useState<PortfolioEducation[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [profData, intData, eduData] = await Promise.all([
+          portfolioService.getProfile().catch(() => ({})),
+          portfolioService.getInterests().catch(() => []),
+          portfolioService.getEducations().catch(() => []),
+        ]);
+        setProfile(profData as Partial<PortfolioProfile>);
+        setInterests(intData);
+        setEducations(eduData);
+      } catch (error) {
+        console.error("Error fetching portfolio data", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+
+  const handleUpdateProfile = async (data: Partial<PortfolioProfile>) => {
+    // Optimistic update
+    setProfile(prev => ({ ...prev, ...data }));
+    try {
+      const updated = await portfolioService.updateProfile(data);
+      setProfile(updated);
+    } catch (error) {
+      console.error("Failed to update profile", error);
+    }
+  };
+
+  const handleAvatarUpload = async (file: File) => {
+    try {
+      const updated = await portfolioService.uploadAvatar(file);
+      setProfile(updated);
+    } catch (error) {
+      console.error("Failed to upload avatar", error);
+    }
+  };
+
+  const handleAddInterest = async () => {
+    try {
+      const newInterest = await portfolioService.createInterest({ namePt: "Novo Interesse", nameEn: "New Interest" });
+      setInterests([...interests, newInterest]);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const handleUpdateInterest = async (id: string, data: Partial<PortfolioInterest>) => {
+    setInterests(prev => prev.map(i => i.id === id ? { ...i, ...data } : i));
+    try {
+      await portfolioService.updateInterest(id, data);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const handleDeleteInterest = async (id: string) => {
+    setInterests(prev => prev.filter(i => i.id !== id));
+    try {
+      await portfolioService.deleteInterest(id);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const handleAddEducation = async () => {
+    try {
+      const newEdu = await portfolioService.createEducation({
+        degreePt: "Nova Formação",
+        degreeEn: "New Education",
+        institution: "Instituição",
+        year: new Date().getFullYear(),
+      });
+      setEducations([...educations, newEdu]);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const handleUpdateEducation = async (id: string, data: Partial<PortfolioEducation>) => {
+    setEducations(prev => prev.map(e => e.id === id ? { ...e, ...data } : e));
+    try {
+      await portfolioService.updateEducation(id, data);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const handleDeleteEducation = async (id: string) => {
+    setEducations(prev => prev.filter(e => e.id !== id));
+    try {
+      await portfolioService.deleteEducation(id);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-[50vh]">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
 
   return (
-    <div className="space-y-6 max-w-6xl mx-auto">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Portfólio Institucional</h1>
-        <p className="text-muted-foreground">
-          Gerencie o conteúdo do seu site acadêmico/profissional (público).
-        </p>
-      </div>
-
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid grid-cols-3 h-auto md:h-12 gap-1 mb-8">
-          <TabsTrigger value="profile">Perfil</TabsTrigger>
-          <TabsTrigger value="curriculum">Currículo</TabsTrigger>
-          <TabsTrigger value="surveys">Pesquisas</TabsTrigger>
-        </TabsList>
-        
-        <div className="bg-card border rounded-lg p-6 shadow-sm min-h-[500px]">
-          <TabsContent value="profile" className="m-0 focus-visible:outline-none">
-            <ProfileTab />
-          </TabsContent>
-          
-          <TabsContent value="curriculum" className="m-0 focus-visible:outline-none">
-            <CurriculumTab />
-          </TabsContent>
-          
-          <TabsContent value="surveys" className="m-0 focus-visible:outline-none">
-            <SurveysTab />
-          </TabsContent>
-        </div>
-      </Tabs>
-    </div>
+    <PortfolioLayout
+      isEditing={true}
+      profile={profile}
+      interests={interests}
+      educations={educations}
+      onUpdateProfile={handleUpdateProfile}
+      onAvatarUpload={handleAvatarUpload}
+      onAddInterest={handleAddInterest}
+      onUpdateInterest={handleUpdateInterest}
+      onDeleteInterest={handleDeleteInterest}
+      onAddEducation={handleAddEducation}
+      onUpdateEducation={handleUpdateEducation}
+      onDeleteEducation={handleDeleteEducation}
+    />
   );
 }
