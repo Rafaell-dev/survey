@@ -40,7 +40,7 @@ export default function PublicPortfolioPage() {
   profile.surveys = surveys || [];
 
   const ensinoPage = pages?.find((p: any) => p.slug === "ensino");
-  let teachingData = { graduacao: [], posGraduacao: [], workshops: [] };
+  let teachingData: any = { graduacao: [], posGraduacao: [], workshops: [] };
   if (ensinoPage?.contentPt) {
     try {
       teachingData = JSON.parse(ensinoPage.contentPt);
@@ -48,7 +48,7 @@ export default function PublicPortfolioPage() {
   }
 
   const ferramentasPage = pages?.find((p: any) => p.slug === "ferramentas");
-  let toolsData = { items: [] };
+  let toolsData: any = { items: [] };
   if (ferramentasPage?.contentPt) {
     try {
       const parsed = JSON.parse(ferramentasPage.contentPt);
