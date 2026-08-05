@@ -1,7 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { PortfolioLayout } from "@/components/portfolio/PortfolioLayout";
+import { TeachingData } from "@/components/portfolio/TeachingTab";
+import { ToolsData } from "@/components/portfolio/ToolsTab";
 import { 
   portfolioService, 
   PortfolioProfile, 
@@ -22,6 +25,12 @@ export default function PortfolioDashboardPage() {
   // Tracking deleted items for bulk save
   const [deletedInterests, setDeletedInterests] = useState<string[]>([]);
   const [deletedEducations, setDeletedEducations] = useState<string[]>([]);
+  
+  const [teachingData, setTeachingData] = useState<TeachingData>({ graduacao: [], posGraduacao: [], workshops: [] });
+  const [teachingPageId, setTeachingPageId] = useState<string | null>(null);
+
+  const [toolsData, setToolsData] = useState<ToolsData>({ items: [] });
+  const [toolsPageId, setToolsPageId] = useState<string | null>(null);
 
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
@@ -42,6 +51,40 @@ export default function PortfolioDashboardPage() {
           portfolioService.getInterests().catch(() => []),
           portfolioService.getEducations().catch(() => []),
         ]);
+        
+        try {
+          const page = await portfolioService.getPage('ensino');
+          setTeachingPageId(page.id);
+          if (page.contentPt) {
+            setTeachingData(JSON.parse(page.contentPt));
+          }
+        } catch (err: any) {
+          if (err.response?.status !== 404) {
+            console.error("Failed to load teaching page", err);
+          }
+        }
+
+        try {
+          const page = await portfolioService.getPage('ferramentas');
+          setToolsPageId(page.id);
+          if (page.contentPt) {
+            try {
+              const parsed = JSON.parse(page.contentPt);
+              // Legacy migration support
+              if (parsed.proprias || parsed.globais) {
+                const combined = [...(parsed.proprias || []), ...(parsed.globais || [])];
+                setToolsData({ introText: parsed.introText, items: combined });
+              } else {
+                setToolsData(parsed);
+              }
+            } catch(e) {}
+          }
+        } catch (err: any) {
+          if (err.response?.status !== 404) {
+            console.error("Failed to load tools page", err);
+          }
+        }
+
         setProfile(profData as Partial<PortfolioProfile>);
         setInterests(intData);
         setEducations(eduData);
@@ -70,14 +113,21 @@ export default function PortfolioDashboardPage() {
       const errorElement = document.querySelector('[aria-invalid="true"]');
       if (errorElement) {
         errorElement.scrollIntoView({ behavior: "smooth", block: "center" });
-        alert("Existem informações inválidas antes de salvar o portfólio.");
+        toast.error("Existem informações inválidas antes de salvar o portfólio.");
         return;
       }
 
       setIsSaving(true);
       try {
         // Bulk save logic
-        await portfolioService.updateProfile(profile);
+        const profilePayload = {
+          ...profile,
+          aboutPt: profile.aboutPt?.substring(0, 500),
+          aboutEn: profile.aboutEn?.substring(0, 500),
+          title: profile.title?.substring(0, 100),
+          institution: profile.institution?.substring(0, 100)
+        };
+        await portfolioService.updateProfile(profilePayload);
 
         // Process Interests
         for (const id of deletedInterests) {
@@ -85,7 +135,7 @@ export default function PortfolioDashboardPage() {
         }
         for (const int of interests) {
           if (int.id.startsWith("temp-")) {
-            await portfolioService.createInterest({ namePt: int.namePt, nameEn: int.nameEn });
+            await portfolioService.createInterest({ namePt: int.namePt, nameEn: int.nameEn, orderIndex: int.orderIndex });
           } else {
             await portfolioService.updateInterest(int.id, { namePt: int.namePt, nameEn: int.nameEn, orderIndex: int.orderIndex });
           }
@@ -97,10 +147,28 @@ export default function PortfolioDashboardPage() {
         }
         for (const edu of educations) {
           if (edu.id.startsWith("temp-")) {
-            await portfolioService.createEducation({ degreePt: edu.degreePt, degreeEn: edu.degreeEn, institution: edu.institution, year: edu.year });
+            await portfolioService.createEducation({ degreePt: edu.degreePt, degreeEn: edu.degreeEn, institution: edu.institution, year: edu.year, orderIndex: edu.orderIndex });
           } else {
             await portfolioService.updateEducation(edu.id, { degreePt: edu.degreePt, degreeEn: edu.degreeEn, institution: edu.institution, year: edu.year, orderIndex: edu.orderIndex });
           }
+        }
+
+        // Save Teaching Page
+        const contentPt = JSON.stringify(teachingData);
+        if (teachingPageId) {
+          await portfolioService.updatePage(teachingPageId, { contentPt });
+        } else {
+          const newPage = await portfolioService.createPage({ slug: 'ensino', titlePt: 'Ensino', titleEn: 'Teaching', contentPt });
+          setTeachingPageId(newPage.id);
+        }
+
+        // Save Tools Page
+        const toolsContentPt = JSON.stringify(toolsData);
+        if (toolsPageId) {
+          await portfolioService.updatePage(toolsPageId, { contentPt: toolsContentPt });
+        } else {
+          const newToolsPage = await portfolioService.createPage({ slug: 'ferramentas', titlePt: 'Ferramentas', titleEn: 'Tools', contentPt: toolsContentPt });
+          setToolsPageId(newToolsPage.id);
         }
 
         // Reload fresh data to get correct IDs
@@ -109,6 +177,7 @@ export default function PortfolioDashboardPage() {
           portfolioService.getInterests(),
           portfolioService.getEducations(),
         ]);
+        
         setProfile(profData as Partial<PortfolioProfile>);
         setInterests(intData);
         setEducations(eduData);
@@ -116,11 +185,10 @@ export default function PortfolioDashboardPage() {
         setDeletedEducations([]);
         
         setIsDirty(false);
-        // Alert handled by Sonner usually, but we use native for now
-        alert("Portfólio atualizado com sucesso.");
+        toast.success("Portfólio atualizado com sucesso.");
       } catch (error) {
         console.error("Failed to update profile", error);
-        alert("Não foi possível salvar. Tente novamente em alguns instantes.");
+        toast.error("Não foi possível salvar. Tente novamente em alguns instantes.");
       } finally {
         setIsSaving(false);
       }
@@ -131,6 +199,7 @@ export default function PortfolioDashboardPage() {
     try {
       const updated = await portfolioService.uploadAvatar(file);
       setProfile(updated);
+      setIsDirty(true);
     } catch (error) {
       console.error("Failed to upload avatar", error);
     }
@@ -191,6 +260,16 @@ export default function PortfolioDashboardPage() {
     setIsDirty(true);
   };
 
+  const handleUpdateTeaching = (data: TeachingData) => {
+    setTeachingData(data);
+    setIsDirty(true);
+  };
+
+  const handleUpdateTools = (data: ToolsData) => {
+    setToolsData(data);
+    setIsDirty(true);
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center items-center h-[50vh]">
@@ -216,10 +295,14 @@ export default function PortfolioDashboardPage() {
         onDeleteEducation={handleDeleteEducation}
         onReorderInterests={handleReorderInterests}
         onReorderEducations={handleReorderEducations}
+        teachingData={teachingData}
+        onUpdateTeaching={handleUpdateTeaching}
+        toolsData={toolsData}
+        onUpdateTools={handleUpdateTools}
       />
 
       {/* Floating Action Bar */}
-      <div className="fixed bottom-0 left-0 right-0 p-4 bg-background/80 backdrop-blur-md border-t shadow-lg z-50 flex items-center justify-between md:justify-end gap-4 px-4 sm:px-8">
+      <div className="fixed bottom-0 left-0 md:left-64 right-0 p-4 bg-background/80 backdrop-blur-md border-t shadow-lg z-30 flex items-center justify-between md:justify-end gap-4 px-4 sm:px-8">
         <Button 
           variant="outline" 
           asChild 

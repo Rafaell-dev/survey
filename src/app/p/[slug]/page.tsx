@@ -36,7 +36,30 @@ export default function PublicPortfolioPage() {
     );
   }
 
-  const { profile, interests, educations } = data;
+  const { profile, interests, educations, pages, surveys } = data;
+  profile.surveys = surveys || [];
+
+  const ensinoPage = pages?.find((p: any) => p.slug === "ensino");
+  let teachingData = { graduacao: [], posGraduacao: [], workshops: [] };
+  if (ensinoPage?.contentPt) {
+    try {
+      teachingData = JSON.parse(ensinoPage.contentPt);
+    } catch(e) {}
+  }
+
+  const ferramentasPage = pages?.find((p: any) => p.slug === "ferramentas");
+  let toolsData = { items: [] };
+  if (ferramentasPage?.contentPt) {
+    try {
+      const parsed = JSON.parse(ferramentasPage.contentPt);
+      if (parsed.proprias || parsed.globais) {
+        toolsData = { items: [...(parsed.proprias || []), ...(parsed.globais || [])] };
+        if (parsed.introText) toolsData.introText = parsed.introText;
+      } else {
+        toolsData = parsed;
+      }
+    } catch(e) {}
+  }
 
   return (
     <PortfolioLayout
@@ -44,6 +67,8 @@ export default function PublicPortfolioPage() {
       profile={profile}
       interests={interests || []}
       educations={educations || []}
+      teachingData={teachingData}
+      toolsData={toolsData}
     />
   );
 }

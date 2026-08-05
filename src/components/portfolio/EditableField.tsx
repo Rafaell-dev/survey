@@ -18,6 +18,7 @@ interface EditableFieldProps {
   validator?: z.ZodTypeAny;
   id?: string;
   autoSanitize?: boolean;
+  label?: string;
 }
 
 export function EditableField({
@@ -32,6 +33,7 @@ export function EditableField({
   validator,
   id,
   autoSanitize = true,
+  label,
 }: EditableFieldProps) {
   const [localValue, setLocalValue] = useState(value || "");
   const [error, setError] = useState<string | null>(null);
@@ -71,14 +73,21 @@ export function EditableField({
   if (!isEditing) {
     if (!localValue) return null;
     return (
-      <div className={cn("whitespace-pre-wrap", className)}>
-        {localValue}
+      <div className="w-full">
+        <div className={cn("whitespace-pre-wrap", className)}>
+          {localValue}
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="relative w-full group">
+    <div className="relative w-full group flex flex-col gap-0.5">
+      {label && (
+        <label htmlFor={id} className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold px-1">
+          {label}
+        </label>
+      )}
       <div className="relative">
         {multiline ? (
           <Textarea

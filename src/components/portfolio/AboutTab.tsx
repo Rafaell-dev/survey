@@ -1,9 +1,11 @@
 import { PortfolioEducation, PortfolioInterest, PortfolioProfile } from "@/services/portfolio.service";
 import { EditableField } from "./EditableField";
-import { Plus, Trash2, MapPin, Calendar, GripVertical } from "lucide-react";
+import { Plus, Trash2, MapPin, Calendar, GripVertical, Mail, Code, Briefcase, GraduationCap } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { portfolioProfileSchema, portfolioInterestSchema, portfolioEducationSchema } from "@/lib/portfolio-validators";
+import { ConfirmModal } from "@/components/ui/confirm-modal";
+import { portfolioProfileSchema, portfolioInterestSchema, portfolioEducationSchema, normalizeLattesUrl, normalizeLinkedinUrl, normalizeGithubUrl } from "@/lib/portfolio-validators";
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
+import { useState } from "react";
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 
@@ -33,7 +35,7 @@ function SortableEducationItem({ id, children, isEditing }: { id: string, childr
   const style = { transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.5 : 1 };
   
   return (
-    <div ref={setNodeRef} style={style} className={`relative group pl-6 border-l-2 border-primary/20 pb-4 ${isDragging ? 'z-50 bg-background/50' : ''}`}>
+    <div ref={setNodeRef} style={style} className={`relative group pb-4 ${isDragging ? 'z-50 bg-background/50' : ''}`}>
       {isEditing && (
         <div {...attributes} {...listeners} className="absolute -left-10 top-2 text-muted-foreground/30 hover:text-muted-foreground cursor-grab active:cursor-grabbing bg-background p-1 rounded">
           <GripVertical className="w-4 h-4" />
@@ -75,6 +77,8 @@ export function AboutTab({
   onReorderInterests,
   onReorderEducations,
 }: AboutTabProps) {
+  const [itemToDelete, setItemToDelete] = useState<{ type: 'interest' | 'education', id: string } | null>(null);
+
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
@@ -103,7 +107,7 @@ export function AboutTab({
     <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
       {/* Biografia */}
       <section>
-        <h2 className="text-3xl font-light mb-6 tracking-tight">Sobre</h2>
+        <h2 className="text-2xl font-semibold tracking-tight mb-6">Sobre</h2>
         <div className="text-lg leading-relaxed text-muted-foreground">
           <EditableField
             id="profile-about"
@@ -155,7 +159,7 @@ export function AboutTab({
                     </div>
                     {isEditing && (
                       <button 
-                        onClick={() => onDeleteInterest?.(interest.id)}
+                        onClick={() => setItemToDelete({ type: 'interest', id: interest.id })}
                         className="absolute right-0 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 p-1 text-destructive hover:bg-destructive/10 rounded transition-all z-10"
                         title="Remover"
                       >
@@ -191,22 +195,20 @@ export function AboutTab({
               <SortableContext items={educations.map(e => e.id)} strategy={verticalListSortingStrategy}>
                 {educations.map((edu) => (
                   <SortableEducationItem key={edu.id} id={edu.id} isEditing={isEditing}>
-                    <div className="absolute w-3 h-3 bg-primary rounded-full -left-[7px] top-2.5 ring-4 ring-background"></div>
-                    
-                    <div className="w-[95%]">
+                    <div className="w-full pr-10">
                       <EditableField
                         id={`edu-degree-${edu.id}`}
                         isEditing={isEditing}
                         value={edu.degreePt}
                         onSave={(v) => onUpdateEducation?.(edu.id, { degreePt: v })}
                         placeholder="Curso/Grau (ex: Doutorado em Linguística)"
-                        className="font-semibold text-lg p-1 -ml-1 w-full"
+                        className="font-semibold text-lg p-1 w-full"
                         validator={portfolioEducationSchema.shape.degreePt}
                         maxLength={100}
                       />
                       
                       <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-6 text-muted-foreground text-sm mt-2">
-                        <div className="flex items-center gap-1 flex-1">
+                        <div className="flex items-center gap-2 flex-1">
                           <MapPin className="h-4 w-4 shrink-0 text-primary/70" />
                           <EditableField
                             id={`edu-inst-${edu.id}`}
@@ -214,13 +216,13 @@ export function AboutTab({
                             value={edu.institution}
                             onSave={(v) => onUpdateEducation?.(edu.id, { institution: v })}
                             placeholder="Instituição (ex: Universidade de São Paulo)"
-                            className="p-1 -ml-1 w-full"
+                            className="p-1 w-full"
                             validator={portfolioEducationSchema.shape.institution}
-                            maxLength={100}
+                            maxLength={50}
                           />
                         </div>
                         
-                        <div className="flex items-center gap-1 w-32">
+                        <div className="flex items-center gap-2 w-32">
                           <Calendar className="h-4 w-4 shrink-0 text-primary/70" />
                           <EditableField
                             id={`edu-year-${edu.id}`}
@@ -228,20 +230,21 @@ export function AboutTab({
                             value={edu.year.toString()}
                             onSave={(v) => onUpdateEducation?.(edu.id, { year: parseInt(v) || new Date().getFullYear() })}
                             placeholder="Ano (ex: 2024)"
-                            className="p-1 -ml-1 w-full"
+                            className="p-1 w-full"
                             validator={portfolioEducationSchema.shape.year}
+                            maxLength={4}
                           />
                         </div>
                       </div>
                     </div>
 
                     {isEditing && (
-                      <button 
-                        onClick={() => onDeleteEducation?.(edu.id)}
-                        className="absolute right-0 top-0 opacity-0 group-hover:opacity-100 p-2 text-destructive hover:bg-destructive/10 rounded transition-all z-10"
-                        title="Remover formação"
+                      <button
+                        onClick={() => setItemToDelete({ type: 'education', id: edu.id })}
+                        className="opacity-0 group-hover:opacity-100 p-2 text-destructive hover:bg-destructive/10 rounded transition-all shrink-0 mt-1"
+                        title="Remover"
                       >
-                        <Trash2 className="w-5 h-5" />
+                        <Trash2 className="w-4 h-4" />
                       </button>
                     )}
                   </SortableEducationItem>
@@ -254,6 +257,162 @@ export function AboutTab({
           </div>
         </section>
       </div>
+
+      {/* Contato */}
+      <section className="pt-8 border-t border-border/50">
+        <h2 className="text-2xl font-semibold tracking-tight mb-6">Contato</h2>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+          {/* Email e Redes */}
+          <div className="space-y-6">
+            <h3 className="text-lg font-medium text-muted-foreground">Redes e Email</h3>
+            
+            <div className="flex flex-col gap-4">
+              {/* Email */}
+              {(!isEditing && profile.email) || isEditing ? (
+                <div className="flex items-center gap-3 group">
+                  <div className="p-2 bg-primary/10 rounded-full text-primary shrink-0">
+                    <Mail className="w-5 h-5" />
+                  </div>
+                  <div className="flex-1">
+                    <EditableField
+                      id="profile-email-contact"
+                      isEditing={isEditing}
+                      value={profile.email || ""}
+                      onSave={(v) => onUpdateProfile({ email: v })}
+                      placeholder="Seu endereço de email (ex: prof@email.com)"
+                      className="font-medium text-foreground w-full"
+                      validator={portfolioProfileSchema.shape.email}
+                      maxLength={100}
+                    />
+                  </div>
+                </div>
+              ) : null}
+
+              {/* Lattes */}
+              {(!isEditing && profile.lattesUrl) || isEditing ? (
+                <div className="flex items-center gap-3 group">
+                  <div className="p-2 bg-primary/10 rounded-full text-primary shrink-0">
+                    <GraduationCap className="w-5 h-5" />
+                  </div>
+                  <div className="flex-1 overflow-hidden">
+                    {isEditing ? (
+                      <EditableField
+                        id="profile-lattes-contact"
+                        isEditing={isEditing}
+                        value={profile.lattesUrl || ""}
+                        onSave={(v) => onUpdateProfile({ lattesUrl: normalizeLattesUrl(v) })}
+                        placeholder="Cole o link do seu Lattes aqui..."
+                        className="text-sm font-medium w-full"
+                        validator={portfolioProfileSchema.shape.lattesUrl}
+                        maxLength={200}
+                      />
+                    ) : (
+                      <a href={profile.lattesUrl} target="_blank" rel="noopener noreferrer" className="font-medium text-primary hover:underline truncate block">
+                        Currículo Lattes
+                      </a>
+                    )}
+                  </div>
+                </div>
+              ) : null}
+
+              {/* LinkedIn */}
+              {(!isEditing && profile.linkedinUrl) || isEditing ? (
+                <div className="flex items-center gap-3 group">
+                  <div className="p-2 bg-primary/10 rounded-full text-primary shrink-0">
+                    <Briefcase className="w-5 h-5" />
+                  </div>
+                  <div className="flex-1 overflow-hidden">
+                    {isEditing ? (
+                      <EditableField
+                        id="profile-linkedin-contact"
+                        isEditing={isEditing}
+                        value={profile.linkedinUrl || ""}
+                        onSave={(v) => onUpdateProfile({ linkedinUrl: normalizeLinkedinUrl(v) })}
+                        placeholder="Cole o link do seu LinkedIn aqui..."
+                        className="text-sm font-medium w-full"
+                        validator={portfolioProfileSchema.shape.linkedinUrl}
+                        maxLength={200}
+                      />
+                    ) : (
+                      <a href={profile.linkedinUrl} target="_blank" rel="noopener noreferrer" className="font-medium text-primary hover:underline truncate block">
+                        LinkedIn
+                      </a>
+                    )}
+                  </div>
+                </div>
+              ) : null}
+
+              {/* GitHub */}
+              {(!isEditing && profile.githubUrl) || isEditing ? (
+                <div className="flex items-center gap-3 group">
+                  <div className="p-2 bg-primary/10 rounded-full text-primary shrink-0">
+                    <Code className="w-5 h-5" />
+                  </div>
+                  <div className="flex-1 overflow-hidden">
+                    {isEditing ? (
+                      <EditableField
+                        id="profile-github-contact"
+                        isEditing={isEditing}
+                        value={profile.githubUrl || ""}
+                        onSave={(v) => onUpdateProfile({ githubUrl: normalizeGithubUrl(v) })}
+                        placeholder="Cole o link do seu GitHub aqui..."
+                        className="text-sm font-medium w-full"
+                        validator={portfolioProfileSchema.shape.githubUrl}
+                        maxLength={200}
+                      />
+                    ) : (
+                      <a href={profile.githubUrl} target="_blank" rel="noopener noreferrer" className="font-medium text-primary hover:underline truncate block">
+                        GitHub
+                      </a>
+                    )}
+                  </div>
+                </div>
+              ) : null}
+            </div>
+          </div>
+
+          {/* Endereço */}
+          {(!isEditing && profile.address) || isEditing ? (
+            <div className="space-y-6">
+              <h3 className="text-lg font-medium text-muted-foreground">Localização / Endereço</h3>
+              
+              <div className="flex items-start gap-3">
+                <div className="p-2 bg-primary/10 rounded-full text-primary shrink-0 mt-1">
+                  <MapPin className="w-5 h-5" />
+                </div>
+                <div className="flex-1">
+                  <EditableField
+                    id="profile-address"
+                    isEditing={isEditing}
+                    value={profile.address || ""}
+                    onSave={(v) => onUpdateProfile({ address: v })}
+                    multiline
+                    placeholder="Informe seu endereço completo (Instituição, Sala, CEP, Cidade, etc)..."
+                    className="w-full text-sm leading-relaxed text-muted-foreground"
+                    validator={portfolioProfileSchema.shape.address}
+                    maxLength={300}
+                  />
+                </div>
+              </div>
+            </div>
+          ) : null}
+        </div>
+      </section>
+
+      <ConfirmModal
+        isOpen={!!itemToDelete}
+        onClose={() => setItemToDelete(null)}
+        onConfirm={() => {
+          if (itemToDelete?.type === 'interest') {
+            onDeleteInterest?.(itemToDelete.id);
+          } else if (itemToDelete?.type === 'education') {
+            onDeleteEducation?.(itemToDelete.id);
+          }
+        }}
+        title="Remover Item"
+        description="Tem certeza que deseja remover este item? Esta ação não pode ser desfeita."
+      />
     </div>
   );
 }

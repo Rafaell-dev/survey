@@ -17,12 +17,14 @@ export interface PortfolioProfile {
   showLinkedin: boolean;
   email: string | null;
   showEmail: boolean;
+  address: string | null;
 }
 
 export interface PortfolioInterest {
   id: string;
   namePt: string;
   nameEn: string;
+  orderIndex: number;
 }
 
 export interface PortfolioEducation {
@@ -31,6 +33,7 @@ export interface PortfolioEducation {
   degreeEn: string;
   institution: string;
   year: number;
+  orderIndex: number;
 }
 
 export interface PortfolioEvent {
@@ -190,6 +193,17 @@ export const portfolioService = {
   },
   async deleteTool(id: string): Promise<void> {
     await api.delete(`/portfolio/admin/tools/${id}`);
+  },
+
+  // ==========================================
+  // SURVEYS (Integração)
+  // ==========================================
+  async getPortfolioSurveys(): Promise<any[]> {
+    const res = await api.get('/portfolio/admin/surveys');
+    return res.data;
+  },
+  async toggleSurveyHighlight(id: string, isHighlighted: boolean): Promise<void> {
+    await api.patch(`/portfolio/admin/surveys/${id}/highlight`, { isHighlighted });
   }
 };
 

@@ -54,6 +54,15 @@ export function normalizeLattesUrl(url: string): string {
   return clean;
 }
 
+export function normalizeCourseUrl(url: string): string {
+  if (!url) return "";
+  let clean = url.trim();
+  if (!clean.startsWith('http://') && !clean.startsWith('https://')) {
+    clean = "https://" + clean;
+  }
+  return clean;
+}
+
 // =====================================
 // SCHEMAS DE VALIDAÇÃO (ZOD)
 // =====================================
@@ -91,6 +100,11 @@ export const portfolioProfileSchema = z.object({
     .or(z.literal(""))
     .nullable()
     .optional(),
+  address: z.string()
+    .max(300, "O endereço pode ter no máximo 300 caracteres.")
+    .or(z.literal(""))
+    .nullable()
+    .optional(),
   lattesUrl: z.string()
     .regex(/^https:\/\/lattes\.cnpq\.br\/[0-9]+$/, "Informe uma URL válida do Currículo Lattes.")
     .or(z.literal(""))
@@ -103,6 +117,31 @@ export const portfolioInterestSchema = z.object({
     .min(2, "O interesse deve ter no mínimo 2 caracteres.")
     .max(50, "O interesse pode ter no máximo 50 caracteres.")
     .refine(v => v.trim().length > 0, "O interesse não pode ser vazio.")
+});
+
+export const portfolioEventSchema = z.object({
+  titlePt: z.string().min(1, "O título é obrigatório").max(100),
+  titleEn: z.string().min(1, "Title is required").max(100),
+  date: z.date(),
+  institution: z.string().max(100).optional().nullable(),
+  slidesUrl: z.string().url("URL de slides inválida").max(200).optional().nullable().or(z.literal(""))
+});
+
+export const portfolioCourseSchema = z.object({
+  name: z.string().min(1, "O nome do curso/disciplina é obrigatório").max(100),
+  url: z.string().url("URL inválida").max(200).optional().nullable().or(z.literal(""))
+});
+
+export const teachingIntroSchema = z.string()
+  .max(500, "A descrição não pode ultrapassar 500 caracteres.")
+  .optional()
+  .nullable();
+
+export const portfolioToolItemSchema = z.object({
+  name: z.string().min(1, "O nome da ferramenta é obrigatório").max(100),
+  url: z.string().url("URL inválida").max(200),
+  description: z.string().max(200, "Descrição no máximo 200 caracteres").optional().nullable().or(z.literal("")),
+  imageUrl: z.string().optional().nullable().or(z.literal(""))
 });
 
 export const portfolioEducationSchema = z.object({

@@ -93,6 +93,7 @@ export function PortfolioSidebar({ profile, isEditing, onUpdate, onAvatarUpload 
       <div className="w-full space-y-1">
         <EditableField
           id="profile-name"
+          label="Nome Completo"
           isEditing={isEditing}
           value={profile.name || ""}
           onSave={(v) => onUpdate({ name: v })}
@@ -103,116 +104,65 @@ export function PortfolioSidebar({ profile, isEditing, onUpdate, onAvatarUpload 
         />
         <EditableField
           id="profile-title"
+          label="Cargo / Título"
           isEditing={isEditing}
           value={profile.title || ""}
           onSave={(v) => onUpdate({ title: v })}
-          placeholder="Seu Cargo / Título (ex: Professora de Linguística)"
-          className="text-lg text-muted-foreground text-center md:text-left"
+          placeholder="Seu cargo (ex: Professora Doutora)"
+          className="text-lg font-medium text-muted-foreground text-center md:text-left"
           validator={portfolioProfileSchema.shape.title}
           maxLength={100}
         />
         <EditableField
           id="profile-institution"
+          label="Instituição Principal"
           isEditing={isEditing}
           value={profile.institution || ""}
           onSave={(v) => onUpdate({ institution: v })}
-          placeholder="Instituição (ex: Universidade de São Paulo)"
-          className="text-md text-muted-foreground text-center md:text-left"
+          placeholder="Sua instituição (ex: Unicamp)"
+          className="text-muted-foreground text-center md:text-left"
           validator={portfolioProfileSchema.shape.institution}
-          maxLength={100}
+          maxLength={50}
         />
+        {isEditing && (
+          <EditableField
+            id="profile-slug"
+            label="Link Público (Slug)"
+            isEditing={isEditing}
+            value={profile.slug || ""}
+            onSave={(v) => onUpdate({ slug: v.toLowerCase().replace(/[^a-z0-9-]/g, '-') })}
+            placeholder="seu-link-aqui"
+            className="text-sm text-primary font-medium text-center md:text-left mt-2"
+            validator={portfolioProfileSchema.shape.slug}
+            maxLength={100}
+          />
+        )}
       </div>
 
-      {/* Social Links */}
-      <div className="w-full">
-        {!isEditing ? (
-          <div className="flex flex-wrap gap-4 justify-center md:justify-start text-primary">
-            {profile.email && profile.showEmail && (
-              <a href={`mailto:${profile.email}`} target="_blank" rel="noopener noreferrer" className="hover:opacity-80 transition-opacity">
-                <Mail className="w-6 h-6" />
-              </a>
-            )}
-            {profile.lattesUrl && profile.showLattes && (
-              <a href={profile.lattesUrl} target="_blank" rel="noopener noreferrer" className="hover:opacity-80 transition-opacity">
-                <GraduationCap className="w-6 h-6" />
-              </a>
-            )}
-            {profile.githubUrl && profile.showGithub && (
-              <a href={profile.githubUrl} target="_blank" rel="noopener noreferrer" className="hover:opacity-80 transition-opacity">
-                <Code className="w-6 h-6" />
-              </a>
-            )}
-            {profile.linkedinUrl && profile.showLinkedin && (
-              <a href={profile.linkedinUrl} target="_blank" rel="noopener noreferrer" className="hover:opacity-80 transition-opacity">
-                <Briefcase className="w-6 h-6" />
-              </a>
-            )}
-          </div>
-        ) : (
-          <div className="space-y-3 w-full bg-muted/30 p-4 rounded-md border border-dashed">
-            <h4 className="text-sm font-semibold mb-2">Links & Redes (Visíveis)</h4>
-            
-            <div className="flex items-center gap-2">
-              <Mail className="w-4 h-4 text-muted-foreground shrink-0 mt-2" />
-              <div className="flex-1">
-                <EditableField
-                  id="profile-email"
-                  isEditing={isEditing}
-                  value={profile.email || ""}
-                  onSave={(v) => onUpdate({ email: v })}
-                  placeholder="Email..."
-                  className="h-8 text-sm"
-                  validator={portfolioProfileSchema.shape.email}
-                />
-              </div>
-            </div>
-            
-            <div className="flex items-center gap-2">
-              <GraduationCap className="w-4 h-4 text-muted-foreground shrink-0 mt-2" />
-              <div className="flex-1">
-                <EditableField
-                  id="profile-lattes"
-                  isEditing={isEditing}
-                  value={profile.lattesUrl || ""}
-                  onSave={(v) => onUpdate({ lattesUrl: normalizeLattesUrl(v) })}
-                  placeholder="Link Currículo Lattes..."
-                  className="h-8 text-sm"
-                  validator={portfolioProfileSchema.shape.lattesUrl}
-                />
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <Code className="w-4 h-4 text-muted-foreground shrink-0 mt-2" />
-              <div className="flex-1">
-                <EditableField
-                  id="profile-github"
-                  isEditing={isEditing}
-                  value={profile.githubUrl || ""}
-                  onSave={(v) => onUpdate({ githubUrl: normalizeGithubUrl(v) })}
-                  placeholder="Link GitHub..."
-                  className="h-8 text-sm"
-                  validator={portfolioProfileSchema.shape.githubUrl}
-                />
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <Briefcase className="w-4 h-4 text-muted-foreground shrink-0 mt-2" />
-              <div className="flex-1">
-                <EditableField
-                  id="profile-linkedin"
-                  isEditing={isEditing}
-                  value={profile.linkedinUrl || ""}
-                  onSave={(v) => onUpdate({ linkedinUrl: normalizeLinkedinUrl(v) })}
-                  placeholder="Link LinkedIn..."
-                  className="h-8 text-sm"
-                  validator={portfolioProfileSchema.shape.linkedinUrl}
-                />
-              </div>
-            </div>
-          </div>
-        )}
+      {/* Social Links (View Only) */}
+      <div className="w-full mt-4">
+        <div className="flex flex-wrap gap-4 justify-center md:justify-start text-primary">
+          {profile.email && (
+            <a href={`mailto:${profile.email}`} target="_blank" rel="noopener noreferrer" className="hover:opacity-80 transition-opacity">
+              <Mail className="w-6 h-6" />
+            </a>
+          )}
+          {profile.lattesUrl && (
+            <a href={profile.lattesUrl} target="_blank" rel="noopener noreferrer" className="hover:opacity-80 transition-opacity">
+              <GraduationCap className="w-6 h-6" />
+            </a>
+          )}
+          {profile.githubUrl && (
+            <a href={profile.githubUrl} target="_blank" rel="noopener noreferrer" className="hover:opacity-80 transition-opacity">
+              <Code className="w-6 h-6" />
+            </a>
+          )}
+          {profile.linkedinUrl && (
+            <a href={profile.linkedinUrl} target="_blank" rel="noopener noreferrer" className="hover:opacity-80 transition-opacity">
+              <Briefcase className="w-6 h-6" />
+            </a>
+          )}
+        </div>
       </div>
     </aside>
   );

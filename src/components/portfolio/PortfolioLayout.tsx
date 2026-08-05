@@ -1,6 +1,9 @@
 import { PortfolioEducation, PortfolioInterest, PortfolioProfile } from "@/services/portfolio.service";
 import { PortfolioSidebar } from "./PortfolioSidebar";
 import { AboutTab } from "./AboutTab";
+import { TeachingTab, TeachingData } from "./TeachingTab";
+import { ToolsTab, ToolsData } from "./ToolsTab";
+import { SurveysTab } from "./SurveysTab";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 
@@ -17,6 +20,12 @@ interface PortfolioLayoutProps {
   onAddEducation?: () => void;
   onUpdateEducation?: (id: string, data: Partial<PortfolioEducation>) => void;
   onDeleteEducation?: (id: string) => void;
+  onReorderInterests?: (newOrder: PortfolioInterest[]) => void;
+  onReorderEducations?: (newOrder: PortfolioEducation[]) => void;
+  teachingData?: TeachingData;
+  onUpdateTeaching?: (data: TeachingData) => void;
+  toolsData?: ToolsData;
+  onUpdateTools?: (data: ToolsData) => void;
 }
 
 export function PortfolioLayout({
@@ -32,14 +41,20 @@ export function PortfolioLayout({
   onAddEducation,
   onUpdateEducation,
   onDeleteEducation,
+  onReorderInterests,
+  onReorderEducations,
+  teachingData,
+  onUpdateTeaching,
+  toolsData,
+  onUpdateTools,
 }: PortfolioLayoutProps) {
   const [activeTab, setActiveTab] = useState("sobre");
 
   const tabs = [
     { id: "sobre", label: "Sobre" },
-    { id: "aba2", label: "Aba 2" },
-    { id: "aba3", label: "Aba 3" },
-    { id: "aba4", label: "Aba 4" },
+    { id: "ensino", label: "Ensino" },
+    { id: "pesquisas", label: "Pesquisas" },
+    { id: "ferramentas", label: "Ferramentas & Projetos" },
   ];
 
   return (
@@ -71,7 +86,7 @@ export function PortfolioLayout({
       </header>
 
       {/* Main Content Area */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <main className={cn("max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12", isEditing ? "pb-48" : "pb-12")}>
         <div className="flex flex-col md:flex-row gap-12 lg:gap-24">
           
           {/* Sidebar */}
@@ -97,10 +112,35 @@ export function PortfolioLayout({
                 onAddEducation={onAddEducation}
                 onUpdateEducation={onUpdateEducation}
                 onDeleteEducation={onDeleteEducation}
+                onReorderInterests={onReorderInterests}
+                onReorderEducations={onReorderEducations}
+              />
+            )}
+
+            {activeTab === "ensino" && (
+              <TeachingTab 
+                data={teachingData || { graduacao: [], posGraduacao: [], workshops: [] }}
+                isEditing={isEditing}
+                onUpdate={onUpdateTeaching || (() => {})}
+              />
+            )}
+
+            {activeTab === "ferramentas" && (
+              <ToolsTab 
+                data={toolsData || { items: [] }}
+                isEditing={isEditing}
+                onUpdate={onUpdateTools || (() => {})}
+              />
+            )}
+
+            {activeTab === "pesquisas" && (
+              <SurveysTab 
+                publicSurveys={profile.surveys} // Passado apenas no modo público, mas SurveysTab pode receber undef/empty no modo edição
+                isEditing={isEditing}
               />
             )}
             
-            {activeTab !== "sobre" && (
+            {activeTab !== "sobre" && activeTab !== "ensino" && activeTab !== "ferramentas" && activeTab !== "pesquisas" && (
               <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
                 <section>
                   <h2 className="text-3xl font-light mb-6 tracking-tight capitalize">
