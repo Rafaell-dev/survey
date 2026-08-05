@@ -2,7 +2,7 @@ import { PortfolioProfile } from "@/services/portfolio.service";
 import { EditableField } from "./EditableField";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Code, Briefcase, Mail, GraduationCap, Camera } from "lucide-react";
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { portfolioProfileSchema, normalizeGithubUrl, normalizeLinkedinUrl, normalizeLattesUrl } from "@/lib/portfolio-validators";
 import { AlertCircle } from "lucide-react";
 
@@ -15,8 +15,14 @@ interface PortfolioSidebarProps {
 
 export function PortfolioSidebar({ profile, isEditing, onUpdate, onAvatarUpload }: PortfolioSidebarProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
-
+  const [localThemeColor, setLocalThemeColor] = useState(profile.themeColor || "#000000");
   const [avatarError, setAvatarError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (profile.themeColor) {
+      setLocalThemeColor(profile.themeColor);
+    }
+  }, [profile.themeColor]);
 
   const handleAvatarClick = () => {
     if (isEditing && fileInputRef.current) {
@@ -144,12 +150,13 @@ export function PortfolioSidebar({ profile, isEditing, onUpdate, onAvatarUpload 
               <input
                 id="theme-color"
                 type="color"
-                value={profile.themeColor || "#000000"}
-                onChange={(e) => onUpdate({ themeColor: e.target.value })}
+                value={localThemeColor}
+                onChange={(e) => setLocalThemeColor(e.target.value)}
+                onBlur={() => onUpdate({ themeColor: localThemeColor })}
                 className="w-8 h-8 rounded cursor-pointer border-0 p-0 bg-transparent"
                 title="Escolher cor de destaque"
               />
-              <span className="text-xs text-muted-foreground uppercase">{profile.themeColor || "#000000"}</span>
+              <span className="text-xs text-muted-foreground uppercase">{localThemeColor}</span>
             </div>
           </div>
         )}
