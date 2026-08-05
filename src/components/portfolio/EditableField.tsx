@@ -54,7 +54,7 @@ export function EditableField({
     if (validator) {
       const result = validator.safeParse(finalValue);
       if (!result.success) {
-        setError(result.error.errors[0].message);
+        setError((result.error as any).errors[0]?.message || "Valor inválido");
         return;
       }
     }
