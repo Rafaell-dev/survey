@@ -157,27 +157,24 @@ export function PortfolioSidebar({ profile, isEditing, onUpdate, onAvatarUpload 
 
       {/* Social Links (View Only) */}
       <div className="w-full mt-4">
-        <div 
-          className="flex flex-wrap gap-4 justify-center md:justify-start"
-          style={profile.themeColor ? { color: "var(--custom-primary)" } : { color: "hsl(var(--primary))" }}
-        >
+        <div className="flex flex-wrap gap-4 justify-center md:justify-start text-primary">
           {profile.email && (
-            <a href={`mailto:${profile.email}`} target="_blank" rel="noopener noreferrer" className="hover:opacity-80 transition-opacity">
+            <a href={`mailto:${profile.email}`} target="_blank" rel="noopener noreferrer" className="hover:text-primary/80 transition-colors">
               <Mail className="w-6 h-6" />
             </a>
           )}
           {profile.lattesUrl && (
-            <a href={profile.lattesUrl} target="_blank" rel="noopener noreferrer" className="hover:opacity-80 transition-opacity">
+            <a href={profile.lattesUrl} target="_blank" rel="noopener noreferrer" className="hover:text-primary/80 transition-colors">
               <GraduationCap className="w-6 h-6" />
             </a>
           )}
           {profile.githubUrl && (
-            <a href={profile.githubUrl} target="_blank" rel="noopener noreferrer" className="hover:opacity-80 transition-opacity">
+            <a href={profile.githubUrl} target="_blank" rel="noopener noreferrer" className="hover:text-primary/80 transition-colors">
               <Code className="w-6 h-6" />
             </a>
           )}
           {profile.linkedinUrl && (
-            <a href={profile.linkedinUrl} target="_blank" rel="noopener noreferrer" className="hover:opacity-80 transition-opacity">
+            <a href={profile.linkedinUrl} target="_blank" rel="noopener noreferrer" className="hover:text-primary/80 transition-colors">
               <Briefcase className="w-6 h-6" />
             </a>
           )}

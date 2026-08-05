@@ -5,7 +5,7 @@ import { TeachingTab, TeachingData } from "./TeachingTab";
 import { ToolsTab, ToolsData } from "./ToolsTab";
 import { SurveysTab } from "./SurveysTab";
 import { useState } from "react";
-import { cn } from "@/lib/utils";
+import { cn, hexToHsl } from "@/lib/utils";
 
 interface PortfolioLayoutProps {
   profile: Partial<PortfolioProfile>;
@@ -60,7 +60,7 @@ export function PortfolioLayout({
   return (
     <div 
       className="min-h-screen bg-background" 
-      style={profile.themeColor ? { "--custom-primary": profile.themeColor } as React.CSSProperties : undefined}
+      style={profile.themeColor ? { "--primary": hexToHsl(profile.themeColor) } as React.CSSProperties : undefined}
     >
       {/* Top Header / Navigation */}
       <header className="w-full border-b sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -77,10 +77,9 @@ export function PortfolioLayout({
                 className={cn(
                   "px-3 py-2 text-sm font-medium transition-colors whitespace-nowrap",
                   activeTab === tab.id
-                    ? "border-b-2"
+                    ? "text-primary border-b-2 border-primary"
                     : "text-muted-foreground hover:text-foreground"
                 )}
-                style={activeTab === tab.id && profile.themeColor ? { color: "var(--custom-primary)", borderColor: "var(--custom-primary)" } : activeTab === tab.id ? { color: "hsl(var(--primary))", borderColor: "hsl(var(--primary))" } : undefined}
               >
                 {tab.label}
               </button>
