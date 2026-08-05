@@ -308,7 +308,7 @@ export function AboutTab({
                         maxLength={200}
                       />
                     ) : (
-                      <a href={profile.lattesUrl} target="_blank" rel="noopener noreferrer" className="font-medium text-primary hover:underline truncate block">
+                      <a href={profile.lattesUrl || undefined} target="_blank" rel="noopener noreferrer" className="font-medium text-primary hover:underline truncate block">
                         Currículo Lattes
                       </a>
                     )}
@@ -335,7 +335,7 @@ export function AboutTab({
                         maxLength={200}
                       />
                     ) : (
-                      <a href={profile.linkedinUrl} target="_blank" rel="noopener noreferrer" className="font-medium text-primary hover:underline truncate block">
+                      <a href={profile.linkedinUrl || undefined} target="_blank" rel="noopener noreferrer" className="font-medium text-primary hover:underline truncate block">
                         LinkedIn
                       </a>
                     )}
@@ -362,7 +362,7 @@ export function AboutTab({
                         maxLength={200}
                       />
                     ) : (
-                      <a href={profile.githubUrl} target="_blank" rel="noopener noreferrer" className="font-medium text-primary hover:underline truncate block">
+                      <a href={profile.githubUrl || undefined} target="_blank" rel="noopener noreferrer" className="font-medium text-primary hover:underline truncate block">
                         GitHub
                       </a>
                     )}
