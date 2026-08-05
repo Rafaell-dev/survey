@@ -19,6 +19,7 @@ interface EditableFieldProps {
   id?: string;
   autoSanitize?: boolean;
   label?: string;
+  parseMarkdownLinks?: boolean;
 }
 
 export function EditableField({
@@ -34,6 +35,7 @@ export function EditableField({
   id,
   autoSanitize = true,
   label,
+  parseMarkdownLinks = false,
 }: EditableFieldProps) {
   const [localValue, setLocalValue] = useState(value || "");
   const [error, setError] = useState<string | null>(null);
@@ -72,10 +74,37 @@ export function EditableField({
 
   if (!isEditing) {
     if (!localValue) return null;
+
+    const renderValue = () => {
+      if (!parseMarkdownLinks) return localValue;
+      
+      const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
+      const parts = [];
+      let lastIndex = 0;
+      let match;
+      
+      while ((match = linkRegex.exec(localValue)) !== null) {
+        if (match.index > lastIndex) {
+          parts.push(localValue.substring(lastIndex, match.index));
+        }
+        parts.push(
+          <a key={match.index} href={match[2]} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium">
+            {match[1]}
+          </a>
+        );
+        lastIndex = linkRegex.lastIndex;
+      }
+      if (lastIndex < localValue.length) {
+        parts.push(localValue.substring(lastIndex));
+      }
+      
+      return parts.length > 0 ? parts : localValue;
+    };
+
     return (
       <div className="w-full">
         <div className={cn("whitespace-pre-wrap", className)}>
-          {localValue}
+          {renderValue()}
         </div>
       </div>
     );

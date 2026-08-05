@@ -120,6 +120,7 @@ export function AboutTab({
             placeholder="Escreva sua biografia aqui (máx 500 caracteres)..."
             className="w-full text-justify"
             validator={portfolioProfileSchema.shape.aboutPt}
+            parseMarkdownLinks={true}
           />
         </div>
       </section>
