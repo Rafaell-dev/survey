@@ -81,8 +81,8 @@ export function TeachingTab({ data, isEditing, onUpdate }: TeachingTabProps) {
   const handleDragEnd = (event: DragEndEvent, category: keyof TeachingData) => {
     const { active, over } = event;
     if (over && active.id !== over.id) {
-      const items = data[category];
-      const oldIndex = items.findIndex(i => i.id === active.id);
+      const items = (data[category] as TeachingCourse[]) || [];
+      const oldIndex = items.findIndex((i: TeachingCourse) => i.id === active.id);
       const newIndex = items.findIndex(i => i.id === over.id);
       const newArray = arrayMove(items, oldIndex, newIndex).map((item, index) => ({ ...item, orderIndex: index }));
       onUpdate({ ...data, [category]: newArray });
@@ -94,13 +94,13 @@ export function TeachingTab({ data, isEditing, onUpdate }: TeachingTabProps) {
       id: `temp-${Date.now()}`,
       name: "Novo Curso",
       url: "",
-      orderIndex: data[category].length
+      orderIndex: ((data[category] as TeachingCourse[]) || []).length
     };
-    onUpdate({ ...data, [category]: [...data[category], newCourse] });
+    onUpdate({ ...data, [category]: [...((data[category] as TeachingCourse[]) || []), newCourse] });
   };
 
   const handleUpdateItem = (category: keyof TeachingData, id: string, changes: Partial<TeachingCourse>) => {
-    const newArray = data[category].map(c => c.id === id ? { ...c, ...changes } : c);
+    const newArray = ((data[category] as TeachingCourse[]) || []).map((c: TeachingCourse) => c.id === id ? { ...c, ...changes } : c);
     onUpdate({ ...data, [category]: newArray });
   };
 
@@ -110,14 +110,14 @@ export function TeachingTab({ data, isEditing, onUpdate }: TeachingTabProps) {
 
   const confirmDelete = () => {
     if (itemToDelete) {
-      const newArray = data[itemToDelete.category].filter(c => c.id !== itemToDelete.id);
+      const newArray = ((data[itemToDelete.category] as TeachingCourse[]) || []).filter((c: TeachingCourse) => c.id !== itemToDelete.id);
       onUpdate({ ...data, [itemToDelete.category]: newArray });
       setItemToDelete(null);
     }
   };
 
   const renderSection = (title: string, category: keyof TeachingData) => {
-    const items = data[category] || [];
+    const items = (data[category] as TeachingCourse[]) || [];
     return (
       <section>
         <div className="flex items-center justify-between mb-6">

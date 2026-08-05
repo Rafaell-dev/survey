@@ -18,6 +18,7 @@ export interface PortfolioProfile {
   email: string | null;
   showEmail: boolean;
   address: string | null;
+  surveys?: any[];
 }
 
 export interface PortfolioInterest {
