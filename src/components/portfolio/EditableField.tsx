@@ -2,7 +2,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { useEffect, useState, useRef } from "react";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, Link as LinkIcon } from "lucide-react";
 import { z } from "zod";
 import { sanitizeText } from "@/lib/portfolio-validators";
 
@@ -41,6 +41,33 @@ export function EditableField({
   const [error, setError] = useState<string | null>(null);
   const [showSuccess, setShowSuccess] = useState(false);
   const successTimeoutRef = useRef<NodeJS.Timeout>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const handleInsertLink = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (!textareaRef.current) return;
+    
+    const textarea = textareaRef.current;
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    
+    const selectedText = localValue.substring(start, end) || "Texto do Link";
+    const before = localValue.substring(0, start);
+    const after = localValue.substring(end);
+    
+    const insertion = `[${selectedText}](https://)`;
+    const newValue = before + insertion + after;
+    
+    setLocalValue(newValue);
+    
+    setTimeout(() => {
+      textarea.focus();
+      textarea.setSelectionRange(
+        start + selectedText.length + 3, 
+        start + selectedText.length + 11
+      );
+    }, 0);
+  };
 
   useEffect(() => {
     setLocalValue(value || "");
@@ -119,25 +146,39 @@ export function EditableField({
       )}
       <div className="relative">
         {multiline ? (
-          <Textarea
-            id={id}
-            value={localValue}
-            onChange={(e) => setLocalValue(e.target.value)}
-            onBlur={handleBlur}
-            placeholder={placeholder}
-            maxLength={maxLength}
-            aria-invalid={!!error}
-            aria-describedby={error ? `${id}-error` : undefined}
-            className={cn(
-              "resize-none transition-colors min-h-[120px] p-2 shadow-none focus-visible:ring-1",
-              error 
-                ? "border-destructive focus-visible:ring-destructive bg-destructive/5" 
-                : showSuccess 
-                  ? "border-green-500 focus-visible:ring-green-500 bg-green-500/5" 
-                  : "bg-transparent border-dashed border-muted-foreground/30 hover:border-input focus:border-input focus:bg-background",
-              className
+          <div className="relative">
+            <Textarea
+              ref={textareaRef}
+              id={id}
+              value={localValue}
+              onChange={(e) => setLocalValue(e.target.value)}
+              onBlur={handleBlur}
+              placeholder={placeholder}
+              maxLength={maxLength}
+              aria-invalid={!!error}
+              aria-describedby={error ? `${id}-error` : undefined}
+              className={cn(
+                "resize-none transition-colors min-h-[120px] p-2 pb-10 shadow-none focus-visible:ring-1",
+                error 
+                  ? "border-destructive focus-visible:ring-destructive bg-destructive/5" 
+                  : showSuccess 
+                    ? "border-green-500 focus-visible:ring-green-500 bg-green-500/5" 
+                    : "bg-transparent border-dashed border-muted-foreground/30 hover:border-input focus:border-input focus:bg-background",
+                className
+              )}
+            />
+            {parseMarkdownLinks && (
+              <button
+                type="button"
+                onMouseDown={(e) => e.preventDefault()} // Impede perda de foco
+                onClick={handleInsertLink}
+                className="absolute bottom-2 right-2 p-1.5 bg-background border border-border rounded-md shadow-sm hover:bg-muted text-muted-foreground transition-colors z-10"
+                title="Inserir Link"
+              >
+                <LinkIcon className="w-4 h-4" />
+              </button>
             )}
-          />
+          </div>
         ) : (
           <Input
             id={id}
