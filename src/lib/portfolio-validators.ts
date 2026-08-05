@@ -114,6 +114,10 @@ export const portfolioProfileSchema = z.object({
     .or(z.literal(""))
     .nullable()
     .optional(),
+  themeColor: z.string()
+    .regex(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/, "A cor deve ser um HEX válido.")
+    .nullable()
+    .optional(),
 });
 
 export const portfolioInterestSchema = z.object({

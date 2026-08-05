@@ -137,11 +137,30 @@ export function PortfolioSidebar({ profile, isEditing, onUpdate, onAvatarUpload 
             maxLength={100}
           />
         )}
+        {isEditing && (
+          <div className="mt-4 flex flex-col items-center md:items-start space-y-2">
+            <label htmlFor="theme-color" className="text-sm font-semibold text-muted-foreground">Cor de Destaque</label>
+            <div className="flex items-center gap-2">
+              <input
+                id="theme-color"
+                type="color"
+                value={profile.themeColor || "#000000"}
+                onChange={(e) => onUpdate({ themeColor: e.target.value })}
+                className="w-8 h-8 rounded cursor-pointer border-0 p-0 bg-transparent"
+                title="Escolher cor de destaque"
+              />
+              <span className="text-xs text-muted-foreground uppercase">{profile.themeColor || "#000000"}</span>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Social Links (View Only) */}
       <div className="w-full mt-4">
-        <div className="flex flex-wrap gap-4 justify-center md:justify-start text-primary">
+        <div 
+          className="flex flex-wrap gap-4 justify-center md:justify-start"
+          style={profile.themeColor ? { color: "var(--custom-primary)" } : { color: "hsl(var(--primary))" }}
+        >
           {profile.email && (
             <a href={`mailto:${profile.email}`} target="_blank" rel="noopener noreferrer" className="hover:opacity-80 transition-opacity">
               <Mail className="w-6 h-6" />
