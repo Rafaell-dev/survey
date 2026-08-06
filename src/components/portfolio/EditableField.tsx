@@ -5,6 +5,7 @@ import { useEffect, useState, useRef } from "react";
 import { AlertCircle, Link as LinkIcon } from "lucide-react";
 import { z } from "zod";
 import { sanitizeText } from "@/lib/portfolio-validators";
+import { RichTextEditor } from "./RichTextEditor";
 
 interface EditableFieldProps {
   value: string;
@@ -20,6 +21,7 @@ interface EditableFieldProps {
   autoSanitize?: boolean;
   label?: string;
   parseMarkdownLinks?: boolean;
+  richText?: boolean;
 }
 
 export function EditableField({
@@ -36,6 +38,7 @@ export function EditableField({
   autoSanitize = true,
   label,
   parseMarkdownLinks = false,
+  richText = false,
 }: EditableFieldProps) {
   const [localValue, setLocalValue] = useState(value || "");
   const [error, setError] = useState<string | null>(null);
@@ -128,6 +131,17 @@ export function EditableField({
       return parts.length > 0 ? parts : localValue;
     };
 
+    if (richText) {
+      return (
+        <div className="w-full">
+          <div 
+            className={cn("prose prose-sm dark:prose-invert max-w-none", className)} 
+            dangerouslySetInnerHTML={{ __html: localValue }} 
+          />
+        </div>
+      );
+    }
+
     return (
       <div className="w-full">
         <div className={cn("whitespace-pre-wrap", className)}>
@@ -145,7 +159,15 @@ export function EditableField({
         </label>
       )}
       <div className="relative">
-        {multiline ? (
+        {richText ? (
+          <RichTextEditor 
+            value={localValue}
+            onChange={(v) => setLocalValue(v)}
+            onBlur={handleBlur}
+            placeholder={placeholder}
+            maxLength={maxLength}
+          />
+        ) : multiline ? (
           <div className="relative">
             <Textarea
               ref={textareaRef}
