@@ -3,12 +3,13 @@ import { BubbleMenu } from '@tiptap/react/menus'
 import StarterKit from '@tiptap/starter-kit'
 import Link from '@tiptap/extension-link'
 import Underline from '@tiptap/extension-underline'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Bold, Italic, Underline as UnderlineIcon, Strikethrough, Link as LinkIcon, ExternalLink, X, Edit2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
 import { ConfirmModal } from '@/components/ui/confirm-modal'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 
 const normalizeUrl = (url: string) => {
   if (!url) return null;
@@ -41,6 +42,7 @@ export function RichTextEditor({ value, onChange, onBlur, placeholder, maxLength
   const [linkText, setLinkText] = useState('');
   const [pasteModalOpen, setPasteModalOpen] = useState(false);
   const [pendingPasteUrl, setPendingPasteUrl] = useState('');
+  const containerRef = useRef<HTMLDivElement>(null);
   
   const editor = useEditor({
     extensions: [
@@ -95,15 +97,6 @@ export function RichTextEditor({ value, onChange, onBlur, placeholder, maxLength
       } else {
         setMenuState('DEFAULT');
       }
-    },
-    onBlur: ({ event }) => {
-      // Apenas chama onBlur se o foco realmente saiu da área do editor (não foi para a barra flutuante)
-      const currentTarget = event.currentTarget as HTMLElement;
-      setTimeout(() => {
-        if (!currentTarget.contains(document.activeElement)) {
-          if (onBlur) onBlur();
-        }
-      }, 150);
     }
   });
 
@@ -195,97 +188,153 @@ export function RichTextEditor({ value, onChange, onBlur, placeholder, maxLength
     setPasteModalOpen(false);
   }
 
+  const handleContainerBlur = (e: React.FocusEvent) => {
+    setTimeout(() => {
+      const activeEl = document.activeElement;
+      const isInsideContainer = containerRef.current?.contains(activeEl);
+      const isInsidePopover = activeEl?.closest('[data-slot="popover-content"]');
+      const isInsideModal = activeEl?.closest('[role="dialog"]');
+      
+      if (!isInsideContainer && !isInsidePopover && !isInsideModal) {
+        if (onBlur) onBlur();
+      }
+    }, 150);
+  };
+
   if (!editor) return null;
 
   return (
-    <div className="relative w-full border border-dashed border-muted-foreground/30 rounded-md bg-transparent overflow-visible focus-within:ring-1 focus-within:ring-ring focus-within:border-input focus-within:bg-background hover:border-input transition-colors group/rte" onPasteCapture={handlePasteCapture}>
+    <div 
+      ref={containerRef}
+      onBlur={handleContainerBlur}
+      className="relative w-full border border-dashed border-muted-foreground/30 rounded-md bg-transparent overflow-visible focus-within:ring-1 focus-within:ring-ring focus-within:border-input focus-within:bg-background hover:border-input transition-colors group/rte" 
+      onPasteCapture={handlePasteCapture}
+    >
       
-      <BubbleMenu editor={editor}>
+      {/* FIXED TOOLBAR */}
+      <div className="flex items-center gap-1 border-b border-border/40 p-1.5 bg-muted/20 rounded-t-md">
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          className={cn("h-7 w-7", editor.isActive('bold') && "bg-muted")} 
+          onClick={() => editor.chain().focus().toggleBold().run()} 
+          aria-label="Negrito"
+          title="Negrito"
+        >
+          <Bold className={cn("w-3.5 h-3.5", editor.isActive('bold') && "text-primary")} />
+        </Button>
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          className={cn("h-7 w-7", editor.isActive('italic') && "bg-muted")} 
+          onClick={() => editor.chain().focus().toggleItalic().run()} 
+          aria-label="Itálico"
+          title="Itálico"
+        >
+          <Italic className={cn("w-3.5 h-3.5", editor.isActive('italic') && "text-primary")} />
+        </Button>
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          className={cn("h-7 w-7", editor.isActive('underline') && "bg-muted")} 
+          onClick={() => editor.chain().focus().toggleUnderline().run()} 
+          aria-label="Sublinhado"
+          title="Sublinhado"
+        >
+          <UnderlineIcon className={cn("w-3.5 h-3.5", editor.isActive('underline') && "text-primary")} />
+        </Button>
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          className={cn("h-7 w-7", editor.isActive('strike') && "bg-muted")} 
+          onClick={() => editor.chain().focus().toggleStrike().run()} 
+          aria-label="Tachado"
+          title="Tachado"
+        >
+          <Strikethrough className={cn("w-3.5 h-3.5", editor.isActive('strike') && "text-primary")} />
+        </Button>
+        <div className="w-px h-4 bg-border mx-1" />
+        
+        <Popover open={menuState === 'EDIT_LINK'} onOpenChange={(open) => {
+          if (!open && menuState === 'EDIT_LINK') cancelLink();
+        }}>
+          <PopoverTrigger asChild>
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className={cn("h-7 w-7", editor.isActive('link') && "bg-muted")} 
+              onClick={openEditLink} 
+              aria-label="Adicionar Link"
+              title="Adicionar Link (Ctrl+K)"
+            >
+              <LinkIcon className={cn("w-3.5 h-3.5", editor.isActive('link') && "text-primary")} />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-64 p-3" align="start" sideOffset={8}>
+            <div className="flex flex-col gap-3">
+               <div className="space-y-1.5">
+                 <label className="text-[10px] uppercase font-semibold text-muted-foreground tracking-wider">Texto</label>
+                 <Input 
+                   value={linkText} 
+                   onChange={e => setLinkText(e.target.value)} 
+                   placeholder="Digite o texto" 
+                   className="h-8 text-xs" 
+                   autoFocus
+                   onKeyDown={e => { if(e.key === 'Enter') saveLink(); if(e.key === 'Escape') cancelLink(); }}
+                 />
+               </div>
+               <div className="space-y-1.5">
+                 <label className="text-[10px] uppercase font-semibold text-muted-foreground tracking-wider">URL</label>
+                 <Input 
+                   value={linkUrl} 
+                   onChange={e => setLinkUrl(e.target.value)} 
+                   placeholder="https://" 
+                   className="h-8 text-xs"
+                   onKeyDown={e => { if(e.key === 'Enter') saveLink(); if(e.key === 'Escape') cancelLink(); }}
+                 />
+               </div>
+               <div className="flex justify-end gap-2 mt-1">
+                 <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={cancelLink} aria-label="Cancelar">
+                   Cancelar
+                 </Button>
+                 <Button variant="default" size="sm" className="h-7 text-xs" onClick={saveLink} aria-label="Salvar Link">
+                   Salvar
+                 </Button>
+               </div>
+            </div>
+          </PopoverContent>
+        </Popover>
+      </div>
+
+      {/* VIEW LINK BUBBLE MENU */}
+      <BubbleMenu editor={editor} shouldShow={({ editor }) => editor.isActive('link') && menuState !== 'EDIT_LINK'}>
         <div className="bg-popover border border-border text-popover-foreground shadow-md rounded-md flex flex-col p-1 gap-1 min-w-[200px]">
-           
-           {menuState === 'DEFAULT' && (
-             <div className="flex items-center gap-1">
-                <Button variant="ghost" size="icon" className={cn("h-8 w-8", editor.isActive('bold') && "bg-muted")} onClick={() => editor.chain().focus().toggleBold().run()} aria-label="Negrito">
-                  <Bold className={cn("w-4 h-4", editor.isActive('bold') && "text-primary")} />
-                </Button>
-                <Button variant="ghost" size="icon" className={cn("h-8 w-8", editor.isActive('italic') && "bg-muted")} onClick={() => editor.chain().focus().toggleItalic().run()} aria-label="Itálico">
-                  <Italic className={cn("w-4 h-4", editor.isActive('italic') && "text-primary")} />
-                </Button>
-                <Button variant="ghost" size="icon" className={cn("h-8 w-8", editor.isActive('underline') && "bg-muted")} onClick={() => editor.chain().focus().toggleUnderline().run()} aria-label="Sublinhado">
-                  <UnderlineIcon className={cn("w-4 h-4", editor.isActive('underline') && "text-primary")} />
-                </Button>
-                <Button variant="ghost" size="icon" className={cn("h-8 w-8", editor.isActive('strike') && "bg-muted")} onClick={() => editor.chain().focus().toggleStrike().run()} aria-label="Tachado">
-                  <Strikethrough className={cn("w-4 h-4", editor.isActive('strike') && "text-primary")} />
-                </Button>
-                <div className="w-px h-5 bg-border mx-1" />
-                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={openEditLink} aria-label="Adicionar Link">
-                  <LinkIcon className="w-4 h-4" />
-                </Button>
-             </div>
-           )}
-
-           {menuState === 'VIEW_LINK' && (
-             <div className="flex items-center gap-1">
-                <Button variant="ghost" size="sm" className="h-8 gap-2 text-xs" onClick={openEditLink} aria-label="Editar Link">
-                  <Edit2 className="w-3.5 h-3.5" /> Editar
-                </Button>
-                <Button variant="ghost" size="sm" className="h-8 gap-2 text-xs" asChild aria-label="Abrir Link">
-                  <a href={editor.getAttributes('link').href} target="_blank" rel="noopener noreferrer">
-                    <ExternalLink className="w-3.5 h-3.5" /> Abrir
-                  </a>
-                </Button>
-                <div className="w-px h-5 bg-border mx-1" />
-                <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10" onClick={removeLink} aria-label="Remover Link">
-                  <X className="w-4 h-4" />
-                </Button>
-             </div>
-           )}
-
-           {menuState === 'EDIT_LINK' && (
-             <div className="flex flex-col gap-2 p-2">
-                <div className="space-y-1.5">
-                  <label className="text-[10px] uppercase font-semibold text-muted-foreground tracking-wider">Texto</label>
-                  <Input 
-                    value={linkText} 
-                    onChange={e => setLinkText(e.target.value)} 
-                    placeholder="Digite o texto" 
-                    className="h-7 text-xs" 
-                    autoFocus
-                    onKeyDown={e => { if(e.key === 'Enter') saveLink(); if(e.key === 'Escape') cancelLink(); }}
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <label className="text-[10px] uppercase font-semibold text-muted-foreground tracking-wider">URL</label>
-                  <Input 
-                    value={linkUrl} 
-                    onChange={e => setLinkUrl(e.target.value)} 
-                    placeholder="https://" 
-                    className="h-7 text-xs"
-                    onKeyDown={e => { if(e.key === 'Enter') saveLink(); if(e.key === 'Escape') cancelLink(); }}
-                  />
-                </div>
-                <div className="flex justify-end gap-2 mt-1">
-                  <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={cancelLink} aria-label="Cancelar">
-                    Cancelar
-                  </Button>
-                  <Button variant="default" size="sm" className="h-7 text-xs" onClick={saveLink} aria-label="Salvar Link">
-                    Salvar
-                  </Button>
-                </div>
-             </div>
-           )}
-
+           <div className="flex items-center gap-1">
+              <Button variant="ghost" size="sm" className="h-8 gap-2 text-xs" onClick={openEditLink} aria-label="Editar Link">
+                <Edit2 className="w-3.5 h-3.5" /> Editar
+              </Button>
+              <Button variant="ghost" size="sm" className="h-8 gap-2 text-xs" asChild aria-label="Abrir Link">
+                <a href={editor.getAttributes('link').href} target="_blank" rel="noopener noreferrer">
+                  <ExternalLink className="w-3.5 h-3.5" /> Abrir
+                </a>
+              </Button>
+              <div className="w-px h-5 bg-border mx-1" />
+              <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10" onClick={removeLink} aria-label="Remover Link">
+                <X className="w-4 h-4" />
+              </Button>
+           </div>
         </div>
       </BubbleMenu>
 
-      <EditorContent editor={editor} />
+      <div className="relative">
+        <EditorContent editor={editor} />
+        {placeholder && !value && (
+           <div className="absolute top-3 left-3 pointer-events-none text-muted-foreground/50 text-sm">
+             {placeholder}
+           </div>
+        )}
+      </div>
       
-      {placeholder && !value && (
-         <div className="absolute top-3 left-3 pointer-events-none text-muted-foreground/50 text-sm">
-           {placeholder}
-         </div>
-      )}
-
       <ConfirmModal 
         isOpen={pasteModalOpen} 
         onClose={() => setPasteModalOpen(false)}
