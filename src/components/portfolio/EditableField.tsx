@@ -135,7 +135,7 @@ export function EditableField({
       return (
         <div className="w-full">
           <div 
-            className={cn("prose prose-sm dark:prose-invert max-w-none prose-a:text-primary prose-a:font-medium prose-a:no-underline hover:prose-a:underline prose-a:cursor-pointer", className)} 
+            className={cn("prose prose-sm dark:prose-invert max-w-none prose-a:!text-primary prose-a:font-medium prose-a:no-underline hover:prose-a:underline prose-a:cursor-pointer", className)} 
             dangerouslySetInnerHTML={{ __html: localValue }} 
           />
         </div>

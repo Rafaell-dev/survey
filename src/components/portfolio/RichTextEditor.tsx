@@ -77,7 +77,7 @@ export function RichTextEditor({ value, onChange, onBlur, placeholder, maxLength
         HTMLAttributes: {
           rel: 'noopener noreferrer',
           target: '_blank',
-          class: 'text-primary hover:underline cursor-pointer transition-colors',
+          class: '!text-primary hover:underline cursor-pointer transition-colors',
           title: 'Abrir link',
         },
       }),
