@@ -102,6 +102,10 @@ export default function PortfolioDashboardPage() {
     setIsDirty(true);
   };
 
+  const handleSurveysChange = (highlightedSurveys: any[]) => {
+    setProfile(prev => ({ ...prev, surveys: highlightedSurveys }));
+  };
+
   const handleSaveChanges = async () => {
     // 1. Force blur on active element to trigger any pending validations
     if (document.activeElement instanceof HTMLElement) {
@@ -122,8 +126,8 @@ export default function PortfolioDashboardPage() {
         // Bulk save logic
         const profilePayload = {
           ...profile,
-          aboutPt: profile.aboutPt?.substring(0, 500),
-          aboutEn: profile.aboutEn?.substring(0, 500),
+          aboutPt: profile.aboutPt?.substring(0, 2000),
+          aboutEn: profile.aboutEn?.substring(0, 2000),
           title: profile.title?.substring(0, 100),
           institution: profile.institution?.substring(0, 100)
         };
@@ -299,6 +303,7 @@ export default function PortfolioDashboardPage() {
         onUpdateTeaching={handleUpdateTeaching}
         toolsData={toolsData}
         onUpdateTools={handleUpdateTools}
+        onSurveysChange={handleSurveysChange}
       />
 
       {/* Floating Action Bar */}
