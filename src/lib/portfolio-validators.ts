@@ -76,7 +76,7 @@ export const portfolioProfileSchema = z.object({
   slug: z.string()
     .min(3, "O link deve ter no mínimo 3 caracteres.")
     .max(50, "O link deve ter no máximo 50 caracteres.")
-    .regex(/^[a-z0-9-]+$/, "Apenas letras minúsculas, números e hifens."),
+    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Formato de link inválido. Use apenas letras, números e hifens (sem hifens no início ou fim)."),
   title: z.string()
     .min(1, "Cargo é obrigatório.")
     .max(100, "Cargo deve ter no máximo 100 caracteres.")

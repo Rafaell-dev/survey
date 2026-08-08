@@ -17,15 +17,17 @@ const normalizeUrl = (url: string) => {
   const forbidden = /^(javascript|data|file|vbscript|blob):/i;
   if (forbidden.test(trimmed)) return null;
 
-  if (trimmed.startsWith('mailto:') || trimmed.startsWith('tel:') || trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
-    return trimmed;
-  }
-  
-  if (trimmed.startsWith('/')) {
-    return trimmed;
+  if (!trimmed.startsWith('mailto:') && !trimmed.startsWith('tel:') && !trimmed.startsWith('http://') && !trimmed.startsWith('https://') && !trimmed.startsWith('/')) {
+    trimmed = `https://${trimmed}`;
   }
 
-  return `https://${trimmed}`;
+  try {
+    // Usamos dummy base (ex: http://local) apenas para testar caminhos relativos
+    new URL(trimmed, 'http://localhost');
+    return trimmed;
+  } catch (e) {
+    return null;
+  }
 }
 
 interface RichTextEditorProps {
@@ -83,7 +85,7 @@ export function RichTextEditor({ value, onChange, onBlur, placeholder, maxLength
     content: value,
     editorProps: {
       attributes: {
-        class: 'prose prose-sm dark:prose-invert max-w-none p-3 min-h-[120px] focus:outline-none text-muted-foreground outline-none',
+        class: 'prose prose-sm dark:prose-invert max-w-none p-3 min-h-[120px] focus:outline-none text-muted-foreground outline-none prose-a:text-primary prose-a:font-medium prose-a:no-underline hover:prose-a:underline prose-a:cursor-pointer',
       },
     },
     onUpdate: ({ editor }) => {
