@@ -122,8 +122,8 @@ export default function PortfolioDashboardPage() {
         // Bulk save logic
         const profilePayload = {
           ...profile,
-          aboutPt: profile.aboutPt?.substring(0, 500),
-          aboutEn: profile.aboutEn?.substring(0, 500),
+          aboutPt: profile.aboutPt,
+          aboutEn: profile.aboutEn,
           title: profile.title?.substring(0, 100),
           institution: profile.institution?.substring(0, 100)
         };
