@@ -73,20 +73,27 @@ export function PortfolioLayout({
           </div>
           
           <nav className="flex space-x-1 md:space-x-8 overflow-x-auto w-full md:w-auto pb-2 md:pb-0 hide-scrollbar">
-            {tabs.map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={cn(
-                  "px-3 py-2 text-sm font-medium transition-colors whitespace-nowrap",
-                  activeTab === tab.id
-                    ? "text-primary border-b-2 border-primary"
-                    : "text-muted-foreground hover:text-primary hover:border-b-2 hover:border-primary/50"
-                )}
-              >
-                {tab.label}
-              </button>
-            ))}
+            {tabs.map((tab) => {
+              const isActive = activeTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  style={profile.themeColor ? {
+                    color: isActive ? profile.themeColor : undefined,
+                    borderColor: isActive ? profile.themeColor : 'transparent',
+                  } : undefined}
+                  className={cn(
+                    "px-3 py-2 text-sm font-medium transition-all whitespace-nowrap border-b-2 rounded-t-sm",
+                    isActive
+                      ? "text-primary border-primary font-semibold bg-primary/5"
+                      : "text-muted-foreground border-transparent hover:text-primary hover:bg-primary/5"
+                  )}
+                >
+                  {tab.label}
+                </button>
+              );
+            })}
           </nav>
         </div>
       </header>
