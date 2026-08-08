@@ -40,10 +40,8 @@ export default function LoginPage() {
       <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-background to-secondary/20 -z-10" />
       <Card className="w-full max-w-md shadow-lg border-primary/10">
         <CardHeader className="space-y-2 text-center">
-          <div className="flex justify-center mb-4">
-            <div className="rounded-full bg-primary/10 p-3">
-              <LayoutDashboard className="h-8 w-8 text-primary" />
-            </div>
+          <div className="flex justify-center mb-2">
+            <img src="/div.ar.png" alt="div.ar" className="h-12 w-auto object-contain" />
           </div>
           <CardTitle className="text-2xl font-bold tracking-tight">
             Bem-vindo de volta

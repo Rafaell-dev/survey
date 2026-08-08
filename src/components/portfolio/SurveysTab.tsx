@@ -58,7 +58,7 @@ export function SurveysTab({ publicSurveys = [], isEditing, onUpdate }: SurveysT
         <h3 className="text-lg font-medium">Nenhuma pesquisa para exibir</h3>
         {isEditing ? (
           <p className="text-muted-foreground mt-2 max-w-sm mx-auto">
-            Crie pesquisas na plataforma LingSurvey. Elas aparecerão aqui automaticamente para você destacar no seu portfólio.
+            Crie pesquisas na plataforma div.ar. Elas aparecerão aqui automaticamente para você destacar no seu portfólio.
           </p>
         ) : (
           <p className="text-muted-foreground mt-2 max-w-sm mx-auto">
@@ -74,7 +74,7 @@ export function SurveysTab({ publicSurveys = [], isEditing, onUpdate }: SurveysT
       {isEditing && (
         <div className="bg-primary/5 border border-primary/20 rounded-md p-4 mb-8">
           <p className="text-sm text-foreground/80 text-center">
-            Abaixo estão todas as suas pesquisas criadas na plataforma LingSurvey. Clique na estrela (⭐) para destacá-las no seu portfólio público.
+            Abaixo estão todas as suas pesquisas criadas na plataforma div.ar. Clique na estrela (⭐) para destacá-las no seu portfólio público.
           </p>
         </div>
       )}

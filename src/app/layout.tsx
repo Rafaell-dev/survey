@@ -15,8 +15,13 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "LingSurvey",
+  title: "div.ar",
   description: "Plataforma avançada de coleta de dados e pesquisas.",
+  icons: {
+    icon: "/div.ar.ico",
+    shortcut: "/div.ar.ico",
+    apple: "/div.ar.png",
+  },
 };
 
 export default function RootLayout({

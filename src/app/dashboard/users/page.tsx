@@ -57,7 +57,7 @@ export default function UsersManagement() {
       <Card>
         <CardHeader>
           <CardTitle>Contas Registradas</CardTitle>
-          <CardDescription>Gerencie todos os usuários que acessam a plataforma LingSurvey.</CardDescription>
+          <CardDescription>Gerencie todos os usuários que acessam a plataforma div.ar.</CardDescription>
         </CardHeader>
         <CardContent>
           {loading ? (
