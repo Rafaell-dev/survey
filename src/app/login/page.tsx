@@ -41,7 +41,7 @@ export default function LoginPage() {
       <Card className="w-full max-w-md shadow-lg border-primary/10">
         <CardHeader className="space-y-2 text-center">
           <div className="flex justify-center mb-2">
-            <img src="/div.ar.png" alt="div.ar" className="h-24 w-auto object-contain my-2" />
+            <img src="/div.ar.png" alt="div.ar" className="h-48 w-auto object-contain my-3" />
           </div>
           <CardTitle className="text-2xl font-bold tracking-tight">
             Bem-vindo de volta
