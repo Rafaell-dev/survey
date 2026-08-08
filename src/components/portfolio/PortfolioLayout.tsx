@@ -48,6 +48,8 @@ export function PortfolioLayout({
   toolsData,
   onUpdateTools,
 }: PortfolioLayoutProps) {
+  const [activeTab, setActiveTab] = useState("sobre");
+
   const hasTeachingContent = Boolean(
     teachingData && (
       (teachingData.graduacao && teachingData.graduacao.length > 0) ||
