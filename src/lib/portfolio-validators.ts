@@ -91,8 +91,8 @@ export const portfolioProfileSchema = z.object({
     }, "A biografia deve ter no mínimo 10 caracteres de texto.")
     .refine(v => {
       const plainText = (v || "").replace(/<[^>]*>?/gm, "").trim();
-      return plainText.length <= 500;
-    }, "O texto da biografia pode ter no máximo 500 caracteres (sem contar os links e formatação)."),
+      return plainText.length <= 750;
+    }, "O texto da biografia pode ter no máximo 750 caracteres (sem contar os links e formatação)."),
   email: z.string()
     .email("Informe um e-mail válido.")
     .or(z.literal(""))

@@ -115,9 +115,9 @@ export function AboutTab({
             value={profile.aboutPt || ""}
             onSave={(v) => onUpdateProfile({ aboutPt: v })}
             multiline
-            maxLength={500}
+            maxLength={750}
             showCount={isEditing}
-            placeholder="Escreva sua biografia aqui (máx 500 caracteres)..."
+            placeholder="Escreva sua biografia aqui (máx 750 caracteres)..."
             className="w-full text-justify"
             validator={portfolioProfileSchema.shape.aboutPt}
             richText={true}
