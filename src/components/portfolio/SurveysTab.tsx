@@ -7,10 +7,10 @@ import { Badge } from "@/components/ui/badge";
 interface SurveysTabProps {
   publicSurveys?: any[]; // Passado no modo público
   isEditing: boolean;
-  onSurveysChange?: (surveys: any[]) => void;
+  onUpdate?: () => void;
 }
 
-export function SurveysTab({ publicSurveys = [], isEditing, onSurveysChange }: SurveysTabProps) {
+export function SurveysTab({ publicSurveys = [], isEditing, onUpdate }: SurveysTabProps) {
   const [surveys, setSurveys] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -33,19 +33,15 @@ export function SurveysTab({ publicSurveys = [], isEditing, onSurveysChange }: S
   };
 
   const handleToggleHighlight = async (id: string, current: boolean) => {
-    const nextState = !current;
-    const updatedSurveys = surveys.map(s => s.id === id ? { ...s, isHighlighted: nextState } : s);
-    setSurveys(updatedSurveys);
-    onSurveysChange?.(updatedSurveys.filter(s => s.isHighlighted));
-
     try {
-      await portfolioService.toggleSurveyHighlight(id, nextState);
+      // Optimistic update
+      setSurveys(prev => prev.map(s => s.id === id ? { ...s, isHighlighted: !current } : s));
+      await portfolioService.toggleSurveyHighlight(id, !current);
+      if (onUpdate) onUpdate();
     } catch (error) {
       console.error("Erro ao favoritar pesquisa:", error);
       // Revert on error
-      const reverted = surveys.map(s => s.id === id ? { ...s, isHighlighted: current } : s);
-      setSurveys(reverted);
-      onSurveysChange?.(reverted.filter(s => s.isHighlighted));
+      setSurveys(prev => prev.map(s => s.id === id ? { ...s, isHighlighted: current } : s));
     }
   };
 

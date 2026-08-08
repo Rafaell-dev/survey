@@ -26,7 +26,7 @@ interface PortfolioLayoutProps {
   onUpdateTeaching?: (data: TeachingData) => void;
   toolsData?: ToolsData;
   onUpdateTools?: (data: ToolsData) => void;
-  onSurveysChange?: (surveys: any[]) => void;
+  onUpdateSurveys?: () => void;
 }
 
 export function PortfolioLayout({
@@ -48,7 +48,7 @@ export function PortfolioLayout({
   onUpdateTeaching,
   toolsData,
   onUpdateTools,
-  onSurveysChange,
+  onUpdateSurveys,
 }: PortfolioLayoutProps) {
   const [activeTab, setActiveTab] = useState("sobre");
 
@@ -176,9 +176,9 @@ export function PortfolioLayout({
 
             {activeTab === "pesquisas" && (
               <SurveysTab 
-                publicSurveys={profile.surveys}
+                publicSurveys={profile.surveys} // Passado apenas no modo público, mas SurveysTab pode receber undef/empty no modo edição
                 isEditing={isEditing}
-                onSurveysChange={onSurveysChange}
+                onUpdate={onUpdateSurveys}
               />
             )}
             
