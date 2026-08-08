@@ -28,7 +28,7 @@ export function sanitizeText(input: string): string {
 export function normalizeGithubUrl(url: string): string {
   if (!url) return "";
   let clean = url.trim();
-  if (clean.startsWith("github.com/")) {
+  if (!clean.startsWith("http://") && !clean.startsWith("https://")) {
     clean = "https://" + clean;
   }
   return clean;
@@ -37,7 +37,7 @@ export function normalizeGithubUrl(url: string): string {
 export function normalizeLinkedinUrl(url: string): string {
   if (!url) return "";
   let clean = url.trim();
-  if (clean.startsWith("linkedin.com/in/")) {
+  if (!clean.startsWith("http://") && !clean.startsWith("https://")) {
     clean = "https://" + clean;
   }
   return clean;
@@ -46,10 +46,8 @@ export function normalizeLinkedinUrl(url: string): string {
 export function normalizeLattesUrl(url: string): string {
   if (!url) return "";
   let clean = url.trim();
-  if (clean.startsWith("lattes.cnpq.br/")) {
+  if (!clean.startsWith("http://") && !clean.startsWith("https://")) {
     clean = "https://" + clean;
-  } else if (clean.startsWith("http://lattes.cnpq.br/")) {
-    clean = clean.replace("http://", "https://");
   }
   return clean;
 }
@@ -101,12 +99,14 @@ export const portfolioProfileSchema = z.object({
     .nullable()
     .optional(),
   githubUrl: z.string()
-    .regex(/^https:\/\/github\.com\/[a-zA-Z0-9_-]+$/, "Informe uma URL válida do GitHub.")
+    .url("Informe uma URL válida do GitHub.")
+    .refine(v => v.includes("github.com"), "A URL deve ser do GitHub.")
     .or(z.literal(""))
     .nullable()
     .optional(),
   linkedinUrl: z.string()
-    .regex(/^https:\/\/linkedin\.com\/in\/[a-zA-Z0-9_-]+\/?$/, "Informe uma URL válida do LinkedIn.")
+    .url("Informe uma URL válida do LinkedIn.")
+    .refine(v => v.includes("linkedin.com"), "A URL deve ser do LinkedIn.")
     .or(z.literal(""))
     .nullable()
     .optional(),
@@ -116,7 +116,8 @@ export const portfolioProfileSchema = z.object({
     .nullable()
     .optional(),
   lattesUrl: z.string()
-    .regex(/^https:\/\/lattes\.cnpq\.br\/[0-9]+$/, "Informe uma URL válida do Currículo Lattes.")
+    .url("Informe uma URL válida do Currículo Lattes.")
+    .refine(v => v.includes("cnpq.br"), "A URL deve ser do CNPq / Lattes.")
     .or(z.literal(""))
     .nullable()
     .optional(),
