@@ -45,6 +45,7 @@ export function RichTextEditor({ value, onChange, onBlur, placeholder, maxLength
   const [pasteModalOpen, setPasteModalOpen] = useState(false);
   const [pendingPasteUrl, setPendingPasteUrl] = useState('');
   const containerRef = useRef<HTMLDivElement>(null);
+  const savedSelectionRef = useRef<{ from: number; to: number } | null>(null);
   
   const editor = useEditor({
     extensions: [
@@ -114,6 +115,8 @@ export function RichTextEditor({ value, onChange, onBlur, placeholder, maxLength
   const openEditLink = () => {
     if (!editor) return;
     const { from, to } = editor.state.selection;
+    savedSelectionRef.current = { from, to };
+
     const text = editor.state.doc.textBetween(from, to, ' ');
     setLinkText(text || '');
     
@@ -139,13 +142,14 @@ export function RichTextEditor({ value, onChange, onBlur, placeholder, maxLength
       return;
     }
     
-    const { from, to } = editor.state.selection;
-    const isSelectionEmpty = from === to;
+    const savedSel = savedSelectionRef.current || editor.state.selection;
+    const { from, to } = savedSel;
 
-    if (isSelectionEmpty) {
+    if (from !== to) {
       editor
         .chain()
         .focus()
+        .setTextSelection({ from, to })
         .insertContent({
           type: 'text',
           text: txt,
@@ -156,22 +160,34 @@ export function RichTextEditor({ value, onChange, onBlur, placeholder, maxLength
       editor
         .chain()
         .focus()
-        .extendMarkRange('link')
-        .setLink({ href: normalized })
+        .setTextSelection(from)
+        .insertContent({
+          type: 'text',
+          text: txt,
+          marks: [{ type: 'link', attrs: { href: normalized } }],
+        })
         .run();
     }
       
+    savedSelectionRef.current = null;
     setMenuState('DEFAULT');
   }
 
   const cancelLink = () => {
+    savedSelectionRef.current = null;
     setMenuState(editor?.isActive('link') ? 'VIEW_LINK' : 'DEFAULT');
     editor?.commands.focus();
   }
 
   const removeLink = () => {
     if (!editor) return;
-    editor.chain().focus().unsetLink().run();
+    if (savedSelectionRef.current) {
+      const { from, to } = savedSelectionRef.current;
+      editor.chain().focus().setTextSelection({ from, to }).extendMarkRange('link').unsetLink().run();
+    } else {
+      editor.chain().focus().unsetLink().run();
+    }
+    savedSelectionRef.current = null;
     setMenuState('DEFAULT');
   }
 
@@ -180,12 +196,13 @@ export function RichTextEditor({ value, onChange, onBlur, placeholder, maxLength
     const isUrl = /^(https?:\/\/|www\.)[^\s]+/i.test(text);
     
     if (!editor) return;
-    const { empty } = editor.state.selection;
+    const { from, to } = editor.state.selection;
 
     if (isUrl) {
-      if (!empty) {
+      if (from !== to) {
         e.preventDefault();
         e.stopPropagation();
+        savedSelectionRef.current = { from, to };
         setPendingPasteUrl(text);
         setPasteModalOpen(true);
       } else {
@@ -207,8 +224,19 @@ export function RichTextEditor({ value, onChange, onBlur, placeholder, maxLength
     if (!editor) return;
     const normalized = normalizeUrl(pendingPasteUrl);
     if (normalized) {
-      editor.chain().focus().setLink({ href: normalized }).run();
+      if (savedSelectionRef.current) {
+        const { from, to } = savedSelectionRef.current;
+        editor
+          .chain()
+          .focus()
+          .setTextSelection({ from, to })
+          .setLink({ href: normalized })
+          .run();
+      } else {
+        editor.chain().focus().setLink({ href: normalized }).run();
+      }
     }
+    savedSelectionRef.current = null;
     setPasteModalOpen(false);
   }
 
