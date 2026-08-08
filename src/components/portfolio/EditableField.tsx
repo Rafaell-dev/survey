@@ -46,6 +46,12 @@ export function EditableField({
   const successTimeoutRef = useRef<NodeJS.Timeout>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
+  const plainTextLength = (localValue || "")
+    .replace(/<[^>]*>?/gm, "")
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, "$1")
+    .trim()
+    .length;
+
   const handleInsertLink = (e: React.MouseEvent) => {
     e.preventDefault();
     if (!textareaRef.current) return;
@@ -185,7 +191,7 @@ export function EditableField({
               onChange={(e) => setLocalValue(e.target.value)}
               onBlur={handleBlur}
               placeholder={placeholder}
-              maxLength={maxLength}
+              maxLength={richText || parseMarkdownLinks ? undefined : maxLength}
               aria-invalid={!!error}
               aria-describedby={error ? `${id}-error` : undefined}
               className={cn(
@@ -249,10 +255,10 @@ export function EditableField({
         {showCount && maxLength && (
           <div className={cn(
             "text-xs text-right transition-colors",
-            localValue.length >= maxLength ? "text-destructive font-bold" :
-            localValue.length >= maxLength * 0.9 ? "text-yellow-500 font-medium" : "text-muted-foreground"
+            plainTextLength >= maxLength ? "text-destructive font-bold" :
+            plainTextLength >= maxLength * 0.9 ? "text-yellow-500 font-medium" : "text-muted-foreground"
           )}>
-            {localValue.length}/{maxLength}
+            {plainTextLength}/{maxLength}
           </div>
         )}
       </div>
