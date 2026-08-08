@@ -90,15 +90,12 @@ export function SurveysTab({ publicSurveys = [], isEditing, onUpdate }: SurveysT
             )}
             onClick={() => {
               if (!isEditing && survey.publicSlug) {
-                window.open(`/s/${survey.publicSlug}`, '_blank');
+                window.open(`/survey/${survey.publicSlug}`, '_blank');
               }
             }}
           >
             <div>
               <div className="flex justify-between items-start mb-4">
-                <Badge variant={survey.status === 'PUBLISHED' ? 'default' : 'secondary'} className="mb-2">
-                  {survey.status === 'PUBLISHED' ? 'Publicada' : 'Rascunho'}
-                </Badge>
                 {isEditing && survey.status === 'PUBLISHED' && (
                   <button
                     onClick={(e) => {
