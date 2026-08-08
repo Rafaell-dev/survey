@@ -13,7 +13,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 
 const normalizeUrl = (url: string) => {
   if (!url) return null;
-  const trimmed = url.trim();
+  let trimmed = url.trim();
   const forbidden = /^(javascript|data|file|vbscript|blob):/i;
   if (forbidden.test(trimmed)) return null;
 
