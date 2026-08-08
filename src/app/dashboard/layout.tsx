@@ -48,7 +48,7 @@ export default function DashboardLayout({
       {/* Mobile Topbar */}
       <header className="md:hidden flex items-center justify-between p-4 border-b bg-background sticky top-0 z-20 shadow-sm">
         <div className="flex items-center gap-2">
-          <img src="/div.ar.png" alt="div.ar" className="h-8 w-auto object-contain" />
+          <img src="/div.ar.png" alt="div.ar" className="h-10 w-auto object-contain" />
           <span className="font-bold text-xl text-primary">div.ar</span>
         </div>
         <button
@@ -64,7 +64,7 @@ export default function DashboardLayout({
       <aside className="hidden md:flex w-64 flex-shrink-0 border-r bg-background flex-col sticky top-0 h-screen">
         <div className="p-6 border-b">
           <div className="flex items-center gap-2">
-            <img src="/div.ar.png" alt="div.ar" className="h-8 w-auto object-contain" />
+            <img src="/div.ar.png" alt="div.ar" className="h-10 w-auto object-contain" />
             <span className="font-bold text-xl text-primary">div.ar</span>
           </div>
         </div>
