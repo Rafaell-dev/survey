@@ -85,8 +85,9 @@ export function SurveysTab({ publicSurveys = [], isEditing, onUpdate }: SurveysT
             key={survey.id}
             className={cn(
               "group flex flex-col justify-between bg-card rounded-xl border p-6 transition-all duration-300",
-              isEditing ? "hover:border-primary/50" : "hover:shadow-md hover:border-primary/50",
-              !isEditing && survey.publicSlug && "cursor-pointer"
+              isEditing 
+                ? "hover:border-primary hover:bg-primary/5" 
+                : "hover:shadow-lg hover:border-primary hover:bg-primary/5 cursor-pointer"
             )}
             onClick={() => {
               if (!isEditing && survey.publicSlug) {
@@ -102,7 +103,7 @@ export function SurveysTab({ publicSurveys = [], isEditing, onUpdate }: SurveysT
                       e.stopPropagation();
                       handleToggleHighlight(survey.id, survey.isHighlighted);
                     }}
-                    className="p-2 -mr-2 -mt-2 rounded-full hover:bg-muted transition-colors focus:outline-none"
+                    className="p-2 -mr-2 -mt-2 rounded-full hover:bg-primary/10 transition-colors focus:outline-none"
                     title={survey.isHighlighted ? "Remover dos destaques" : "Destacar no portfólio"}
                   >
                     <Star 
@@ -118,7 +119,7 @@ export function SurveysTab({ publicSurveys = [], isEditing, onUpdate }: SurveysT
                 )}
               </div>
               
-              <h3 className="font-semibold text-lg leading-tight mb-2 group-hover:text-primary transition-colors">
+              <h3 className="font-semibold text-lg leading-tight mb-2 group-hover:!text-primary transition-colors">
                 {survey.title}
               </h3>
               
@@ -128,9 +129,9 @@ export function SurveysTab({ publicSurveys = [], isEditing, onUpdate }: SurveysT
             </div>
 
             {!isEditing && survey.publicSlug && (
-              <div className="mt-6 pt-4 border-t text-sm font-medium text-primary flex items-center justify-between">
+              <div className="mt-6 pt-4 border-t text-sm font-medium !text-primary flex items-center justify-between">
                 <span>Participar da pesquisa</span>
-                <span className="opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300">
+                <span className="opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300 text-lg">
                   →
                 </span>
               </div>
