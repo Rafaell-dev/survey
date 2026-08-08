@@ -118,6 +118,11 @@ export function TeachingTab({ data, isEditing, onUpdate }: TeachingTabProps) {
 
   const renderSection = (title: string, category: keyof TeachingData) => {
     const items = (data[category] as TeachingCourse[]) || [];
+    
+    if (!isEditing && items.length === 0) {
+      return null;
+    }
+
     return (
       <section>
         <div className="flex items-center justify-between mb-6">
