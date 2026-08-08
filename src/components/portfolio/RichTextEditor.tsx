@@ -106,7 +106,7 @@ export function RichTextEditor({ value, onChange, onBlur, placeholder, maxLength
   });
 
   useEffect(() => {
-    if (editor && value !== editor.getHTML()) {
+    if (editor && value !== undefined && !editor.isFocused && value !== editor.getHTML()) {
       editor.commands.setContent(value);
     }
   }, [value, editor]);
@@ -139,12 +139,27 @@ export function RichTextEditor({ value, onChange, onBlur, placeholder, maxLength
       return;
     }
     
-    editor
-      .chain()
-      .focus()
-      .extendMarkRange('link')
-      .insertContent(`<a href="${normalized}">${txt}</a>`)
-      .run();
+    const { from, to } = editor.state.selection;
+    const isSelectionEmpty = from === to;
+
+    if (isSelectionEmpty) {
+      editor
+        .chain()
+        .focus()
+        .insertContent({
+          type: 'text',
+          text: txt,
+          marks: [{ type: 'link', attrs: { href: normalized } }],
+        })
+        .run();
+    } else {
+      editor
+        .chain()
+        .focus()
+        .extendMarkRange('link')
+        .setLink({ href: normalized })
+        .run();
+    }
       
     setMenuState('DEFAULT');
   }
@@ -178,7 +193,11 @@ export function RichTextEditor({ value, onChange, onBlur, placeholder, maxLength
         e.stopPropagation();
         const normalized = normalizeUrl(text);
         if (normalized) {
-          editor.chain().focus().insertContent(`<a href="${normalized}">${normalized}</a>`).run();
+          editor.chain().focus().insertContent({
+            type: 'text',
+            text: normalized,
+            marks: [{ type: 'link', attrs: { href: normalized } }],
+          }).run();
         }
       }
     }
