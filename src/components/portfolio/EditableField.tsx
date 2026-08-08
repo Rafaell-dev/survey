@@ -86,7 +86,9 @@ export function EditableField({
     if (validator) {
       const result = validator.safeParse(finalValue);
       if (!result.success) {
-        setError((result.error as any).errors[0]?.message || "Valor inválido");
+        const issues = result.error.issues || (result.error as any).errors || [];
+        const msg = issues[0]?.message || result.error.message || "Valor inválido";
+        setError(msg);
         return;
       }
     }
