@@ -196,48 +196,62 @@ export function AboutTab({
               <SortableContext items={educations.map(e => e.id)} strategy={verticalListSortingStrategy}>
                 {educations.map((edu) => (
                   <SortableEducationItem key={edu.id} id={edu.id} isEditing={isEditing}>
-                    <div className="w-full pr-10">
-                      <EditableField
-                        id={`edu-degree-${edu.id}`}
-                        isEditing={isEditing}
-                        value={edu.degreePt}
-                        onSave={(v) => onUpdateEducation?.(edu.id, { degreePt: v })}
-                        placeholder="Curso/Grau (ex: Doutorado em Linguística)"
-                        className="font-semibold text-lg p-1 w-full"
-                        validator={portfolioEducationSchema.shape.degreePt}
-                        maxLength={100}
-                      />
-                      
-                      <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-6 text-muted-foreground text-sm mt-2">
-                        <div className="flex items-center gap-2 flex-1">
-                          <MapPin className="h-4 w-4 shrink-0 text-primary/70" />
-                          <EditableField
-                            id={`edu-inst-${edu.id}`}
-                            isEditing={isEditing}
-                            value={edu.institution}
-                            onSave={(v) => onUpdateEducation?.(edu.id, { institution: v })}
-                            placeholder="Instituição (ex: Universidade de São Paulo)"
-                            className="p-1 w-full"
-                            validator={portfolioEducationSchema.shape.institution}
-                            maxLength={50}
-                          />
-                        </div>
+                    {isEditing ? (
+                      <div className="w-full pr-10">
+                        <EditableField
+                          id={`edu-degree-${edu.id}`}
+                          isEditing={isEditing}
+                          value={edu.degreePt}
+                          onSave={(v) => onUpdateEducation?.(edu.id, { degreePt: v })}
+                          placeholder="Curso/Grau (ex: Doutorado em Linguística)"
+                          className="font-semibold text-lg p-1 w-full"
+                          validator={portfolioEducationSchema.shape.degreePt}
+                          maxLength={100}
+                        />
                         
-                        <div className="flex items-center gap-2 w-32">
-                          <Calendar className="h-4 w-4 shrink-0 text-primary/70" />
-                          <EditableField
-                            id={`edu-year-${edu.id}`}
-                            isEditing={isEditing}
-                            value={edu.year.toString()}
-                            onSave={(v) => onUpdateEducation?.(edu.id, { year: parseInt(v) || new Date().getFullYear() })}
-                            placeholder="Ano (ex: 2024)"
-                            className="p-1 w-full"
-                            validator={portfolioEducationSchema.shape.year}
-                            maxLength={4}
-                          />
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-6 text-muted-foreground text-sm mt-2">
+                          <div className="flex items-center gap-2 flex-1">
+                            <MapPin className="h-4 w-4 shrink-0 text-primary/70" />
+                            <EditableField
+                              id={`edu-inst-${edu.id}`}
+                              isEditing={isEditing}
+                              value={edu.institution}
+                              onSave={(v) => onUpdateEducation?.(edu.id, { institution: v })}
+                              placeholder="Instituição (ex: Universidade de São Paulo)"
+                              className="p-1 w-full"
+                              validator={portfolioEducationSchema.shape.institution}
+                              maxLength={50}
+                            />
+                          </div>
+                          
+                          <div className="flex items-center gap-2 w-32">
+                            <Calendar className="h-4 w-4 shrink-0 text-primary/70" />
+                            <EditableField
+                              id={`edu-year-${edu.id}`}
+                              isEditing={isEditing}
+                              value={edu.year.toString()}
+                              onSave={(v) => onUpdateEducation?.(edu.id, { year: parseInt(v) || new Date().getFullYear() })}
+                              placeholder="Ano (ex: 2024)"
+                              className="p-1 w-full"
+                              validator={portfolioEducationSchema.shape.year}
+                              maxLength={4}
+                            />
+                          </div>
                         </div>
                       </div>
-                    </div>
+                    ) : (
+                      <div className="flex items-start gap-3 py-1">
+                        <GraduationCap className="w-6 h-6 shrink-0 text-foreground mt-0.5" />
+                        <div className="flex flex-col">
+                          <div className="text-base font-normal text-foreground leading-snug">
+                            {edu.degreePt}, {edu.year}
+                          </div>
+                          <div className="text-sm text-muted-foreground leading-snug mt-0.5">
+                            {edu.institution}
+                          </div>
+                        </div>
+                      </div>
+                    )}
 
                     {isEditing && (
                       <button
