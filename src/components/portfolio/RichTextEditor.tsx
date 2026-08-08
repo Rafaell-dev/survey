@@ -91,6 +91,9 @@ export function RichTextEditor({ value, onChange, onBlur, placeholder, maxLength
     onUpdate: ({ editor }) => {
       onChange(editor.getHTML());
     },
+    onBlur: () => {
+      if (onBlur) onBlur();
+    },
     onSelectionUpdate: ({ editor }) => {
       if (menuState === 'EDIT_LINK') return; 
       

@@ -76,6 +76,13 @@ export function EditableField({
     setLocalValue(value || "");
   }, [value]);
 
+  const handleRichTextChange = (v: string) => {
+    setLocalValue(v);
+    if (v !== value) {
+      onSave(v);
+    }
+  };
+
   const handleBlur = () => {
     let finalValue = localValue;
     if (autoSanitize && !richText) {
@@ -164,7 +171,7 @@ export function EditableField({
         {richText ? (
           <RichTextEditor 
             value={localValue}
-            onChange={(v) => setLocalValue(v)}
+            onChange={handleRichTextChange}
             onBlur={handleBlur}
             placeholder={placeholder}
             maxLength={maxLength}
