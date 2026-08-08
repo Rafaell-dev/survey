@@ -86,9 +86,15 @@ export const portfolioProfileSchema = z.object({
     .max(100, "Instituição deve ter no máximo 100 caracteres.")
     .refine(v => v.trim().length > 0, "A instituição não pode ser composta apenas por espaços."),
   aboutPt: z.string()
-    .min(50, "A biografia deve ter no mínimo 50 caracteres.")
-    .max(500, "A biografia pode ter no máximo 500 caracteres.")
-    .refine(v => v.trim().length > 0, "A biografia não pode ser composta apenas por espaços."),
+    .max(2000, "A biografia pode ter no máximo 2000 caracteres com a formatação.")
+    .refine(v => {
+      const plainText = (v || "").replace(/<[^>]*>?/gm, "").trim();
+      return plainText.length >= 10;
+    }, "A biografia deve ter no mínimo 10 caracteres de texto.")
+    .refine(v => {
+      const plainText = (v || "").replace(/<[^>]*>?/gm, "").trim();
+      return plainText.length <= 500;
+    }, "O texto da biografia pode ter no máximo 500 caracteres (sem contar os links e formatação)."),
   email: z.string()
     .email("Informe um e-mail válido.")
     .or(z.literal(""))

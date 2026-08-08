@@ -78,7 +78,7 @@ export function EditableField({
 
   const handleBlur = () => {
     let finalValue = localValue;
-    if (autoSanitize) {
+    if (autoSanitize && !richText) {
       finalValue = sanitizeText(localValue);
       setLocalValue(finalValue);
     }
