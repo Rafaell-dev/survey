@@ -90,6 +90,21 @@
     color: var(--color-primary) !important;
   }
 
+  /* Card Hover padronizado com a Cor de Destaque */
+  .portfolio-card-hover {
+    transition: all 0.3s ease !important;
+  }
+  .portfolio-card-hover:hover {
+    border-color: var(--color-primary) !important;
+    background-color: color-mix(in srgb, var(--color-primary) 4%, transparent) !important;
+    box-shadow: 0 10px 25px -5px color-mix(in srgb, var(--color-primary) 15%, transparent) !important;
+  }
+  .portfolio-card-hover:hover h3,
+  .portfolio-card-hover:hover .card-title,
+  .portfolio-card-hover:hover .card-action {
+    color: var(--color-primary) !important;
+  }
+
   .prose a, .prose-sm a {
     color: var(--color-primary) !important;
     font-weight: 500;
