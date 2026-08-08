@@ -172,25 +172,25 @@ export function PortfolioSidebar({ profile, isEditing, onUpdate, onAvatarUpload 
 
       {/* Social Links (View Only) */}
       <div className="w-full mt-4">
-        <div className="flex flex-wrap gap-4 justify-center md:justify-start text-primary">
+        <div className="flex flex-wrap gap-2 justify-center md:justify-start">
           {profile.email && (
-            <a href={`mailto:${profile.email}`} target="_blank" rel="noopener noreferrer" className="hover:text-primary/80 transition-colors">
-              <Mail className="w-6 h-6" />
+            <a href={`mailto:${profile.email}`} target="_blank" rel="noopener noreferrer" className="p-2 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all" title="E-mail">
+              <Mail className="w-5 h-5" />
             </a>
           )}
           {profile.lattesUrl && (
-            <a href={profile.lattesUrl} target="_blank" rel="noopener noreferrer" className="hover:text-primary/80 transition-colors">
-              <GraduationCap className="w-6 h-6" />
+            <a href={profile.lattesUrl} target="_blank" rel="noopener noreferrer" className="p-2 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all" title="Lattes">
+              <GraduationCap className="w-5 h-5" />
             </a>
           )}
           {profile.githubUrl && (
-            <a href={profile.githubUrl} target="_blank" rel="noopener noreferrer" className="hover:text-primary/80 transition-colors">
-              <Code className="w-6 h-6" />
+            <a href={profile.githubUrl} target="_blank" rel="noopener noreferrer" className="p-2 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all" title="GitHub">
+              <Code className="w-5 h-5" />
             </a>
           )}
           {profile.linkedinUrl && (
-            <a href={profile.linkedinUrl} target="_blank" rel="noopener noreferrer" className="hover:text-primary/80 transition-colors">
-              <Briefcase className="w-6 h-6" />
+            <a href={profile.linkedinUrl} target="_blank" rel="noopener noreferrer" className="p-2 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all" title="LinkedIn">
+              <Briefcase className="w-5 h-5" />
             </a>
           )}
         </div>
