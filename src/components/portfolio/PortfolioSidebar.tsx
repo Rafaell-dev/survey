@@ -19,10 +19,19 @@ export function PortfolioSidebar({ profile, isEditing, onUpdate, onAvatarUpload 
   const [avatarError, setAvatarError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (profile.themeColor) {
+    if (profile.themeColor && profile.themeColor !== localThemeColor) {
       setLocalThemeColor(profile.themeColor);
     }
   }, [profile.themeColor]);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      if (localThemeColor && localThemeColor !== profile.themeColor) {
+        onUpdate({ themeColor: localThemeColor });
+      }
+    }, 500);
+    return () => clearTimeout(handler);
+  }, [localThemeColor, profile.themeColor, onUpdate]);
 
   const handleAvatarClick = () => {
     if (isEditing && fileInputRef.current) {
@@ -152,7 +161,6 @@ export function PortfolioSidebar({ profile, isEditing, onUpdate, onAvatarUpload 
                 type="color"
                 value={localThemeColor}
                 onChange={(e) => setLocalThemeColor(e.target.value)}
-                onBlur={() => onUpdate({ themeColor: localThemeColor })}
                 className="w-8 h-8 rounded cursor-pointer border-0 p-0 bg-transparent"
                 title="Escolher cor de destaque"
               />

@@ -60,7 +60,10 @@ export function PortfolioLayout({
   return (
     <div 
       className="min-h-screen bg-background" 
-      style={profile.themeColor ? { "--primary": hexToHsl(profile.themeColor) } as React.CSSProperties : undefined}
+      style={profile.themeColor ? { 
+        "--primary": hexToHsl(profile.themeColor),
+        "--color-primary": profile.themeColor
+      } as React.CSSProperties : undefined}
     >
       {/* Top Header / Navigation */}
       <header className="w-full border-b sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -78,7 +81,7 @@ export function PortfolioLayout({
                   "px-3 py-2 text-sm font-medium transition-colors whitespace-nowrap",
                   activeTab === tab.id
                     ? "text-primary border-b-2 border-primary"
-                    : "text-muted-foreground hover:text-foreground"
+                    : "text-muted-foreground hover:text-primary hover:border-b-2 hover:border-primary/50"
                 )}
               >
                 {tab.label}
