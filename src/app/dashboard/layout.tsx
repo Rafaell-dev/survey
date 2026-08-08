@@ -48,7 +48,7 @@ export default function DashboardLayout({
       {/* Mobile Topbar */}
       <header className="md:hidden flex items-center justify-between p-4 border-b bg-background sticky top-0 z-20 shadow-sm">
         <div className="flex items-center">
-          <img src="/div.ar.png" alt="div.ar" className="h-10 w-auto object-contain" />
+          <img src="/div.ar 21.png" alt="div.ar" className="h-20 w-auto object-contain" />
         </div>
         <button
           onClick={handleLogout}
@@ -63,7 +63,7 @@ export default function DashboardLayout({
       <aside className="hidden md:flex w-64 flex-shrink-0 border-r bg-background flex-col sticky top-0 h-screen">
         <div className="p-6 border-b">
           <div className="flex items-center">
-            <img src="/div.ar.png" alt="div.ar" className="h-12 w-auto object-contain" />
+            <img src="/div.ar 21.png" alt="div.ar" className="h-24 w-auto object-contain" />
           </div>
         </div>
         <div className="flex-1 py-6 px-4 space-y-1 overflow-y-auto">
