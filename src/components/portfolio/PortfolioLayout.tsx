@@ -4,7 +4,7 @@ import { AboutTab } from "./AboutTab";
 import { TeachingTab, TeachingData } from "./TeachingTab";
 import { ToolsTab, ToolsData } from "./ToolsTab";
 import { SurveysTab } from "./SurveysTab";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { cn, hexToHsl } from "@/lib/utils";
 
 interface PortfolioLayoutProps {
@@ -48,14 +48,38 @@ export function PortfolioLayout({
   toolsData,
   onUpdateTools,
 }: PortfolioLayoutProps) {
-  const [activeTab, setActiveTab] = useState("sobre");
+  const hasTeachingContent = Boolean(
+    teachingData && (
+      (teachingData.graduacao && teachingData.graduacao.length > 0) ||
+      (teachingData.posGraduacao && teachingData.posGraduacao.length > 0) ||
+      (teachingData.workshops && teachingData.workshops.length > 0) ||
+      (teachingData.introText && teachingData.introText.trim().length > 0)
+    )
+  );
+
+  const hasSurveysContent = Boolean(
+    profile.surveys && profile.surveys.length > 0
+  );
+
+  const hasToolsContent = Boolean(
+    toolsData && (
+      (toolsData.items && toolsData.items.length > 0) ||
+      (toolsData.introText && toolsData.introText.trim().length > 0)
+    )
+  );
 
   const tabs = [
-    { id: "sobre", label: "Sobre" },
-    { id: "ensino", label: "Ensino" },
-    { id: "pesquisas", label: "Pesquisas" },
-    { id: "ferramentas", label: "Ferramentas & Projetos" },
-  ];
+    { id: "sobre", label: "Sobre", show: true },
+    { id: "ensino", label: "Ensino", show: isEditing || hasTeachingContent },
+    { id: "pesquisas", label: "Pesquisas", show: isEditing || hasSurveysContent },
+    { id: "ferramentas", label: "Ferramentas & Projetos", show: isEditing || hasToolsContent },
+  ].filter(t => t.show);
+
+  useEffect(() => {
+    if (!tabs.some(t => t.id === activeTab)) {
+      setActiveTab("sobre");
+    }
+  }, [tabs, activeTab]);
 
   return (
     <div 
