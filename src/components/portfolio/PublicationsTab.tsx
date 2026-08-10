@@ -140,7 +140,7 @@ export function PublicationsTab({ data, isEditing, onUpdate }: PublicationsTabPr
 
       {/* Sub-Abas de Navegação (Padrão Visual solicitado) */}
       {sections.length > 0 && (
-        <div className="border-b border-border/80 pt-2 pb-0 mb-6 flex items-center gap-1.5 overflow-x-auto hide-scrollbar">
+        <div className="border-b border-border/80 pt-2 pb-0 mb-6 flex items-center gap-2 overflow-x-auto hide-scrollbar">
           {sections.map((sec, index) => {
             const isActive = activeSectionId === sec.id;
             return (
@@ -159,6 +159,18 @@ export function PublicationsTab({ data, isEditing, onUpdate }: PublicationsTabPr
               </button>
             );
           })}
+
+          {/* Botão + Nova Aba dentro da barra de sub-abas */}
+          {isEditing && sections.length < 4 && (
+            <button
+              type="button"
+              onClick={handleAddSection}
+              className="px-4 py-2 text-sm font-semibold text-primary hover:bg-primary/10 border-2 border-dashed border-primary/40 rounded-t-sm transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5 -mb-[2px]"
+              title="Adicionar nova aba/seção (máx. 4)"
+            >
+              <Plus className="w-4 h-4" /> Nova Aba
+            </button>
+          )}
         </div>
       )}
 
