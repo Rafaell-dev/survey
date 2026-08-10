@@ -61,6 +61,14 @@ export default function PublicPortfolioPage() {
     } catch(e) {}
   }
 
+  const publicacoesPage = pages?.find((p: any) => p.slug === "publicacoes");
+  let publicationsData: any = { sections: [] };
+  if (publicacoesPage?.contentPt) {
+    try {
+      publicationsData = JSON.parse(publicacoesPage.contentPt);
+    } catch(e) {}
+  }
+
   return (
     <PortfolioLayout
       isEditing={false}
@@ -69,6 +77,7 @@ export default function PublicPortfolioPage() {
       educations={educations || []}
       teachingData={teachingData}
       toolsData={toolsData}
+      publicationsData={publicationsData}
     />
   );
 }

@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { PortfolioLayout } from "@/components/portfolio/PortfolioLayout";
 import { TeachingData } from "@/components/portfolio/TeachingTab";
 import { ToolsData } from "@/components/portfolio/ToolsTab";
+import { PublicationsData } from "@/components/portfolio/PublicationsTab";
 import { 
   portfolioService, 
   PortfolioProfile, 
@@ -31,6 +32,9 @@ export default function PortfolioDashboardPage() {
 
   const [toolsData, setToolsData] = useState<ToolsData>({ items: [] });
   const [toolsPageId, setToolsPageId] = useState<string | null>(null);
+
+  const [publicationsData, setPublicationsData] = useState<PublicationsData>({ sections: [] });
+  const [publicationsPageId, setPublicationsPageId] = useState<string | null>(null);
 
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
@@ -82,6 +86,20 @@ export default function PortfolioDashboardPage() {
         } catch (err: any) {
           if (err.response?.status !== 404) {
             console.error("Failed to load tools page", err);
+          }
+        }
+
+        try {
+          const page = await portfolioService.getPage('publicacoes');
+          setPublicationsPageId(page.id);
+          if (page.contentPt) {
+            try {
+              setPublicationsData(JSON.parse(page.contentPt));
+            } catch(e) {}
+          }
+        } catch (err: any) {
+          if (err.response?.status !== 404) {
+            console.error("Failed to load publications page", err);
           }
         }
 
@@ -169,6 +187,15 @@ export default function PortfolioDashboardPage() {
         } else {
           const newToolsPage = await portfolioService.createPage({ slug: 'ferramentas', titlePt: 'Ferramentas', titleEn: 'Tools', contentPt: toolsContentPt });
           setToolsPageId(newToolsPage.id);
+        }
+
+        // Save Publications Page
+        const pubContentPt = JSON.stringify(publicationsData);
+        if (publicationsPageId) {
+          await portfolioService.updatePage(publicationsPageId, { contentPt: pubContentPt });
+        } else {
+          const newPubPage = await portfolioService.createPage({ slug: 'publicacoes', titlePt: 'Publicações', titleEn: 'Publications', contentPt: pubContentPt });
+          setPublicationsPageId(newPubPage.id);
         }
 
         // Reload fresh data to get correct IDs
@@ -270,6 +297,11 @@ export default function PortfolioDashboardPage() {
     setIsDirty(true);
   };
 
+  const handleUpdatePublications = (data: PublicationsData) => {
+    setPublicationsData(data);
+    setIsDirty(true);
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center items-center h-[50vh]">
@@ -299,6 +331,8 @@ export default function PortfolioDashboardPage() {
         onUpdateTeaching={handleUpdateTeaching}
         toolsData={toolsData}
         onUpdateTools={handleUpdateTools}
+        publicationsData={publicationsData}
+        onUpdatePublications={handleUpdatePublications}
         onUpdateSurveys={() => setIsDirty(true)}
       />
 

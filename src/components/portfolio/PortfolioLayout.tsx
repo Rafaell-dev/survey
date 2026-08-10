@@ -3,6 +3,7 @@ import { PortfolioSidebar } from "./PortfolioSidebar";
 import { AboutTab } from "./AboutTab";
 import { TeachingTab, TeachingData } from "./TeachingTab";
 import { ToolsTab, ToolsData } from "./ToolsTab";
+import { PublicationsTab, PublicationsData } from "./PublicationsTab";
 import { SurveysTab } from "./SurveysTab";
 import { useState, useEffect } from "react";
 import { cn, hexToHsl } from "@/lib/utils";
@@ -26,6 +27,8 @@ interface PortfolioLayoutProps {
   onUpdateTeaching?: (data: TeachingData) => void;
   toolsData?: ToolsData;
   onUpdateTools?: (data: ToolsData) => void;
+  publicationsData?: PublicationsData;
+  onUpdatePublications?: (data: PublicationsData) => void;
   onUpdateSurveys?: () => void;
 }
 
@@ -48,6 +51,8 @@ export function PortfolioLayout({
   onUpdateTeaching,
   toolsData,
   onUpdateTools,
+  publicationsData,
+  onUpdatePublications,
   onUpdateSurveys,
 }: PortfolioLayoutProps) {
   const [activeTab, setActiveTab] = useState("sobre");
@@ -72,8 +77,16 @@ export function PortfolioLayout({
     )
   );
 
+  const hasPublicationsContent = Boolean(
+    publicationsData &&
+    publicationsData.sections &&
+    publicationsData.sections.length > 0 &&
+    publicationsData.sections.some(s => (s.title && s.title.trim().length > 0) || (s.content && s.content.trim().length > 0))
+  );
+
   const tabs = [
     { id: "sobre", label: "Sobre", show: true },
+    { id: "publicacoes", label: "Publicações", show: isEditing || hasPublicationsContent },
     { id: "ensino", label: "Ensino", show: isEditing || hasTeachingContent },
     { id: "pesquisas", label: "Pesquisas", show: isEditing || hasSurveysContent },
     { id: "ferramentas", label: "Ferramentas & Projetos", show: isEditing || hasToolsContent },
@@ -158,6 +171,14 @@ export function PortfolioLayout({
               />
             )}
 
+            {activeTab === "publicacoes" && (
+              <PublicationsTab
+                data={publicationsData || { sections: [] }}
+                isEditing={isEditing}
+                onUpdate={onUpdatePublications || (() => {})}
+              />
+            )}
+
             {activeTab === "ensino" && (
               <TeachingTab 
                 data={teachingData || { graduacao: [], posGraduacao: [], workshops: [] }}
@@ -182,7 +203,7 @@ export function PortfolioLayout({
               />
             )}
             
-            {activeTab !== "sobre" && activeTab !== "ensino" && activeTab !== "ferramentas" && activeTab !== "pesquisas" && (
+            {activeTab !== "sobre" && activeTab !== "publicacoes" && activeTab !== "ensino" && activeTab !== "ferramentas" && activeTab !== "pesquisas" && (
               <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
                 <section>
                   <h2 className="text-3xl font-light mb-6 tracking-tight capitalize">
