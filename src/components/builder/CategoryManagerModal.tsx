@@ -120,29 +120,41 @@ export function CategoryManagerModal({
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="sm:max-w-md w-[95vw]">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-xl">
-            <Tag className="w-5 h-5 text-primary" />
-            Gerenciar Categorias
-          </DialogTitle>
+          <div className="flex items-center justify-between">
+            <DialogTitle className="flex items-center gap-2 text-xl">
+              <Tag className="w-5 h-5 text-primary" />
+              Gerenciar Categorias
+            </DialogTitle>
+            <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-muted text-muted-foreground border">
+              {categories.length}/5
+            </span>
+          </div>
           <DialogDescription>
-            Crie, edite ou exclua categorias para organizar suas pesquisas.
+            Crie, edite ou exclua categorias para organizar suas pesquisas (máx. 5 categorias).
           </DialogDescription>
         </DialogHeader>
 
         {/* Formulário de Criação rápida */}
-        <form onSubmit={handleCreate} className="flex gap-2 my-2 items-center">
-          <Input
-            value={newCategoryName}
-            onChange={(e) => setNewCategoryName(e.target.value)}
-            placeholder="Nova categoria (ex: Linguística, R...)"
-            disabled={creating}
-            className="flex-1 h-10"
-          />
-          <Button type="submit" disabled={creating || !newCategoryName.trim()} className="h-10 gap-1 px-4">
-            {creating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
-            Criar
-          </Button>
-        </form>
+        <div className="space-y-1.5 my-2">
+          <form onSubmit={handleCreate} className="flex gap-2 items-center">
+            <Input
+              value={newCategoryName}
+              onChange={(e) => setNewCategoryName(e.target.value)}
+              placeholder={categories.length >= 5 ? "Limite de 5 categorias atingido" : "Nova categoria (ex: Linguística, R...)"}
+              disabled={creating || categories.length >= 5}
+              className="flex-1 h-10"
+            />
+            <Button type="submit" disabled={creating || !newCategoryName.trim() || categories.length >= 5} className="h-10 gap-1 px-4">
+              {creating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
+              Criar
+            </Button>
+          </form>
+          {categories.length >= 5 && (
+            <p className="text-xs text-amber-600 bg-amber-50 dark:bg-amber-950/40 dark:text-amber-400 p-2 rounded-md border border-amber-200 dark:border-amber-800">
+              Você atingiu o limite de 5 categorias. Exclua uma categoria existente para criar uma nova.
+            </p>
+          )}
+        </div>
 
         {/* Lista de Categorias */}
         <div className="mt-4 space-y-2 max-h-[300px] overflow-y-auto pr-1">
