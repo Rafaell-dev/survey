@@ -45,7 +45,9 @@ export function SurveysTab({ publicSurveys = [], isEditing, onUpdate }: SurveysT
     }
   };
 
-  const displaySurveys = isEditing ? surveys : publicSurveys;
+  const displaySurveys = (isEditing ? surveys : publicSurveys).filter(
+    (s: any) => s.status !== 'ARCHIVED'
+  );
 
   if (loading && isEditing) {
     return <div className="text-center py-12 text-muted-foreground animate-pulse">Carregando suas pesquisas...</div>;
