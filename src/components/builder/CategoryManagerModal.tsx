@@ -130,15 +130,15 @@ export function CategoryManagerModal({
         </DialogHeader>
 
         {/* Formulário de Criação rápida */}
-        <form onSubmit={handleCreate} className="flex gap-2 my-2">
+        <form onSubmit={handleCreate} className="flex gap-2 my-2 items-center">
           <Input
             value={newCategoryName}
             onChange={(e) => setNewCategoryName(e.target.value)}
             placeholder="Nova categoria (ex: Linguística, R...)"
             disabled={creating}
-            className="flex-1"
+            className="flex-1 h-10"
           />
-          <Button type="submit" disabled={creating || !newCategoryName.trim()} className="gap-1">
+          <Button type="submit" disabled={creating || !newCategoryName.trim()} className="h-10 gap-1 px-4">
             {creating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
             Criar
           </Button>
