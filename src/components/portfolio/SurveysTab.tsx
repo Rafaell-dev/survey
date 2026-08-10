@@ -108,11 +108,19 @@ export function SurveysTab({ publicSurveys = [], publicSurveyCategories = [], is
           <button
             onClick={() => setSelectedCategory("ALL")}
             className={cn(
-              "px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-200",
+              "px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 cursor-pointer",
               selectedCategory === "ALL"
-                ? "bg-primary text-primary-foreground shadow-sm font-semibold"
+                ? "font-semibold shadow-sm"
                 : "text-muted-foreground hover:text-foreground hover:bg-muted/70"
             )}
+            style={
+              selectedCategory === "ALL"
+                ? {
+                    backgroundColor: "var(--color-primary, hsl(var(--primary)))",
+                    color: "#ffffff",
+                  }
+                : undefined
+            }
           >
             Todos
           </button>
@@ -124,11 +132,19 @@ export function SurveysTab({ publicSurveys = [], publicSurveyCategories = [], is
                 key={cat.id}
                 onClick={() => setSelectedCategory(cat.id)}
                 className={cn(
-                  "px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-200",
+                  "px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 cursor-pointer",
                   isActive
-                    ? "bg-primary text-primary-foreground shadow-sm font-semibold"
+                    ? "font-semibold shadow-sm"
                     : "text-muted-foreground hover:text-foreground hover:bg-muted/70"
                 )}
+                style={
+                  isActive
+                    ? {
+                        backgroundColor: "var(--color-primary, hsl(var(--primary)))",
+                        color: "#ffffff",
+                      }
+                    : undefined
+                }
               >
                 {cat.name}
               </button>
