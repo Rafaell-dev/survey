@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
-import { ArrowLeft, Save, Loader2, Share2 } from "lucide-react";
+import { ArrowLeft, Save, Loader2, Share2, Tag, Plus } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
 
@@ -29,6 +29,8 @@ import { SurveyStatusBadge } from "@/components/builder/publish/SurveyStatusBadg
 import { ParticipantIdentificationType } from "@/domain/survey.types";
 import { AnalyticsDashboard } from "@/components/analytics/AnalyticsDashboard";
 import { ThemeEditor } from "@/components/builder/theme/ThemeEditor";
+import { surveyCategoryService, SurveyCategory } from "@/services/survey-category.service";
+import { CategoryManagerModal } from "@/components/builder/CategoryManagerModal";
 
 export default function EditFormPage() {
   const router = useRouter();
@@ -47,6 +49,9 @@ export default function EditFormPage() {
   const [description, setDescription] = useState("");
   const [instructions, setInstructions] = useState("");
   const [status, setStatus] = useState("DRAFT");
+  const [categoryId, setCategoryId] = useState<string | null>(null);
+  const [categories, setCategories] = useState<SurveyCategory[]>([]);
+  const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
 
   // Settings
   const [participantIdentificationType, setParticipantIdentificationType] =
@@ -76,13 +81,22 @@ export default function EditFormPage() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, [lastScrollY]);
 
+  const reloadCategories = async () => {
+    try {
+      const catList = await surveyCategoryService.list();
+      setCategories(catList);
+    } catch (e) {}
+  };
+
   useEffect(() => {
-    Promise.all([fetchSurvey(surveyId), fetchBlocks(surveyId)])
-      .then(([survey]) => {
+    Promise.all([fetchSurvey(surveyId), fetchBlocks(surveyId), surveyCategoryService.list().catch(() => [])])
+      .then(([survey, _blocks, catList]) => {
         setTitle(survey.title);
         setDescription(survey.description || "");
         setInstructions(survey.instructions || "");
         setStatus(survey.status);
+        setCategoryId(survey.categoryId || null);
+        setCategories(catList);
         setParticipantIdentificationType(survey.participantIdentificationType);
         setAllowMultipleResponses(survey.allowMultipleResponses);
         setInitialLoading(false);
@@ -107,6 +121,7 @@ export default function EditFormPage() {
           title,
           description: description || undefined,
           instructions: instructions || undefined,
+          categoryId: categoryId || null,
         }),
         updateSurveySettings(surveyId, {
           participantIdentificationType,
@@ -278,6 +293,44 @@ export default function EditFormPage() {
                       placeholder="Ex: Leia atentamente cada questão antes de responder... (Opcional)"
                     />
                   </div>
+
+                  {/* Campo de Categoria */}
+                  <div className="space-y-2 pt-2 border-t">
+                    <div className="flex items-center justify-between">
+                      <label className="text-sm font-medium text-muted-foreground flex items-center gap-1.5">
+                        <Tag className="w-4 h-4 text-primary" /> Categoria da Pesquisa
+                      </label>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 text-xs text-primary hover:text-primary gap-1"
+                        onClick={() => setIsCategoryModalOpen(true)}
+                      >
+                        <Plus className="w-3.5 h-3.5" /> Gerenciar / Criar Categoria
+                      </Button>
+                    </div>
+
+                    <Select
+                      value={categoryId || "NONE"}
+                      onValueChange={(val) => setCategoryId(val === "NONE" ? null : val)}
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Selecione uma categoria..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="NONE">Sem Categoria</SelectItem>
+                        {categories.map((cat) => (
+                          <SelectItem key={cat.id} value={cat.id}>
+                            {cat.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <p className="text-xs text-muted-foreground">
+                      Associe a pesquisa a uma categoria para permitir filtragem por tópicos no seu portfólio.
+                    </p>
+                  </div>
                 </CardContent>
               </Card>
             </section>
@@ -380,6 +433,12 @@ export default function EditFormPage() {
           <AnalyticsDashboard surveyId={surveyId} />
         </TabsContent>
       </Tabs>
+      <CategoryManagerModal
+        isOpen={isCategoryModalOpen}
+        onClose={() => setIsCategoryModalOpen(false)}
+        onSelectCategory={(id) => setCategoryId(id)}
+        onCategoriesUpdated={reloadCategories}
+      />
     </div>
   );
 }

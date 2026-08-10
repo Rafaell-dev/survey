@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Star, FileText } from "lucide-react";
 import { portfolioService } from "@/services/portfolio.service";
 import { cn } from "@/lib/utils";
@@ -6,13 +6,15 @@ import { Badge } from "@/components/ui/badge";
 
 interface SurveysTabProps {
   publicSurveys?: any[]; // Passado no modo público
+  publicSurveyCategories?: any[];
   isEditing: boolean;
   onUpdate?: () => void;
 }
 
-export function SurveysTab({ publicSurveys = [], isEditing, onUpdate }: SurveysTabProps) {
+export function SurveysTab({ publicSurveys = [], publicSurveyCategories = [], isEditing, onUpdate }: SurveysTabProps) {
   const [surveys, setSurveys] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<string>("ALL");
 
   useEffect(() => {
     if (isEditing) {
@@ -49,6 +51,25 @@ export function SurveysTab({ publicSurveys = [], isEditing, onUpdate }: SurveysT
     (s: any) => s.status !== 'ARCHIVED'
   );
 
+  const availableCategories = useMemo(() => {
+    const map = new Map<string, string>();
+    displaySurveys.forEach((s: any) => {
+      if (s.category && s.category.id && s.category.name) {
+        map.set(s.category.id, s.category.name);
+      } else if (s.categoryId && s.categoryName) {
+        map.set(s.categoryId, s.categoryName);
+      }
+    });
+    return Array.from(map.entries()).map(([id, name]) => ({ id, name }));
+  }, [displaySurveys]);
+
+  const filteredSurveys = useMemo(() => {
+    if (selectedCategory === "ALL") return displaySurveys;
+    return displaySurveys.filter(
+      (s: any) => s.categoryId === selectedCategory || s.category?.id === selectedCategory
+    );
+  }, [displaySurveys, selectedCategory]);
+
   if (loading && isEditing) {
     return <div className="text-center py-12 text-muted-foreground animate-pulse">Carregando suas pesquisas...</div>;
   }
@@ -81,8 +102,43 @@ export function SurveysTab({ publicSurveys = [], isEditing, onUpdate }: SurveysT
         </div>
       )}
 
+      {/* Filtro de Categorias (Pills Bar) */}
+      {availableCategories.length > 0 && (
+        <div className="flex flex-wrap items-center gap-1.5 p-1.5 bg-muted/40 rounded-xl border border-border/50 max-w-fit mb-6">
+          <button
+            onClick={() => setSelectedCategory("ALL")}
+            className={cn(
+              "px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-200",
+              selectedCategory === "ALL"
+                ? "bg-primary text-primary-foreground shadow-sm font-semibold"
+                : "text-muted-foreground hover:text-foreground hover:bg-muted/70"
+            )}
+          >
+            Todos
+          </button>
+
+          {availableCategories.map((cat) => {
+            const isActive = selectedCategory === cat.id;
+            return (
+              <button
+                key={cat.id}
+                onClick={() => setSelectedCategory(cat.id)}
+                className={cn(
+                  "px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-200",
+                  isActive
+                    ? "bg-primary text-primary-foreground shadow-sm font-semibold"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted/70"
+                )}
+              >
+                {cat.name}
+              </button>
+            );
+          })}
+        </div>
+      )}
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {displaySurveys.map((survey) => (
+        {filteredSurveys.map((survey) => (
           <div 
             key={survey.id}
             className={cn(
@@ -95,9 +151,16 @@ export function SurveysTab({ publicSurveys = [], isEditing, onUpdate }: SurveysT
               }
             }}
           >
-            <div>
-              <div className="flex justify-between items-start mb-4">
-                {isEditing && survey.status === 'PUBLISHED' && (
+              <div>
+                <div className="flex justify-between items-start mb-2">
+                  <div>
+                    {survey.category?.name && (
+                      <span className="inline-block px-2.5 py-0.5 text-xs font-semibold rounded-full bg-primary/10 text-primary mb-2">
+                        {survey.category.name}
+                      </span>
+                    )}
+                  </div>
+                  {isEditing && survey.status === 'PUBLISHED' && (
                   <button
                     onClick={(e) => {
                       e.stopPropagation();

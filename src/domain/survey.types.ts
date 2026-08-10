@@ -8,6 +8,11 @@ export interface PublicLinkInfo {
   url: string | null;
 }
 
+export interface SurveyCategory {
+  id: string;
+  name: string;
+}
+
 export interface Survey {
   id: string;
   title: string;
@@ -19,6 +24,8 @@ export interface Survey {
   publicSlug: string | null;
   publicLinkActive: boolean;
   isHighlighted?: boolean;
+  categoryId?: string | null;
+  category?: SurveyCategory | null;
   researcherId: string;
   createdAt: string;
   updatedAt: string;
@@ -38,6 +45,7 @@ export interface UpdateSurveyDTO {
   description?: string;
   instructions?: string;
   isHighlighted?: boolean;
+  categoryId?: string | null;
 }
 
 export interface UpdateSurveySettingsDTO {
