@@ -4,7 +4,7 @@ import StarterKit from '@tiptap/starter-kit'
 import Link from '@tiptap/extension-link'
 import Underline from '@tiptap/extension-underline'
 import { useState, useEffect, useRef } from 'react'
-import { Bold, Italic, Underline as UnderlineIcon, Strikethrough, Link as LinkIcon, ExternalLink, X, Edit2 } from 'lucide-react'
+import { Bold, Italic, Underline as UnderlineIcon, Strikethrough, Link as LinkIcon, ExternalLink, X, Edit2, Heading2, Heading3, List, ListOrdered } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
@@ -86,7 +86,7 @@ export function RichTextEditor({ value, onChange, onBlur, placeholder, maxLength
     content: value,
     editorProps: {
       attributes: {
-        class: 'prose prose-sm dark:prose-invert max-w-none p-3 min-h-[120px] focus:outline-none text-muted-foreground outline-none prose-a:text-primary prose-a:font-medium prose-a:no-underline hover:prose-a:underline prose-a:cursor-pointer',
+        class: 'prose prose-sm dark:prose-invert max-w-none p-3 min-h-[120px] focus:outline-none text-muted-foreground outline-none prose-h2:text-xl prose-h2:font-bold prose-h2:text-foreground prose-h2:mt-4 prose-h2:mb-2 prose-h3:text-lg prose-h3:font-bold prose-h3:text-foreground prose-h3:mt-3 prose-h3:mb-1.5 prose-ul:list-disc prose-ul:pl-5 prose-ul:my-2 prose-ol:list-decimal prose-ol:pl-5 prose-ol:my-2 prose-li:my-1 prose-a:text-primary prose-a:font-medium prose-a:no-underline hover:prose-a:underline prose-a:cursor-pointer',
       },
     },
     onUpdate: ({ editor }) => {
@@ -264,10 +264,38 @@ export function RichTextEditor({ value, onChange, onBlur, placeholder, maxLength
     >
       
       {/* FIXED TOOLBAR */}
-      <div className="flex items-center gap-1 border-b border-border/40 p-1.5 bg-muted/20 rounded-t-md">
+      <div className="flex items-center gap-1 border-b border-border/40 p-1.5 bg-muted/20 rounded-t-md flex-wrap">
+        {/* Títulos / Headings */}
         <Button 
           variant="ghost" 
           size="icon" 
+          type="button"
+          className={cn("h-7 w-7", editor.isActive('heading', { level: 2 }) && "bg-muted")} 
+          onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} 
+          aria-label="Título Grande"
+          title="Título Grande (H2)"
+        >
+          <Heading2 className={cn("w-3.5 h-3.5", editor.isActive('heading', { level: 2 }) && "text-primary")} />
+        </Button>
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          type="button"
+          className={cn("h-7 w-7", editor.isActive('heading', { level: 3 }) && "bg-muted")} 
+          onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()} 
+          aria-label="Subtítulo"
+          title="Subtítulo (H3)"
+        >
+          <Heading3 className={cn("w-3.5 h-3.5", editor.isActive('heading', { level: 3 }) && "text-primary")} />
+        </Button>
+
+        <div className="w-px h-4 bg-border mx-0.5" />
+
+        {/* Formatações de Texto */}
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          type="button"
           className={cn("h-7 w-7", editor.isActive('bold') && "bg-muted")} 
           onClick={() => editor.chain().focus().toggleBold().run()} 
           aria-label="Negrito"
@@ -278,6 +306,7 @@ export function RichTextEditor({ value, onChange, onBlur, placeholder, maxLength
         <Button 
           variant="ghost" 
           size="icon" 
+          type="button"
           className={cn("h-7 w-7", editor.isActive('italic') && "bg-muted")} 
           onClick={() => editor.chain().focus().toggleItalic().run()} 
           aria-label="Itálico"
@@ -288,6 +317,7 @@ export function RichTextEditor({ value, onChange, onBlur, placeholder, maxLength
         <Button 
           variant="ghost" 
           size="icon" 
+          type="button"
           className={cn("h-7 w-7", editor.isActive('underline') && "bg-muted")} 
           onClick={() => editor.chain().focus().toggleUnderline().run()} 
           aria-label="Sublinhado"
@@ -298,6 +328,7 @@ export function RichTextEditor({ value, onChange, onBlur, placeholder, maxLength
         <Button 
           variant="ghost" 
           size="icon" 
+          type="button"
           className={cn("h-7 w-7", editor.isActive('strike') && "bg-muted")} 
           onClick={() => editor.chain().focus().toggleStrike().run()} 
           aria-label="Tachado"
@@ -305,7 +336,34 @@ export function RichTextEditor({ value, onChange, onBlur, placeholder, maxLength
         >
           <Strikethrough className={cn("w-3.5 h-3.5", editor.isActive('strike') && "text-primary")} />
         </Button>
-        <div className="w-px h-4 bg-border mx-1" />
+
+        <div className="w-px h-4 bg-border mx-0.5" />
+
+        {/* Marcadores / Listas */}
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          type="button"
+          className={cn("h-7 w-7", editor.isActive('bulletList') && "bg-muted")} 
+          onClick={() => editor.chain().focus().toggleBulletList().run()} 
+          aria-label="Lista com Marcadores (Bullet Points)"
+          title="Lista com Marcadores"
+        >
+          <List className={cn("w-3.5 h-3.5", editor.isActive('bulletList') && "text-primary")} />
+        </Button>
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          type="button"
+          className={cn("h-7 w-7", editor.isActive('orderedList') && "bg-muted")} 
+          onClick={() => editor.chain().focus().toggleOrderedList().run()} 
+          aria-label="Lista Numerada"
+          title="Lista Numerada"
+        >
+          <ListOrdered className={cn("w-3.5 h-3.5", editor.isActive('orderedList') && "text-primary")} />
+        </Button>
+
+        <div className="w-px h-4 bg-border mx-0.5" />
         
         <Popover open={menuState === 'EDIT_LINK'} onOpenChange={(open) => {
           if (!open && menuState === 'EDIT_LINK') cancelLink();

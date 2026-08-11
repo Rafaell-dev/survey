@@ -150,7 +150,7 @@ export function EditableField({
       return (
         <div className="w-full">
           <div 
-            className={cn("prose prose-sm dark:prose-invert max-w-none prose-a:!text-primary prose-a:font-medium prose-a:no-underline hover:prose-a:underline prose-a:cursor-pointer", className)} 
+            className={cn("prose prose-sm dark:prose-invert max-w-none prose-h2:text-xl prose-h2:font-bold prose-h2:text-foreground prose-h2:mt-5 prose-h2:mb-2.5 prose-h3:text-lg prose-h3:font-bold prose-h3:text-foreground prose-h3:mt-4 prose-h3:mb-2 prose-ul:list-disc prose-ul:pl-5 prose-ul:my-2 prose-ol:list-decimal prose-ol:pl-5 prose-ol:my-2 prose-li:my-1 prose-a:!text-primary prose-a:font-medium prose-a:no-underline hover:prose-a:underline prose-a:cursor-pointer", className)} 
             dangerouslySetInnerHTML={{ __html: localValue }} 
           />
         </div>
