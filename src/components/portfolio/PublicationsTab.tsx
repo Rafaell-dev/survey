@@ -23,9 +23,10 @@ interface PublicationsTabProps {
   data: PublicationsData;
   isEditing: boolean;
   onUpdate: (data: PublicationsData) => void;
+  themeColor?: string | null;
 }
 
-export function PublicationsTab({ data, isEditing, onUpdate }: PublicationsTabProps) {
+export function PublicationsTab({ data, isEditing, onUpdate, themeColor }: PublicationsTabProps) {
   const sections = data?.sections || [];
   const [activeSectionId, setActiveSectionId] = useState<string>("");
   const [deleteSectionId, setDeleteSectionId] = useState<string | null>(null);
@@ -121,7 +122,8 @@ export function PublicationsTab({ data, isEditing, onUpdate }: PublicationsTabPr
               onClick={handleAddSection}
               disabled={sections.length >= 4}
               size="sm"
-              className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90 font-medium px-4 py-2 h-9 rounded-md shadow-xs opacity-100"
+              style={themeColor ? { backgroundColor: themeColor, color: '#ffffff' } : undefined}
+              className="gap-2 bg-slate-900 text-white hover:bg-slate-800 dark:bg-slate-100 dark:text-slate-900 font-semibold px-4 py-2 h-9 rounded-md shadow-sm opacity-100 border border-transparent transition-all"
             >
               <Plus className="w-4 h-4" /> Adicionar Seção
             </Button>
@@ -139,7 +141,8 @@ export function PublicationsTab({ data, isEditing, onUpdate }: PublicationsTabPr
           <Button
             onClick={handleAddSection}
             size="sm"
-            className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90 font-medium px-4 py-2 h-9 rounded-md shadow-xs opacity-100"
+            style={themeColor ? { backgroundColor: themeColor, color: '#ffffff' } : undefined}
+            className="gap-2 bg-slate-900 text-white hover:bg-slate-800 dark:bg-slate-100 dark:text-slate-900 font-semibold px-4 py-2 h-9 rounded-md shadow-sm opacity-100 border border-transparent transition-all"
           >
             <Plus className="w-4 h-4" /> Criar Primeira Seção
           </Button>

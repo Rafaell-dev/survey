@@ -102,7 +102,7 @@ export function PortfolioLayout({
     <div 
       className="min-h-screen bg-background" 
       style={profile.themeColor ? { 
-        "--primary": hexToHsl(profile.themeColor),
+        "--primary": profile.themeColor.startsWith('#') ? profile.themeColor : `hsl(${hexToHsl(profile.themeColor)})`,
         "--color-primary": profile.themeColor
       } as React.CSSProperties : undefined}
     >
@@ -176,6 +176,7 @@ export function PortfolioLayout({
                 data={publicationsData || { sections: [] }}
                 isEditing={isEditing}
                 onUpdate={onUpdatePublications || (() => {})}
+                themeColor={profile.themeColor}
               />
             )}
 
