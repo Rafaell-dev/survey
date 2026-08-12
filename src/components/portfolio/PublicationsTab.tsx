@@ -120,7 +120,8 @@ export function PublicationsTab({ data, isEditing, onUpdate }: PublicationsTabPr
             <Button
               onClick={handleAddSection}
               disabled={sections.length >= 4}
-              className="gap-2"
+              size="sm"
+              className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90 font-medium px-4 py-2 h-9 rounded-md shadow-xs opacity-100"
             >
               <Plus className="w-4 h-4" /> Adicionar Seção
             </Button>
@@ -135,7 +136,11 @@ export function PublicationsTab({ data, isEditing, onUpdate }: PublicationsTabPr
           <p className="text-sm text-muted-foreground mt-1 max-w-md mx-auto mb-4">
             Crie até 4 seções para organizar suas publicações em abas (ex: Visão Geral, Projetos, Publicações, Apresentações).
           </p>
-          <Button onClick={handleAddSection} className="gap-2">
+          <Button
+            onClick={handleAddSection}
+            size="sm"
+            className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90 font-medium px-4 py-2 h-9 rounded-md shadow-xs opacity-100"
+          >
             <Plus className="w-4 h-4" /> Criar Primeira Seção
           </Button>
         </div>
