@@ -122,8 +122,7 @@ export function PublicationsTab({ data, isEditing, onUpdate, themeColor }: Publi
               onClick={handleAddSection}
               disabled={sections.length >= 4}
               size="sm"
-              style={themeColor ? { backgroundColor: themeColor, color: '#ffffff' } : undefined}
-              className="gap-2 bg-slate-900 text-white hover:bg-slate-800 dark:bg-slate-100 dark:text-slate-900 font-semibold px-4 py-2 h-9 rounded-md shadow-sm opacity-100 border border-transparent transition-all"
+              className="gap-2 bg-black text-white hover:bg-black/90 dark:bg-white dark:text-black font-semibold px-4 py-2 h-9 rounded-md shadow-sm opacity-100 border border-transparent transition-all cursor-pointer"
             >
               <Plus className="w-4 h-4" /> Adicionar Seção
             </Button>
@@ -141,8 +140,7 @@ export function PublicationsTab({ data, isEditing, onUpdate, themeColor }: Publi
           <Button
             onClick={handleAddSection}
             size="sm"
-            style={themeColor ? { backgroundColor: themeColor, color: '#ffffff' } : undefined}
-            className="gap-2 bg-slate-900 text-white hover:bg-slate-800 dark:bg-slate-100 dark:text-slate-900 font-semibold px-4 py-2 h-9 rounded-md shadow-sm opacity-100 border border-transparent transition-all"
+            className="gap-2 bg-black text-white hover:bg-black/90 dark:bg-white dark:text-black font-semibold px-4 py-2 h-9 rounded-md shadow-sm opacity-100 border border-transparent transition-all cursor-pointer"
           >
             <Plus className="w-4 h-4" /> Criar Primeira Seção
           </Button>
