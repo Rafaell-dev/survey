@@ -5,6 +5,7 @@ import { Plus, Trash2, ArrowLeft, ArrowRight, BookOpen, FileText } from "lucide-
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { EditableField } from "./EditableField";
+import { ConfirmModal } from "@/components/ui/confirm-modal";
 import { cn } from "@/lib/utils";
 
 export interface PublicationSection {
@@ -27,6 +28,7 @@ interface PublicationsTabProps {
 export function PublicationsTab({ data, isEditing, onUpdate }: PublicationsTabProps) {
   const sections = data?.sections || [];
   const [activeSectionId, setActiveSectionId] = useState<string>("");
+  const [deleteSectionId, setDeleteSectionId] = useState<string | null>(null);
 
   useEffect(() => {
     if (sections.length > 0) {
@@ -67,13 +69,14 @@ export function PublicationsTab({ data, isEditing, onUpdate }: PublicationsTabPr
     onUpdate({ ...data, sections: updated });
   };
 
-  const handleDeleteSection = (id: string) => {
-    if (!confirm("Tem certeza que deseja excluir esta seção de publicações?")) return;
-    const updated = sections.filter((sec) => sec.id !== id);
+  const handleConfirmDeleteSection = () => {
+    if (!deleteSectionId) return;
+    const updated = sections.filter((sec) => sec.id !== deleteSectionId);
     onUpdate({ ...data, sections: updated });
     if (updated.length > 0) {
       setActiveSectionId(updated[0].id);
     }
+    setDeleteSectionId(null);
   };
 
   const handleMove = (index: number, direction: "left" | "right") => {
@@ -107,7 +110,7 @@ export function PublicationsTab({ data, isEditing, onUpdate }: PublicationsTabPr
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
       {/* Título Principal */}
       <div className="flex items-center justify-between gap-4">
-        <h2 className="text-4xl font-light tracking-tight text-foreground">Publicações</h2>
+        <h2 className="text-2xl font-semibold tracking-tight mb-6">Publicações</h2>
 
         {isEditing && (
           <div className="flex items-center gap-3">
@@ -222,7 +225,7 @@ export function PublicationsTab({ data, isEditing, onUpdate }: PublicationsTabPr
                   size="icon"
                   variant="ghost"
                   className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
-                  onClick={() => handleDeleteSection(activeSection.id)}
+                  onClick={() => setDeleteSectionId(activeSection.id)}
                   title="Excluir esta Aba/Seção"
                 >
                   <Trash2 className="w-4 h-4" />
@@ -251,6 +254,18 @@ export function PublicationsTab({ data, isEditing, onUpdate }: PublicationsTabPr
           </div>
         </div>
       )}
+
+      {/* Modal de Confirmação de Exclusão Personalizado */}
+      <ConfirmModal
+        isOpen={!!deleteSectionId}
+        onClose={() => setDeleteSectionId(null)}
+        onConfirm={handleConfirmDeleteSection}
+        title="Excluir Seção de Publicações"
+        description="Tem certeza que deseja excluir esta seção? Todo o conteúdo e textos formatados nela serão permanentemente removidos."
+        confirmText="Excluir Seção"
+        cancelText="Cancelar"
+        isDestructive={true}
+      />
     </div>
   );
 }
