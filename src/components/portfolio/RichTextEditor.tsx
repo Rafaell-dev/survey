@@ -270,6 +270,7 @@ export function RichTextEditor({ value, onChange, onBlur, placeholder, maxLength
           variant="ghost" 
           size="icon" 
           type="button"
+          onMouseDown={(e) => e.preventDefault()}
           className={cn("h-7 w-7", editor.isActive('heading', { level: 2 }) && "bg-muted")} 
           onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} 
           aria-label="Título Grande"
@@ -281,6 +282,7 @@ export function RichTextEditor({ value, onChange, onBlur, placeholder, maxLength
           variant="ghost" 
           size="icon" 
           type="button"
+          onMouseDown={(e) => e.preventDefault()}
           className={cn("h-7 w-7", editor.isActive('heading', { level: 3 }) && "bg-muted")} 
           onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()} 
           aria-label="Subtítulo"
@@ -296,6 +298,7 @@ export function RichTextEditor({ value, onChange, onBlur, placeholder, maxLength
           variant="ghost" 
           size="icon" 
           type="button"
+          onMouseDown={(e) => e.preventDefault()}
           className={cn("h-7 w-7", editor.isActive('bold') && "bg-muted")} 
           onClick={() => editor.chain().focus().toggleBold().run()} 
           aria-label="Negrito"
@@ -307,6 +310,7 @@ export function RichTextEditor({ value, onChange, onBlur, placeholder, maxLength
           variant="ghost" 
           size="icon" 
           type="button"
+          onMouseDown={(e) => e.preventDefault()}
           className={cn("h-7 w-7", editor.isActive('italic') && "bg-muted")} 
           onClick={() => editor.chain().focus().toggleItalic().run()} 
           aria-label="Itálico"
@@ -318,6 +322,7 @@ export function RichTextEditor({ value, onChange, onBlur, placeholder, maxLength
           variant="ghost" 
           size="icon" 
           type="button"
+          onMouseDown={(e) => e.preventDefault()}
           className={cn("h-7 w-7", editor.isActive('underline') && "bg-muted")} 
           onClick={() => editor.chain().focus().toggleUnderline().run()} 
           aria-label="Sublinhado"
@@ -329,6 +334,7 @@ export function RichTextEditor({ value, onChange, onBlur, placeholder, maxLength
           variant="ghost" 
           size="icon" 
           type="button"
+          onMouseDown={(e) => e.preventDefault()}
           className={cn("h-7 w-7", editor.isActive('strike') && "bg-muted")} 
           onClick={() => editor.chain().focus().toggleStrike().run()} 
           aria-label="Tachado"
@@ -344,6 +350,7 @@ export function RichTextEditor({ value, onChange, onBlur, placeholder, maxLength
           variant="ghost" 
           size="icon" 
           type="button"
+          onMouseDown={(e) => e.preventDefault()}
           className={cn("h-7 w-7", editor.isActive('bulletList') && "bg-muted")} 
           onClick={() => editor.chain().focus().toggleBulletList().run()} 
           aria-label="Lista com Marcadores (Bullet Points)"
@@ -355,6 +362,7 @@ export function RichTextEditor({ value, onChange, onBlur, placeholder, maxLength
           variant="ghost" 
           size="icon" 
           type="button"
+          onMouseDown={(e) => e.preventDefault()}
           className={cn("h-7 w-7", editor.isActive('orderedList') && "bg-muted")} 
           onClick={() => editor.chain().focus().toggleOrderedList().run()} 
           aria-label="Lista Numerada"

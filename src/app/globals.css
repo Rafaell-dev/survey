@@ -241,3 +241,64 @@
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
 }
+
+/* Custom RichText / Tiptap List & Heading Styles */
+.prose ul,
+.tiptap ul,
+.rich-text-content ul,
+.ProseMirror ul {
+  list-style-type: disc !important;
+  padding-left: 1.5rem !important;
+  margin-top: 0.5rem !important;
+  margin-bottom: 0.5rem !important;
+}
+
+.prose ol,
+.tiptap ol,
+.rich-text-content ol,
+.ProseMirror ol {
+  list-style-type: decimal !important;
+  padding-left: 1.5rem !important;
+  margin-top: 0.5rem !important;
+  margin-bottom: 0.5rem !important;
+}
+
+.prose li,
+.tiptap li,
+.rich-text-content li,
+.ProseMirror li {
+  margin-top: 0.25rem !important;
+  margin-bottom: 0.25rem !important;
+  display: list-item !important;
+}
+
+.prose li p,
+.tiptap li p,
+.rich-text-content li p,
+.ProseMirror li p {
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  display: inline !important;
+}
+
+.prose h2,
+.tiptap h2,
+.rich-text-content h2,
+.ProseMirror h2 {
+  font-size: 1.25rem !important;
+  font-weight: 700 !important;
+  margin-top: 1.25rem !important;
+  margin-bottom: 0.5rem !important;
+  color: inherit;
+}
+
+.prose h3,
+.tiptap h3,
+.rich-text-content h3,
+.ProseMirror h3 {
+  font-size: 1.125rem !important;
+  font-weight: 700 !important;
+  margin-top: 1rem !important;
+  margin-bottom: 0.375rem !important;
+  color: inherit;
+}
