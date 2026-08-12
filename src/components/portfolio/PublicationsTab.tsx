@@ -162,6 +162,7 @@ export function PublicationsTab({
             onClick={handleAddSection}
             size="sm"
             className="gap-2 bg-black text-white hover:bg-black/90 dark:bg-white dark:text-black font-semibold px-4 py-2 h-9 rounded-md shadow-sm opacity-100 border border-transparent transition-all cursor-pointer"
+            className="gap-2 bg-black text-white hover:bg-black/90 dark:bg-white dark:text-black font-semibold px-4 py-2 h-9 rounded-md shadow-sm opacity-100 border border-transparent transition-all cursor-pointer"
           >
             <Plus className="w-4 h-4" /> Criar Primeira Seção
           </Button>
