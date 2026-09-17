@@ -125,6 +125,7 @@ export const portfolioProfileSchema = z.object({
     .regex(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/, "A cor deve ser um HEX válido.")
     .nullable()
     .optional(),
+  fontFamily: z.string().optional(),
 });
 
 export const portfolioInterestSchema = z.object({

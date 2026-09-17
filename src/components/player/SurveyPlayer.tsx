@@ -135,7 +135,7 @@ export function SurveyPlayer() {
   return (
     <div 
       className={`w-full min-h-screen transition-colors duration-500`}
-      style={isFullPage ? { backgroundColor: theme?.backgroundColor, color: theme?.textColor, fontFamily: theme?.fontFamily || "Inter" } : { fontFamily: theme?.fontFamily || "Inter" }}
+      style={isFullPage ? { backgroundColor: theme?.backgroundColor, color: theme?.textColor, fontFamily: `"${theme?.fontFamily || 'Inter'}", sans-serif` } : { fontFamily: `"${theme?.fontFamily || 'Inter'}", sans-serif` }}
     >
       <div 
         className={`mx-auto space-y-6 sm:space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-20 mt-4 sm:mt-8 ${

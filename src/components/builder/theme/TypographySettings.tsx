@@ -40,7 +40,7 @@ export function TypographySettings({ surveyId }: { surveyId: string }) {
             </SelectTrigger>
             <SelectContent>
               {FONTS.map(font => (
-                <SelectItem key={font.id} value={font.id} style={{ fontFamily: font.id }}>
+                <SelectItem key={font.id} value={font.id} style={{ fontFamily: `"${font.id}", sans-serif` }}>
                   {font.label}
                 </SelectItem>
               ))}

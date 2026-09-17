@@ -101,10 +101,13 @@ export function PortfolioLayout({
   return (
     <div 
       className="min-h-screen bg-background" 
-      style={profile.themeColor ? { 
-        "--primary": profile.themeColor.startsWith('#') ? profile.themeColor : `hsl(${hexToHsl(profile.themeColor)})`,
-        "--color-primary": profile.themeColor
-      } as React.CSSProperties : undefined}
+      style={{
+        fontFamily: `"${profile.fontFamily || 'Inter'}", sans-serif`,
+        ...(profile.themeColor ? { 
+          "--primary": profile.themeColor.startsWith('#') ? profile.themeColor : `hsl(${hexToHsl(profile.themeColor)})`,
+          "--color-primary": profile.themeColor
+        } : {})
+      } as React.CSSProperties}
     >
       {/* Top Header / Navigation */}
       <header className="w-full border-b sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">

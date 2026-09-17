@@ -11,7 +11,7 @@ export function SurveyPreview() {
   const containerStyle = {
     backgroundColor: theme.backgroundColor,
     color: theme.textColor,
-    fontFamily: theme.fontFamily,
+    fontFamily: `"${theme.fontFamily}", sans-serif`,
   };
 
   const primaryStyle = {
@@ -26,7 +26,7 @@ export function SurveyPreview() {
   return (
     <div 
       className="w-full h-full min-h-[500px] max-h-[800px] overflow-y-auto rounded-xl flex items-start justify-center shadow-inner transition-all duration-300"
-      style={{ backgroundColor: isFullPage ? theme.backgroundColor : "#f1f5f9", fontFamily: theme.fontFamily }}
+      style={{ backgroundColor: isFullPage ? theme.backgroundColor : "#f1f5f9", fontFamily: `"${theme.fontFamily}", sans-serif` }}
     >
       <div 
         className={`w-full transition-all duration-500 ${

@@ -19,6 +19,7 @@ export interface PortfolioProfile {
   showEmail: boolean;
   address: string | null;
   themeColor?: string | null;
+  fontFamily?: string | null;
   surveys?: any[];
 }
 

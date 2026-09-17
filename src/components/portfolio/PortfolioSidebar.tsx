@@ -5,6 +5,17 @@ import { Code, Briefcase, Mail, GraduationCap, Camera } from "lucide-react";
 import { useRef, useState, useEffect } from "react";
 import { portfolioProfileSchema, normalizeGithubUrl, normalizeLinkedinUrl, normalizeLattesUrl } from "@/lib/portfolio-validators";
 import { AlertCircle } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
+const FONTS = [
+  { id: "Inter", label: "Inter (Padrão)" },
+  { id: "Roboto", label: "Roboto" },
+  { id: "Open Sans", label: "Open Sans" },
+  { id: "Lato", label: "Lato" },
+  { id: "Montserrat", label: "Montserrat" },
+  { id: "Merriweather", label: "Merriweather" },
+  { id: "Playfair Display", label: "Playfair Display" },
+];
 
 interface PortfolioSidebarProps {
   profile: Partial<PortfolioProfile>;
@@ -153,18 +164,39 @@ export function PortfolioSidebar({ profile, isEditing, onUpdate, onAvatarUpload 
           />
         )}
         {isEditing && (
-          <div className="mt-4 flex flex-col items-center md:items-start space-y-2">
-            <label htmlFor="theme-color" className="text-sm font-semibold text-muted-foreground">Cor de Destaque</label>
-            <div className="flex items-center gap-2">
-              <input
-                id="theme-color"
-                type="color"
-                value={localThemeColor}
-                onChange={(e) => setLocalThemeColor(e.target.value)}
-                className="w-8 h-8 rounded cursor-pointer border-0 p-0 bg-transparent"
-                title="Escolher cor de destaque"
-              />
-              <span className="text-xs text-muted-foreground uppercase">{localThemeColor}</span>
+          <div className="mt-4 flex flex-col items-center md:items-start space-y-4 w-full">
+            <div className="w-full flex flex-col items-center md:items-start space-y-2">
+              <label htmlFor="theme-color" className="text-sm font-semibold text-muted-foreground">Cor de Destaque</label>
+              <div className="flex items-center gap-2">
+                <input
+                  id="theme-color"
+                  type="color"
+                  value={localThemeColor}
+                  onChange={(e) => setLocalThemeColor(e.target.value)}
+                  className="w-8 h-8 rounded cursor-pointer border-0 p-0 bg-transparent"
+                  title="Escolher cor de destaque"
+                />
+                <span className="text-xs text-muted-foreground uppercase">{localThemeColor}</span>
+              </div>
+            </div>
+            
+            <div className="w-full flex flex-col items-center md:items-start space-y-2">
+              <label className="text-sm font-semibold text-muted-foreground">Família da Fonte</label>
+              <Select 
+                value={profile.fontFamily || "Inter"} 
+                onValueChange={(val) => onUpdate({ fontFamily: val })}
+              >
+                <SelectTrigger className="w-full max-w-[200px]">
+                  <SelectValue placeholder="Selecione uma fonte" />
+                </SelectTrigger>
+                <SelectContent>
+                  {FONTS.map(font => (
+                    <SelectItem key={font.id} value={font.id} style={{ fontFamily: `"${font.id}", sans-serif` }}>
+                      {font.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
         )}
