@@ -16,7 +16,7 @@ interface SurveyState {
 
   globalMetrics: { totalResponses: number; newResponses7Days: number } | null;
 
-  fetchSurveys: (page?: number, limit?: number, search?: string) => Promise<void>;
+  fetchSurveys: (page?: number, limit?: number, search?: string, includeArchived?: boolean) => Promise<void>;
   fetchGlobalMetrics: () => Promise<void>;
   fetchSurvey: (id: string) => Promise<Survey>;
   createSurvey: (data: CreateSurveyDTO) => Promise<Survey>;
@@ -46,10 +46,10 @@ export const useSurveyStore = create<SurveyState>((set, get) => ({
 
   globalMetrics: null,
 
-  fetchSurveys: async (page = 1, limit = 20, search = '') => {
+  fetchSurveys: async (page = 1, limit = 20, search = '', includeArchived = false) => {
     set({ loading: true });
     try {
-      const response = await surveyService.getSurveys(page, limit, search);
+      const response = await surveyService.getSurveys(page, limit, search, includeArchived);
       set({ 
         surveys: response.items, 
         total: response.total, 

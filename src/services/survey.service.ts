@@ -9,12 +9,13 @@ import {
 } from '../domain/survey.types';
 
 export const surveyService = {
-  async getSurveys(page = 1, limit = 20, search = ''): Promise<SurveyPaginationResponse> {
+  async getSurveys(page = 1, limit = 20, search = '', includeArchived = false): Promise<SurveyPaginationResponse> {
     const params = new URLSearchParams({
       page: page.toString(),
       limit: limit.toString(),
     });
     if (search) params.append('search', search);
+    if (includeArchived) params.append('includeArchived', 'true');
 
     const response = await api.get<SurveyPaginationResponse>(`/surveys?${params.toString()}`);
     return response.data;

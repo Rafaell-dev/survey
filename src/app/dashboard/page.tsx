@@ -6,6 +6,8 @@ import { Plus, Users, LayoutTemplate, Clock, Download, ExternalLink, Trash2, Sta
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 import { isAxiosError } from "axios";
 import { useSurveyStore } from "@/store/survey.store";
 import { api } from "@/services/api";
@@ -13,13 +15,14 @@ import { api } from "@/services/api";
 export default function DashboardPage() {
   const { surveys, loading, fetchSurveys, deleteSurvey, total, globalMetrics, fetchGlobalMetrics, toggleHighlight } = useSurveyStore();
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [showArchived, setShowArchived] = useState(false);
 
   useEffect(() => {
-    fetchSurveys().catch((err) => {
+    fetchSurveys(1, 20, '', showArchived).catch((err) => {
       toast.error("Erro ao carregar surveys.");
     });
     fetchGlobalMetrics();
-  }, [fetchSurveys, fetchGlobalMetrics]);
+  }, [fetchSurveys, fetchGlobalMetrics, showArchived]);
 
   const handleExport = async (e: React.MouseEvent, formId: string) => {
     e.stopPropagation();
@@ -96,7 +99,13 @@ export default function DashboardPage() {
       </div>
 
       <div className="space-y-4">
-        <h2 className="text-xl font-semibold tracking-tight">Formulários Recentes</h2>
+        <div className="flex items-center justify-between">
+          <h2 className="text-xl font-semibold tracking-tight">Formulários Recentes</h2>
+          <div className="flex items-center space-x-2">
+            <Switch id="show-archived" checked={showArchived} onCheckedChange={setShowArchived} />
+            <Label htmlFor="show-archived" className="cursor-pointer">Mostrar Arquivados</Label>
+          </div>
+        </div>
         
         {loading ? (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
