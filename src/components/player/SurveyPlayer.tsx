@@ -24,7 +24,8 @@ export function SurveyPlayer() {
     savingAnswers,
     saveError,
     trackBlockExit,
-    trackBlockStart
+    trackBlockStart,
+    isPreviewMode
   } = useSurveyPlayerStore();
 
   const [showLeaveModal, setShowLeaveModal] = useState(false);
@@ -93,6 +94,8 @@ export function SurveyPlayer() {
   const isLastBlock = currentBlockIndex >= survey.blocks.length - 1;
 
   const validateBlock = () => {
+    if (isPreviewMode) return true;
+
     for (const question of currentBlock.questions) {
       if (question.isRequired) {
         const answer = answers[question.id];

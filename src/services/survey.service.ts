@@ -73,5 +73,10 @@ export const surveyService = {
   async generatePublicLink(id: string): Promise<PublicLinkInfo> {
     const response = await api.post(`/surveys/${id}/public-link`);
     return response.data;
+  },
+
+  async getPreviewSurvey(id: string): Promise<any> {
+    const response = await api.get(`/surveys/${id}/preview`);
+    return response.data;
   }
 };

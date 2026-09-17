@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
-import { Loader2, Send, Archive, Globe } from "lucide-react";
+import { Loader2, Send, Archive, Globe, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useSurveyStore } from "@/store/survey.store";
 import { SurveyStatusBadge } from "./SurveyStatusBadge";
@@ -104,10 +104,21 @@ export function SurveyPublishPanel({ onBeforePublish }: SurveyPublishPanelProps)
               Ao publicar o survey, ele passará a aceitar respostas. Certifique-se de ter adicionado blocos e perguntas.
             </AlertDescription>
           </Alert>
-          <Button onClick={handlePublish} disabled={publishing} className="w-full">
-            {publishing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />}
-            Publicar Survey
-          </Button>
+          <div className="flex flex-col gap-2 mt-4">
+            <Button 
+              type="button" 
+              variant="secondary" 
+              className="w-full" 
+              onClick={() => window.open(`/dashboard/preview/${selectedSurvey.id}`, '_blank')}
+            >
+              <Eye className="mr-2 h-4 w-4" />
+              Visualizar Formulário
+            </Button>
+            <Button onClick={handlePublish} disabled={publishing} className="w-full">
+              {publishing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />}
+              Publicar Survey
+            </Button>
+          </div>
         </div>
       )}
 

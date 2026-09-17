@@ -15,6 +15,7 @@ interface SurveyPlayerState {
   survey: SurveyPlayerDTO | null;
   loading: boolean;
   error: string | null;
+  isPreviewMode: boolean;
   
   playerStep: PlayerStep;
   participant: CreateParticipantDTO | null;
@@ -33,6 +34,7 @@ interface SurveyPlayerState {
   saveError: string | null;
 
   loadSurvey: (slug: string) => Promise<void>;
+  loadPreview: (surveyId: string) => Promise<void>;
   startSession: (data: CreateParticipantDTO) => Promise<void>;
   restoreSession: (surveyId: string) => void;
   clearSession: () => void;
@@ -83,6 +85,7 @@ export const useSurveyPlayerStore = create<SurveyPlayerState>((set, get) => ({
   survey: null,
   loading: true,
   error: null,
+  isPreviewMode: false,
   
   playerStep: 'IDENTIFICATION',
   participant: null,
@@ -100,7 +103,7 @@ export const useSurveyPlayerStore = create<SurveyPlayerState>((set, get) => ({
   saveError: null,
 
   loadSurvey: async (slug: string) => {
-    set({ loading: true, error: null });
+    set({ loading: true, error: null, isPreviewMode: false });
     try {
       const survey = await publicSurveyService.getPublicSurvey(slug);
       
@@ -129,15 +132,54 @@ export const useSurveyPlayerStore = create<SurveyPlayerState>((set, get) => ({
     }
   },
 
+  loadPreview: async (surveyId: string) => {
+    set({ loading: true, error: null, isPreviewMode: true });
+    try {
+      // Import on the fly to avoid circular dependency if any, or just use surveyService
+      const { surveyService } = await import('../services/survey.service');
+      const survey = await surveyService.getPreviewSurvey(surveyId);
+      
+      survey.blocks.sort((a: any, b: any) => a.orderIndex - b.orderIndex);
+      survey.blocks.forEach((block: any) => {
+        block.questions.sort((a: any, b: any) => a.orderIndex - b.orderIndex);
+        block.questions.forEach((q: any) => {
+          q.options?.sort((a: any, b: any) => a.orderIndex - b.orderIndex);
+          q.scaleOptions?.sort((a: any, b: any) => a.orderIndex - b.orderIndex);
+        });
+      });
+
+      set({ 
+        survey, 
+        loading: false 
+      });
+
+      // Clear any session in preview mode
+      get().clearSession();
+      set({ playerStep: 'IDENTIFICATION' });
+
+    } catch (err: any) {
+      set({ 
+        error: err.response?.data?.message || 'Erro ao carregar o preview do survey.', 
+        loading: false 
+      });
+    }
+  },
+
   startSession: async (data: CreateParticipantDTO) => {
-    const { survey } = get();
+    const { survey, isPreviewMode } = get();
     if (!survey) return;
 
     try {
-      const session = await publicSurveyService.startResponse(survey.id, data);
+      let session;
       
-      // Salva no localStorage para persistência
-      if (typeof window !== 'undefined') {
+      if (isPreviewMode) {
+        session = { responseId: 'preview-session-id', status: 'IN_PROGRESS', participantId: 'preview', surveyId: survey.id };
+      } else {
+        session = await publicSurveyService.startResponse(survey.id, data);
+      }
+      
+      // Salva no localStorage para persistência se não for preview
+      if (!isPreviewMode && typeof window !== 'undefined') {
         localStorage.setItem(`survey_session_${survey.id}`, JSON.stringify({
           participant: data,
           session,
@@ -237,8 +279,8 @@ export const useSurveyPlayerStore = create<SurveyPlayerState>((set, get) => ({
   },
 
   saveAnswerToApi: (questionId: string, value: any) => {
-    const { responseSession, survey } = get();
-    if (!responseSession || !survey) return;
+    const { responseSession, survey, isPreviewMode } = get();
+    if (!responseSession || !survey || isPreviewMode) return;
 
     if (debounceTimers[questionId]) {
       clearTimeout(debounceTimers[questionId]);
@@ -374,14 +416,14 @@ export const useSurveyPlayerStore = create<SurveyPlayerState>((set, get) => ({
 
   finishSurvey: async () => {
     get().trackBlockExit();
-    const { survey, responseSession, blockTrackings, savingAnswers } = get();
+    const { survey, responseSession, blockTrackings, savingAnswers, isPreviewMode } = get();
     
     if (savingAnswers > 0) {
       set({ saveError: 'Aguarde o salvamento das respostas antes de finalizar.' });
       return;
     }
 
-    if (responseSession) {
+    if (responseSession && !isPreviewMode) {
       try {
         await responseService.finishResponse(responseSession.responseId);
       } catch (e: any) {
@@ -390,7 +432,7 @@ export const useSurveyPlayerStore = create<SurveyPlayerState>((set, get) => ({
       }
     }
 
-    if (survey && typeof window !== 'undefined') {
+    if (survey && !isPreviewMode && typeof window !== 'undefined') {
       const saved = localStorage.getItem(`survey_session_${survey.id}`);
       if (saved) {
         try {
@@ -435,6 +477,9 @@ export const useSurveyPlayerStore = create<SurveyPlayerState>((set, get) => ({
 
     set({ blockTrackings: newBlockTrackings, currentBlockStartedAt: null });
 
+    const { isPreviewMode } = get();
+    if (isPreviewMode) return;
+
     // Enviar tracking de forma silenciosa ("fire and forget") para a API com debounce/sem bloqueio
     const payload: SaveTrackingDTO = {
       blocks: Object.entries(newBlockTrackings).map(([blockId, tracking]) => ({
@@ -450,7 +495,7 @@ export const useSurveyPlayerStore = create<SurveyPlayerState>((set, get) => ({
   },
 
   trackMediaInteraction: (mediaId: string, type: MediaInteractionType, timeOffsetMs?: number) => {
-    const { responseSession, trackedMediaEvents, survey } = get();
+    const { responseSession, trackedMediaEvents, survey, isPreviewMode } = get();
     if (!responseSession || !survey) return;
 
     // Controle local de duplicidade para eventos PLAY e END
@@ -463,7 +508,7 @@ export const useSurveyPlayerStore = create<SurveyPlayerState>((set, get) => ({
 
     // Atualiza estado e localStorage
     set({ trackedMediaEvents: newTrackedEvents });
-    if (typeof window !== 'undefined') {
+    if (!isPreviewMode && typeof window !== 'undefined') {
       const saved = localStorage.getItem(`survey_session_${survey.id}`);
       if (saved) {
         try {
@@ -473,6 +518,8 @@ export const useSurveyPlayerStore = create<SurveyPlayerState>((set, get) => ({
         } catch (e) {}
       }
     }
+
+    if (isPreviewMode) return;
 
     // Disparo para a API (fire and forget)
     mediaTrackingService.saveMediaInteractions(responseSession.responseId, {

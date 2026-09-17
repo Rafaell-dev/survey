@@ -12,9 +12,10 @@ interface ParticipantFormProps {
   survey: SurveyPlayerDTO;
   onSubmit: (data: CreateParticipantDTO) => Promise<void>;
   loading?: boolean;
+  isPreviewMode?: boolean;
 }
 
-export function ParticipantForm({ survey, onSubmit, loading }: ParticipantFormProps) {
+export function ParticipantForm({ survey, onSubmit, loading, isPreviewMode }: ParticipantFormProps) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
@@ -23,6 +24,8 @@ export function ParticipantForm({ survey, onSubmit, loading }: ParticipantFormPr
   const type = survey.participantIdentificationType;
 
   const validate = () => {
+    if (isPreviewMode) return true;
+
     const newErrors: typeof errors = {};
     
     if (type === "NAME_AND_EMAIL") {

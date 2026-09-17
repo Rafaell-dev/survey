@@ -9,7 +9,7 @@ import { AlertCircle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export function IdentificationStep() {
-  const { survey, startSession } = useSurveyPlayerStore();
+  const { survey, startSession, isPreviewMode } = useSurveyPlayerStore();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -65,7 +65,8 @@ export function IdentificationStep() {
         <ParticipantForm 
           survey={survey} 
           onSubmit={handleStart} 
-          loading={loading} 
+          loading={loading}
+          isPreviewMode={isPreviewMode}
         />
       </div>
     </div>
