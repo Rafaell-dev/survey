@@ -1,7 +1,7 @@
 import { PortfolioProfile } from "@/services/portfolio.service";
 import { EditableField } from "./EditableField";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Code, Briefcase, Mail, GraduationCap, Camera } from "lucide-react";
+import { Code, Briefcase, Mail, GraduationCap, Camera, Copy, Check } from "lucide-react";
 import { useRef, useState, useEffect } from "react";
 import { portfolioProfileSchema, normalizeGithubUrl, normalizeLinkedinUrl, normalizeLattesUrl } from "@/lib/portfolio-validators";
 import { AlertCircle } from "lucide-react";
@@ -28,6 +28,16 @@ export function PortfolioSidebar({ profile, isEditing, onUpdate, onAvatarUpload 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [localThemeColor, setLocalThemeColor] = useState(profile.themeColor || "#000000");
   const [avatarError, setAvatarError] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+
+  const handleCopyLink = () => {
+    if (typeof window !== "undefined" && profile.slug) {
+      const url = `${window.location.origin}/p/${profile.slug}`;
+      navigator.clipboard.writeText(url);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
 
   useEffect(() => {
     if (profile.themeColor && profile.themeColor !== localThemeColor) {
@@ -151,17 +161,29 @@ export function PortfolioSidebar({ profile, isEditing, onUpdate, onAvatarUpload 
           maxLength={50}
         />
         {isEditing && (
-          <EditableField
-            id="profile-slug"
-            label="Link Público (Slug)"
-            isEditing={isEditing}
-            value={profile.slug || ""}
-            onSave={(v) => onUpdate({ slug: v.toLowerCase().replace(/[^a-z0-9-]/g, '-') })}
-            placeholder="seu-link-aqui"
-            className="text-sm text-primary font-medium text-center md:text-left mt-2"
-            validator={portfolioProfileSchema.shape.slug}
-            maxLength={100}
-          />
+          <div className="flex flex-col items-center md:items-start w-full relative">
+            <EditableField
+              id="profile-slug"
+              label="Link Público (Slug)"
+              isEditing={isEditing}
+              value={profile.slug || ""}
+              onSave={(v) => onUpdate({ slug: v.toLowerCase().replace(/[^a-z0-9-]/g, '-') })}
+              placeholder="seu-link-aqui"
+              className="text-sm text-primary font-medium text-center md:text-left mt-2"
+              validator={portfolioProfileSchema.shape.slug}
+              maxLength={100}
+            />
+            {profile.slug && (
+              <button
+                onClick={handleCopyLink}
+                className="mt-2 flex items-center gap-1.5 text-xs text-muted-foreground hover:text-primary transition-colors bg-secondary/50 px-2.5 py-1.5 rounded-md"
+                title="Copiar link do portfólio"
+              >
+                {copied ? <Check className="w-3.5 h-3.5 text-green-500" /> : <Copy className="w-3.5 h-3.5" />}
+                {copied ? "Link copiado!" : "Copiar link"}
+              </button>
+            )}
+          </div>
         )}
         {isEditing && (
           <div className="mt-4 flex flex-col items-center md:items-start space-y-4 w-full">
