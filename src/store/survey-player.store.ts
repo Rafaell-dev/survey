@@ -174,7 +174,7 @@ export const useSurveyPlayerStore = create<SurveyPlayerState>((set, get) => ({
       let session;
       
       if (isPreviewMode) {
-        session = { responseId: 'preview-session-id', status: 'IN_PROGRESS', participantId: 'preview', surveyId: survey.id };
+        session = { responseId: 'preview-session-id', status: 'IN_PROGRESS', participantId: 'preview', startedAt: new Date().toISOString() };
       } else {
         session = await publicSurveyService.startResponse(survey.id, data);
       }
