@@ -171,7 +171,7 @@ export const useSurveyPlayerStore = create<SurveyPlayerState>((set, get) => ({
     if (!survey) return;
 
     try {
-      let session;
+      let session: ResponseSessionDTO;
       
       if (isPreviewMode) {
         session = { responseId: 'preview-session-id', status: 'IN_PROGRESS', participantId: 'preview', startedAt: new Date().toISOString() };
