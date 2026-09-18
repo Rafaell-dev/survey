@@ -46,6 +46,7 @@ interface SurveyPlayerState {
   trackBlockStart: () => void;
   trackBlockExit: () => void;
   trackMediaInteraction: (mediaId: string, type: MediaInteractionType, timeOffsetMs?: number) => void;
+  interruptSession: () => Promise<void>;
 }
 
 function evaluateRule(rule: ConditionalRuleDTO, answer: any): boolean {
@@ -254,6 +255,18 @@ export const useSurveyPlayerStore = create<SurveyPlayerState>((set, get) => ({
       savingAnswers: 0,
       saveError: null
     });
+  },
+
+  interruptSession: async () => {
+    const { responseSession, isPreviewMode } = get();
+    if (responseSession && !isPreviewMode) {
+      try {
+        await responseService.interruptResponse(responseSession.responseId);
+      } catch (e) {
+        console.error("Failed to interrupt response", e);
+      }
+    }
+    get().clearSession();
   },
 
   setAnswer: (questionId: string, value: any) => {

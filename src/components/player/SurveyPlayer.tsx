@@ -25,20 +25,40 @@ export function SurveyPlayer() {
     saveError,
     trackBlockExit,
     trackBlockStart,
-    isPreviewMode
+    isPreviewMode,
+    interruptSession
   } = useSurveyPlayerStore();
 
   const [showLeaveModal, setShowLeaveModal] = useState(false);
+  const [showWarningModal, setShowWarningModal] = useState(false);
 
   // Garante que o tracking de tempo seja salvo quando o usuário sair da aba ou fechar no celular/PC
   useEffect(() => {
     if (playerStep !== 'RESPONDING') return;
 
+    let isTrackingMouseLeave = false;
+
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'hidden') {
         trackBlockExit();
+        if (!isPreviewMode) {
+          interruptSession();
+          toast.error("Você saiu da aba e sua pesquisa foi cancelada.", { duration: 5000 });
+        }
       } else if (document.visibilityState === 'visible') {
         trackBlockStart();
+      }
+    };
+
+    const handleMouseEnter = () => {
+      isTrackingMouseLeave = true;
+    };
+
+    const handleMouseLeave = (e: MouseEvent) => {
+      if (!isTrackingMouseLeave) return;
+      // Quando o mouse sai pela parte de cima (para trocar de aba)
+      if (e.clientY <= 0) {
+        setShowWarningModal(true);
       }
     };
 
@@ -47,15 +67,19 @@ export function SurveyPlayer() {
     };
 
     document.addEventListener("visibilitychange", handleVisibilityChange);
+    document.addEventListener("mouseenter", handleMouseEnter);
+    document.addEventListener("mouseleave", handleMouseLeave);
     window.addEventListener("beforeunload", handleUnload);
     window.addEventListener("pagehide", handleUnload);
 
     return () => {
       document.removeEventListener("visibilitychange", handleVisibilityChange);
+      document.removeEventListener("mouseenter", handleMouseEnter);
+      document.removeEventListener("mouseleave", handleMouseLeave);
       window.removeEventListener("beforeunload", handleUnload);
       window.removeEventListener("pagehide", handleUnload);
     };
-  }, [playerStep, trackBlockExit, trackBlockStart]);
+  }, [playerStep, trackBlockExit, trackBlockStart, isPreviewMode, interruptSession]);
 
   useEffect(() => {
     if (playerStep !== 'RESPONDING') return;
@@ -253,6 +277,27 @@ export function SurveyPlayer() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {showWarningModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in text-left">
+          <div className="bg-background w-full max-w-md rounded-xl p-6 shadow-xl animate-in zoom-in-95">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="p-2 bg-amber-500/10 rounded-full text-amber-600">
+                <AlertTriangle className="w-5 h-5" />
+              </div>
+              <h3 className="text-xl font-bold">Atenção</h3>
+            </div>
+            <p className="text-muted-foreground text-base mb-6 pt-3">
+              Se você mudar de aba, o formulário será iniciado do zero e suas respostas descartadas.
+            </p>
+            <div className="flex justify-end gap-3 mt-4">
+              <Button variant="default" className="w-full sm:w-auto" onClick={() => setShowWarningModal(false)}>
+                Entendi
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

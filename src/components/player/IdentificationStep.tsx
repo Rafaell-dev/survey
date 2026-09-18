@@ -7,19 +7,26 @@ import { ParticipantForm } from "./ParticipantForm";
 import { CreateParticipantDTO } from "@/domain/participant.types";
 import { AlertCircle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
 
 export function IdentificationStep() {
   const { survey, startSession, isPreviewMode } = useSurveyPlayerStore();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [pendingData, setPendingData] = useState<CreateParticipantDTO | null>(null);
 
   if (!survey) return null;
 
   const handleStart = async (data: CreateParticipantDTO) => {
+    setPendingData(data);
+  };
+
+  const confirmStart = async () => {
+    if (!pendingData) return;
     setLoading(true);
     setError(null);
     try {
-      await startSession(data);
+      await startSession(pendingData);
       toast.success("Sessão iniciada com sucesso!");
     } catch (err: any) {
       const msg = err.response?.data?.message || "Não foi possível iniciar a pesquisa. Tente novamente.";
@@ -27,6 +34,7 @@ export function IdentificationStep() {
       toast.error(msg);
     } finally {
       setLoading(false);
+      setPendingData(null);
     }
   };
 
@@ -62,6 +70,7 @@ export function IdentificationStep() {
           </Alert>
         )}
 
+
         <ParticipantForm 
           survey={survey} 
           onSubmit={handleStart} 
@@ -69,6 +78,23 @@ export function IdentificationStep() {
           isPreviewMode={isPreviewMode}
         />
       </div>
+
+      {pendingData && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in text-left">
+          <div className="bg-background w-full max-w-md rounded-xl p-6 shadow-xl animate-in zoom-in-95">
+            <h3 className="text-xl font-bold mb-2">Atenção</h3>
+            <p className="text-muted-foreground mb-6">
+              Ao iniciar, não saia desta página ou mude de aba. Se você trocar de aba durante a resposta, a pesquisa será invalidada e reiniciada imediatamente.
+            </p>
+            <div className="flex justify-end gap-3">
+              <Button variant="outline" onClick={() => setPendingData(null)}>Cancelar</Button>
+              <Button variant="default" onClick={confirmStart} className="gap-2">
+                Entendi e quero começar
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
