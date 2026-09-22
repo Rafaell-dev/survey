@@ -23,6 +23,7 @@ export interface Survey {
   allowMultipleResponses: boolean;
   publicSlug: string | null;
   publicLinkActive: boolean;
+  acceptingResponses: boolean;
   isHighlighted?: boolean;
   categoryId?: string | null;
   category?: SurveyCategory | null;
@@ -51,6 +52,7 @@ export interface UpdateSurveyDTO {
 export interface UpdateSurveySettingsDTO {
   participantIdentificationType?: ParticipantIdentificationType;
   allowMultipleResponses?: boolean;
+  acceptingResponses?: boolean;
 }
 
 export interface SurveyPaginationResponse {

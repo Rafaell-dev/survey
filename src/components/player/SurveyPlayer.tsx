@@ -105,6 +105,38 @@ export function SurveyPlayer() {
 
   if (!survey) return null;
 
+  const theme = survey.theme;
+  const isFullPage = theme?.layout === "FULL_PAGE";
+  const isCompact = theme?.layout === "COMPACT";
+
+  if (survey.acceptingResponses === false && !isPreviewMode) {
+    return (
+      <div 
+        className={`w-full min-h-screen transition-colors duration-500 flex items-center justify-center`}
+        style={isFullPage ? { backgroundColor: theme?.backgroundColor, color: theme?.textColor, fontFamily: `"${theme?.fontFamily || 'Inter'}", sans-serif` } : { fontFamily: `"${theme?.fontFamily || 'Inter'}", sans-serif` }}
+      >
+        <div 
+          className={`mx-auto w-full animate-in fade-in slide-in-from-bottom-4 duration-500 p-4 ${
+            isFullPage ? "max-w-4xl" : isCompact ? "max-w-2xl" : "max-w-3xl"
+          }`}
+        >
+          <div 
+            className={`bg-card border rounded-xl sm:rounded-2xl shadow-sm p-8 text-center space-y-6 relative transition-colors duration-500`}
+            style={!isFullPage && theme ? { backgroundColor: theme.backgroundColor, color: theme.textColor } : {}}
+          >
+            <div className="mx-auto w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-4">
+              <AlertTriangle className="w-8 h-8 text-muted-foreground" />
+            </div>
+            <h2 className="text-2xl sm:text-3xl font-bold">Formulário Pausado</h2>
+            <p className="text-muted-foreground text-lg max-w-md mx-auto">
+              Este formulário não está aceitando novas respostas no momento. Agradecemos o interesse!
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (playerStep === 'IDENTIFICATION') {
     return <IdentificationStep />;
   }
@@ -151,10 +183,6 @@ export function SurveyPlayer() {
   const progressPercent = Math.round((currentBlockIndex / survey.blocks.length) * 100);
 
   const isNavigationDisabled = savingAnswers > 0;
-
-  const theme = survey.theme;
-  const isFullPage = theme?.layout === "FULL_PAGE";
-  const isCompact = theme?.layout === "COMPACT";
 
   return (
     <div 

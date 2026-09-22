@@ -68,6 +68,7 @@ export interface SurveyPlayerDTO {
   allowMultipleResponses: boolean;
   publicSlug: string | null;
   publicLinkActive: boolean;
+  acceptingResponses: boolean;
   blocks: SurveyBlockDTO[];
   theme?: SurveyTheme | null;
 }

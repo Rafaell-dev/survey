@@ -8,21 +8,25 @@ import { useSurveyStore } from "@/store/survey.store";
 import { SurveyStatusBadge } from "./SurveyStatusBadge";
 import { PublicLinkCard } from "./PublicLinkCard";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Switch } from "@/components/ui/switch";
 
 interface SurveyPublishPanelProps {
   onBeforePublish?: () => Promise<void>;
 }
 
-export function SurveyPublishPanel({ onBeforePublish }: SurveyPublishPanelProps) {
-  const { 
-    selectedSurvey, 
-    publicLinkInfo, 
-    publishing, 
-    archiving, 
-    publishSurvey, 
-    archiveSurvey, 
-    loadPublicLink, 
-    generatePublicLink 
+export function SurveyPublishPanel({
+  onBeforePublish,
+}: SurveyPublishPanelProps) {
+  const {
+    selectedSurvey,
+    publicLinkInfo,
+    publishing,
+    archiving,
+    publishSurvey,
+    archiveSurvey,
+    loadPublicLink,
+    generatePublicLink,
+    updateSurveySettings,
   } = useSurveyStore();
 
   const [loadingLink, setLoadingLink] = useState(false);
@@ -34,21 +38,28 @@ export function SurveyPublishPanel({ onBeforePublish }: SurveyPublishPanelProps)
         .catch(() => {})
         .finally(() => setLoadingLink(false));
     }
-  }, [selectedSurvey?.status, selectedSurvey?.id, publicLinkInfo, loadPublicLink]);
+  }, [
+    selectedSurvey?.status,
+    selectedSurvey?.id,
+    publicLinkInfo,
+    loadPublicLink,
+  ]);
 
   if (!selectedSurvey) return null;
 
   const handlePublish = async () => {
     try {
       if (onBeforePublish) {
-        toast.loading("Salvando rascunho antes de publicar...", { id: "publish-save" });
+        toast.loading("Salvando rascunho antes de publicar...", {
+          id: "publish-save",
+        });
         await onBeforePublish();
         toast.dismiss("publish-save");
       }
-      
+
       await publishSurvey(selectedSurvey.id);
       toast.success("Survey publicado com sucesso!");
-      
+
       // Logo após publicar, tenta gerar ou carregar o link público
       try {
         await generatePublicLink(selectedSurvey.id);
@@ -64,7 +75,12 @@ export function SurveyPublishPanel({ onBeforePublish }: SurveyPublishPanelProps)
   };
 
   const handleArchive = async () => {
-    if (!confirm("Deseja realmente arquivar este survey? Ele não aceitará mais respostas.")) return;
+    if (
+      !confirm(
+        "Deseja realmente arquivar este survey? Ele não aceitará mais respostas.",
+      )
+    )
+      return;
     try {
       await archiveSurvey(selectedSurvey.id);
       toast.success("Survey arquivado com sucesso!");
@@ -90,7 +106,9 @@ export function SurveyPublishPanel({ onBeforePublish }: SurveyPublishPanelProps)
       <div className="flex items-center justify-between border-b pb-4">
         <div>
           <h3 className="text-lg font-medium">Publicação</h3>
-          <p className="text-sm text-muted-foreground">Gerencie o status e o compartilhamento do seu survey.</p>
+          <p className="text-sm text-muted-foreground">
+            Gerencie o status e o compartilhamento do seu survey.
+          </p>
         </div>
         <SurveyStatusBadge status={selectedSurvey.status} />
       </div>
@@ -101,21 +119,32 @@ export function SurveyPublishPanel({ onBeforePublish }: SurveyPublishPanelProps)
             <Globe className="h-4 w-4" />
             <AlertTitle>Pronto para coletar respostas?</AlertTitle>
             <AlertDescription>
-              Ao publicar o survey, ele passará a aceitar respostas. Certifique-se de ter adicionado blocos e perguntas.
+              Ao publicar o survey, ele passará a aceitar respostas.
+              Certifique-se de ter adicionado blocos e perguntas.
             </AlertDescription>
           </Alert>
           <div className="flex flex-col gap-2 mt-4">
-            <Button 
-              type="button" 
-              variant="secondary" 
-              className="w-full" 
-              onClick={() => window.open(`/dashboard/preview/${selectedSurvey.id}`, '_blank')}
+            <Button
+              type="button"
+              variant="secondary"
+              className="w-full"
+              onClick={() =>
+                window.open(`/dashboard/preview/${selectedSurvey.id}`, "_blank")
+              }
             >
               <Eye className="mr-2 h-4 w-4" />
               Visualizar Formulário
             </Button>
-            <Button onClick={handlePublish} disabled={publishing} className="w-full">
-              {publishing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />}
+            <Button
+              onClick={handlePublish}
+              disabled={publishing}
+              className="w-full"
+            >
+              {publishing ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <Send className="mr-2 h-4 w-4" />
+              )}
               Publicar Survey
             </Button>
           </div>
@@ -128,28 +157,82 @@ export function SurveyPublishPanel({ onBeforePublish }: SurveyPublishPanelProps)
             <h4 className="text-sm font-medium">Link de Compartilhamento</h4>
             {loadingLink ? (
               <div className="flex items-center justify-center py-4 text-muted-foreground">
-                <Loader2 className="h-5 w-5 animate-spin mr-2" /> Carregando link...
+                <Loader2 className="h-5 w-5 animate-spin mr-2" /> Carregando
+                link...
               </div>
             ) : publicLinkInfo?.publicSlug ? (
-              <PublicLinkCard url={`${typeof window !== 'undefined' ? window.location.origin : ''}/survey/${publicLinkInfo.publicSlug}`} />
+              <PublicLinkCard
+                url={`${typeof window !== "undefined" ? window.location.origin : ""}/survey/${publicLinkInfo.publicSlug}`}
+              />
             ) : publicLinkInfo?.url ? (
               <PublicLinkCard url={publicLinkInfo.url} />
             ) : (
-              <Button variant="outline" onClick={handleGenerateLink} className="w-full">
+              <Button
+                variant="outline"
+                onClick={handleGenerateLink}
+                className="w-full"
+              >
                 Gerar Link Público
               </Button>
             )}
           </div>
 
+          <div className="pt-4 border-t border-dashed space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <label className="text-sm font-medium">Aceitar respostas</label>
+                <p className="text-xs text-muted-foreground">
+                  Se desativado, o formulário será fechado para o público.
+                </p>
+              </div>
+              <Switch
+                checked={selectedSurvey.acceptingResponses}
+                onCheckedChange={async (checked) => {
+                  try {
+                    await updateSurveySettings(selectedSurvey.id, {
+                      acceptingResponses: checked,
+                    });
+                    toast.success(
+                      checked
+                        ? "Formulário aberto para respostas!"
+                        : "Formulário pausado.",
+                    );
+                  } catch (e) {
+                    console.log(e);
+                    toast.error("Erro ao alterar recebimento de respostas.");
+                  }
+                }}
+              />
+            </div>
+
+            <Button
+              type="button"
+              variant="secondary"
+              className="w-full"
+              onClick={() =>
+                window.open(`/dashboard/preview/${selectedSurvey.id}`, "_blank")
+              }
+            >
+              <Eye className="mr-2 h-4 w-4" />
+              Visualizar Formulário
+            </Button>
+          </div>
+
           <div className="pt-4 border-t border-dashed">
-            <h4 className="text-sm font-medium text-destructive mb-2">Zona de Perigo</h4>
-            <Button 
-              variant="destructive" 
-              onClick={handleArchive} 
-              disabled={archiving} 
+            <h4 className="text-sm font-medium text-destructive mb-2">
+              Zona de Perigo
+            </h4>
+            <Button
+              variant="destructive"
+              onClick={handleArchive}
+              disabled={archiving}
               className="w-full"
             >
-              {archiving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Archive className="mr-2 h-4 w-4" />}
+              {archiving ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <Archive className="mr-2 h-4 w-4" />
+              )}
               Arquivar Survey
             </Button>
             <p className="text-xs text-muted-foreground mt-2 text-center">
@@ -160,11 +243,15 @@ export function SurveyPublishPanel({ onBeforePublish }: SurveyPublishPanelProps)
       )}
 
       {selectedSurvey.status === "ARCHIVED" && (
-        <Alert variant="destructive" className="bg-destructive/5 border-destructive/20 text-destructive">
+        <Alert
+          variant="destructive"
+          className="bg-destructive/5 border-destructive/20 text-destructive"
+        >
           <Archive className="h-4 w-4" />
           <AlertTitle>Survey Arquivado</AlertTitle>
           <AlertDescription>
-            Este survey foi arquivado e não está mais disponível para respostas públicas.
+            Este survey foi arquivado e não está mais disponível para respostas
+            públicas.
           </AlertDescription>
         </Alert>
       )}
