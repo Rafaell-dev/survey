@@ -21,6 +21,8 @@ export interface SurveyMediaDTO {
   id: string;
   type: "IMAGE" | "VIDEO" | "AUDIO";
   url: string;
+  orderIndex?: number;
+  responseLimit?: number | null;
 }
 
 export interface ConditionalRuleDTO {

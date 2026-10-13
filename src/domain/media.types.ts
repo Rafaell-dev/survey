@@ -8,6 +8,9 @@ export interface Media {
   mimeType?: string;
   fileSize?: number;
   questionId: string;
+  orderIndex?: number;
+  responseLimit?: number | null;
+  answersCount?: number;
   createdAt: string;
 }
 
@@ -20,6 +23,9 @@ export interface UploadMediaResponseDTO {
   fileSize: number;
   questionId: string;
   storageKey: string;
+  orderIndex?: number;
+  responseLimit?: number | null;
+  answersCount?: number;
   createdAt: string;
 }
 

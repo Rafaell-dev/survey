@@ -4,6 +4,7 @@ export interface SaveAnswerDTO {
   numericValue?: number;
   selectedOptionId?: string;
   selectedOptionsIds?: string[];
+  mediaId?: string;
   timeSpentMs: number;
 }
 
@@ -15,6 +16,7 @@ export interface AnswerDTO {
   numericValue?: number | null;
   selectedOptionId?: string | null;
   selectedOptionsIds?: string[] | null;
+  mediaId?: string | null;
   timeSpentMs: number;
   createdAt: string;
   updatedAt: string;

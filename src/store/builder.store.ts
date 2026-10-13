@@ -53,6 +53,8 @@ interface BuilderState {
   // Media
   fetchQuestionMedia: (questionId: string) => Promise<void>;
   uploadMediaToQuestion: (questionId: string, file: File, onProgress?: (p: number) => void) => Promise<void>;
+  updateMediaLimit: (questionId: string, mediaId: string, limit: number | null) => Promise<void>;
+  reorderMedia: (questionId: string, mediaId: string, direction: 'up' | 'down') => Promise<void>;
   removeMedia: (questionId: string, mediaId: string) => Promise<void>;
 
   // Rules
@@ -485,6 +487,53 @@ export const useBuilderStore = create<BuilderState>((set, get) => ({
       });
     } catch (err) {
       console.error("Erro no upload de mídia:", err);
+      throw err;
+    }
+  },
+
+  updateMediaLimit: async (questionId: string, mediaId: string, limit: number | null) => {
+    try {
+      const updated = await mediaService.updateMedia(mediaId, { responseLimit: limit });
+      set((state) => {
+        const currentList = state.mediaByQuestion[questionId] || [];
+        return {
+          mediaByQuestion: {
+            ...state.mediaByQuestion,
+            [questionId]: currentList.map(m => m.id === mediaId ? { ...m, ...updated, responseLimit: limit } : m)
+          }
+        };
+      });
+    } catch (err) {
+      console.error("Erro ao atualizar limite da mídia:", err);
+      throw err;
+    }
+  },
+
+  reorderMedia: async (questionId: string, mediaId: string, direction: 'up' | 'down') => {
+    const currentList = [...(get().mediaByQuestion[questionId] || [])];
+    const index = currentList.findIndex(m => m.id === mediaId);
+    if (index === -1) return;
+    if (direction === 'up' && index === 0) return;
+    if (direction === 'down' && index === currentList.length - 1) return;
+
+    const targetIndex = direction === 'up' ? index - 1 : index + 1;
+    const temp = currentList[index];
+    currentList[index] = currentList[targetIndex];
+    currentList[targetIndex] = temp;
+
+    const reorderedList = currentList.map((m, idx) => ({ ...m, orderIndex: idx }));
+    set((state) => ({
+      mediaByQuestion: {
+        ...state.mediaByQuestion,
+        [questionId]: reorderedList
+      }
+    }));
+
+    try {
+      await mediaService.reorderMedia(questionId, reorderedList.map(m => m.id));
+    } catch (err) {
+      console.error("Erro ao reordenar mídias:", err);
+      get().fetchQuestionMedia(questionId);
       throw err;
     }
   },

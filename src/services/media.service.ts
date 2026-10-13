@@ -26,6 +26,15 @@ export const mediaService = {
     return response.data;
   },
 
+  async updateMedia(mediaId: string, data: { responseLimit?: number | null; orderIndex?: number }): Promise<Media> {
+    const response = await api.patch<Media>(`/media/${mediaId}`, data);
+    return response.data;
+  },
+
+  async reorderMedia(questionId: string, mediaIds: string[]): Promise<void> {
+    await api.patch(`/questions/${questionId}/media/reorder`, { mediaIds });
+  },
+
   async deleteMedia(mediaId: string): Promise<void> {
     await api.delete(`/media/${mediaId}`);
   }

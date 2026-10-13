@@ -133,7 +133,7 @@ export function QuestionCard({
         <MediaSection 
           questionId={question.id} 
           isNew={question.isNew} 
-          maxMediaCount={question.type === "PERCEPTION_TEST" ? 1 : undefined}
+          maxMediaCount={question.type === "PERCEPTION_TEST" ? 1 : 4}
         />
 
         {(question.type === 'SINGLE_CHOICE' || question.type === 'MULTIPLE_CHOICE') && (

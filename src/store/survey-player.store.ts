@@ -315,6 +315,7 @@ export const useSurveyPlayerStore = create<SurveyPlayerState>((set, get) => ({
 
         const dto: SaveAnswerDTO = {
           questionId,
+          mediaId: question.medias?.[0]?.id,
           timeSpentMs: 0 // Tracking não é foco no momento
         };
 
