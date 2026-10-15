@@ -3,162 +3,14 @@
 import { useEffect, useState } from "react";
 import { useBuilderStore } from "@/store/builder.store";
 import { MediaPreview } from "./MediaPreview";
-import { Trash2, Loader2, FileWarning, ArrowUp, ArrowDown, Users, Check, AlertCircle } from "lucide-react";
+import { Trash2, Loader2, FileWarning, ArrowUp, ArrowDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Media } from "@/domain/media.types";
 
 interface MediaListProps {
   questionId: string;
   isNew?: boolean;
-}
-
-interface MediaLimitInputProps {
-  questionId: string;
-  media: Media;
-  index: number;
-  totalMedias: number;
-}
-
-function MediaLimitInput({ questionId, media, index, totalMedias }: MediaLimitInputProps) {
-  const { updateMediaLimit } = useBuilderStore();
-  const [val, setVal] = useState<string>(media.responseLimit ? String(media.responseLimit) : "");
-  const [isSaving, setIsSaving] = useState(false);
-  const [isSaved, setIsSaved] = useState(false);
-
-  useEffect(() => {
-    setVal(media.responseLimit ? String(media.responseLimit) : "");
-  }, [media.responseLimit]);
-
-  const handleBlurOrSave = async () => {
-    const trimmed = val.trim();
-    if (trimmed === "") {
-      if (media.responseLimit !== null && media.responseLimit !== undefined) {
-        setIsSaving(true);
-        try {
-          await updateMediaLimit(questionId, media.id, null);
-          setIsSaved(true);
-          setTimeout(() => setIsSaved(false), 2000);
-          toast.success(`Limite da Mídia ${String(index + 1).padStart(2, '0')} removido.`);
-        } catch {
-          toast.error("Erro ao remover limite.");
-        } finally {
-          setIsSaving(false);
-        }
-      }
-      return;
-    }
-
-    const num = Number(trimmed);
-    if (isNaN(num) || !Number.isInteger(num) || num < 1 || num > 9999) {
-      toast.error("O limite deve ser um número inteiro de 1 até 9999.");
-      setVal(media.responseLimit ? String(media.responseLimit) : "");
-      return;
-    }
-
-    if (num === media.responseLimit) return;
-
-    setIsSaving(true);
-    try {
-      await updateMediaLimit(questionId, media.id, num);
-      setIsSaved(true);
-      setTimeout(() => setIsSaved(false), 2000);
-      toast.success(`Limite de ${num} respostas salvo para a Mídia ${String(index + 1).padStart(2, '0')}!`);
-    } catch {
-      toast.error("Erro ao salvar limite de respostas.");
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
-  const answersCount = media.answersCount ?? 0;
-  const limit = media.responseLimit;
-  const isLimitReached = limit !== null && limit !== undefined && answersCount >= limit;
-  const progressPercent = limit ? Math.min(100, Math.round((answersCount / limit) * 100)) : 0;
-
-  return (
-    <div className="p-3 bg-muted/20 border-t space-y-2.5">
-      <div className="flex items-center justify-between gap-2">
-        <label className="text-xs font-semibold flex items-center gap-1.5 text-foreground/90">
-          <Users className="h-3.5 w-3.5 text-primary" />
-          Limite de respostas (1 - 9999)
-        </label>
-        {isSaving ? (
-          <span className="text-[10px] text-muted-foreground flex items-center gap-1">
-            <Loader2 className="h-3 w-3 animate-spin" /> Salvando...
-          </span>
-        ) : isSaved ? (
-          <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium flex items-center gap-1">
-            <Check className="h-3 w-3" /> Salvo!
-          </span>
-        ) : null}
-      </div>
-
-      <div className="flex items-center gap-2">
-        <div className="relative flex-1">
-          <Input
-            type="number"
-            min={1}
-            max={9999}
-            placeholder="Ex: 40 respostas"
-            value={val}
-            onChange={(e) => setVal(e.target.value)}
-            onBlur={handleBlurOrSave}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                e.currentTarget.blur();
-              }
-            }}
-            className="h-8 text-xs bg-background pr-16"
-          />
-          <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] text-muted-foreground pointer-events-none">
-            respostas
-          </span>
-        </div>
-      </div>
-
-      {limit ? (
-        <div className="space-y-1.5 pt-1">
-          <div className="flex items-center justify-between text-[11px]">
-            <span className="text-muted-foreground">
-              {answersCount} de {limit} respostas recebidas
-            </span>
-            <span className="font-semibold text-primary">{progressPercent}%</span>
-          </div>
-
-          <div className="w-full bg-muted rounded-full h-1.5 overflow-hidden">
-            <div 
-              className={`h-full transition-all duration-300 rounded-full ${
-                isLimitReached ? "bg-amber-500" : "bg-primary"
-              }`}
-              style={{ width: `${progressPercent}%` }}
-            />
-          </div>
-
-          {isLimitReached ? (
-            <div className="flex items-center gap-1 text-[11px] text-amber-600 dark:text-amber-400 font-medium pt-0.5">
-              <AlertCircle className="h-3.5 w-3.5 shrink-0" />
-              <span>Limite atingido! Passando para a próxima mídia configurada.</span>
-            </div>
-          ) : index < totalMedias - 1 ? (
-            <p className="text-[10px] text-muted-foreground italic">
-              Após atingir {limit} respostas, passa automaticamente para a Mídia {String(index + 2).padStart(2, '0')}.
-            </p>
-          ) : (
-            <p className="text-[10px] text-muted-foreground italic">
-              Última mídia da sequência.
-            </p>
-          )}
-        </div>
-      ) : (
-        <p className="text-[10px] text-muted-foreground italic">
-          Sem limite definido (receberá respostas sem rotação condicional).
-        </p>
-      )}
-    </div>
-  );
 }
 
 export function MediaList({ questionId, isNew }: MediaListProps) {
@@ -179,7 +31,7 @@ export function MediaList({ questionId, isNew }: MediaListProps) {
     return (
       <div className="p-4 border border-dashed rounded-lg bg-muted/10 flex items-center gap-3 text-muted-foreground">
         <FileWarning className="h-5 w-5 shrink-0" />
-        <span className="text-sm">Salve o formulário primeiro para poder anexar arquivos de mídia e definir limites.</span>
+        <span className="text-sm">Salve o formulário primeiro para poder anexar arquivos de mídia.</span>
       </div>
     );
   }
@@ -200,13 +52,8 @@ export function MediaList({ questionId, isNew }: MediaListProps) {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            Mídias Configuradas ({mediaList.length}/4)
+            Mídias Anexadas ({mediaList.length}/4)
           </h4>
-          {mediaList.length > 1 && (
-            <Badge variant="outline" className="text-[10px] font-normal py-0">
-              Rotação Condicional Ativa
-            </Badge>
-          )}
         </div>
       </div>
 
@@ -236,7 +83,7 @@ export function MediaList({ questionId, isNew }: MediaListProps) {
                     className="h-7 w-7 text-muted-foreground hover:text-foreground disabled:opacity-30"
                     disabled={index === 0}
                     onClick={() => reorderMedia(questionId, media.id, "up")}
-                    title="Mover para cima na fila de respostas"
+                    title="Mover para cima"
                   >
                     <ArrowUp className="h-3.5 w-3.5" />
                   </Button>
@@ -246,7 +93,7 @@ export function MediaList({ questionId, isNew }: MediaListProps) {
                     className="h-7 w-7 text-muted-foreground hover:text-foreground disabled:opacity-30"
                     disabled={index === mediaList.length - 1}
                     onClick={() => reorderMedia(questionId, media.id, "down")}
-                    title="Mover para baixo na fila de respostas"
+                    title="Mover para baixo"
                   >
                     <ArrowDown className="h-3.5 w-3.5" />
                   </Button>
@@ -270,14 +117,6 @@ export function MediaList({ questionId, isNew }: MediaListProps) {
               <div className="p-2 flex-1 flex items-center justify-center bg-muted/5 min-h-[140px]">
                 <MediaPreview media={media} />
               </div>
-
-              {/* Campo para Definir Limite de Respostas (1 - 9999) */}
-              <MediaLimitInput
-                questionId={questionId}
-                media={media}
-                index={index}
-                totalMedias={mediaList.length}
-              />
             </div>
           );
         })}
@@ -288,7 +127,7 @@ export function MediaList({ questionId, isNew }: MediaListProps) {
           <div className="bg-background w-full max-w-md rounded-xl p-6 shadow-xl animate-in zoom-in-95">
             <h3 className="text-xl font-bold mb-2">Excluir mídia?</h3>
             <p className="text-muted-foreground mb-6 text-sm">
-              Esta ação irá excluir permanentemente esta mídia da questão e removerá qualquer limite de respostas configurado para ela.
+              Esta ação irá excluir permanentemente esta mídia da questão.
             </p>
             <div className="flex justify-end gap-3">
               <Button variant="outline" onClick={() => setDeleteConfirmId(null)}>

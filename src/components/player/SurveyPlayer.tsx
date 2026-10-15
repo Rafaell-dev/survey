@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useSurveyPlayerStore } from "@/store/survey-player.store";
+import { useSurveyPlayerStore, evaluateRule, shouldSkipBlock } from "@/store/survey-player.store";
 import { QuestionRenderer } from "./QuestionRenderer";
 import { IdentificationStep } from "./IdentificationStep";
 import { CompletionPage } from "./CompletionPage";
@@ -147,7 +147,31 @@ export function SurveyPlayer() {
 
   // playerStep === 'RESPONDING'
   const currentBlock = survey.blocks[currentBlockIndex];
-  const isLastBlock = currentBlockIndex >= survey.blocks.length - 1;
+
+  let hasRuleJump = false;
+  if (currentBlock?.questions) {
+    for (const question of currentBlock.questions) {
+      if (!question.rules || question.rules.length === 0) continue;
+      const answer = answers[question.id];
+      for (const rule of question.rules) {
+        if (evaluateRule(rule, answer)) {
+          hasRuleJump = true;
+          break;
+        }
+      }
+      if (hasRuleJump) break;
+    }
+  }
+
+  let hasNextLinearBlock = false;
+  for (let i = currentBlockIndex + 1; i < survey.blocks.length; i++) {
+    if (!shouldSkipBlock(survey.blocks[i], survey.blocks, answers)) {
+      hasNextLinearBlock = true;
+      break;
+    }
+  }
+
+  const isLastBlock = !hasRuleJump && !hasNextLinearBlock;
 
   const validateBlock = () => {
     if (isPreviewMode) return true;
@@ -180,7 +204,25 @@ export function SurveyPlayer() {
     goToPreviousBlock();
   };
 
-  const progressPercent = Math.round((currentBlockIndex / survey.blocks.length) * 100);
+  // Blocos considerados no fluxo ativo deste respondente:
+  // - Blocos que o respondente visitou ou está respondendo no momento
+  // - Blocos que não devem ser pulados (não atingiram limite e não são fallback inativo)
+  const flowBlocks = survey.blocks.filter((b, idx) => {
+    if (idx === currentBlockIndex || history.includes(idx)) return true;
+    if (shouldSkipBlock(b, survey.blocks, answers)) return false;
+    return true;
+  });
+
+  const totalFlowBlocks = Math.max(1, flowBlocks.length);
+  const currentStepNumber = Math.max(
+    1,
+    flowBlocks.findIndex((b) => b.id === currentBlock?.id) + 1
+  );
+
+  const progressPercent = Math.min(
+    100,
+    Math.round(((currentStepNumber - 1) / totalFlowBlocks) * 100)
+  );
 
   const isNavigationDisabled = savingAnswers > 0;
 
@@ -212,7 +254,7 @@ export function SurveyPlayer() {
       <div className="space-y-2 px-1">
         <div className="flex justify-between text-xs sm:text-sm text-muted-foreground font-medium">
           <span>{progressPercent}% Concluído</span>
-          <span>Bloco {currentBlockIndex + 1} de {survey.blocks.length}</span>
+          <span>Bloco {currentStepNumber} de {totalFlowBlocks}</span>
         </div>
         <div className="h-2 w-full bg-secondary rounded-full overflow-hidden">
           <div 

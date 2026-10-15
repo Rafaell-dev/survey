@@ -91,6 +91,10 @@ export const useBuilderStore = create<BuilderState>((set, get) => ({
         title: b.title || "",
         description: b.description || "",
         orderIndex: b.orderIndex,
+        responseLimit: b.responseLimit ?? null,
+        fallbackBlockId: b.fallbackBlockId ?? null,
+        showOnlyOnFallback: Boolean(b.showOnlyOnFallback),
+        responsesCount: b.responsesCount ?? 0,
         isNew: false
       }));
       set({ blocks: localBlocks });
@@ -151,6 +155,7 @@ export const useBuilderStore = create<BuilderState>((set, get) => ({
       title: `Bloco ${blocks.length + 1}`,
       description: "",
       orderIndex: blocks.length,
+      showOnlyOnFallback: false,
       isNew: true
     };
     set({ blocks: [...blocks, newBlock] });
@@ -372,6 +377,9 @@ export const useBuilderStore = create<BuilderState>((set, get) => ({
           title: b.title,
           description: b.description,
           orderIndex: b.orderIndex,
+          responseLimit: b.responseLimit ?? null,
+          fallbackBlockId: b.fallbackBlockId ?? null,
+          showOnlyOnFallback: Boolean(b.showOnlyOnFallback),
           questions: questions.filter(q => q.blockId === b.id).map(q => ({
             id: q.id,
             isNew: q.isNew,
@@ -410,6 +418,10 @@ export const useBuilderStore = create<BuilderState>((set, get) => ({
         title: b.title || "",
         description: b.description || "",
         orderIndex: b.orderIndex,
+        responseLimit: b.responseLimit ?? null,
+        fallbackBlockId: b.fallbackBlockId ?? null,
+        showOnlyOnFallback: Boolean(b.showOnlyOnFallback),
+        responsesCount: b.responsesCount ?? 0,
         isNew: false
       }));
 

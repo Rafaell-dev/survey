@@ -20,15 +20,15 @@ export function MediaSection({ questionId, isNew, maxMediaCount = 4 }: MediaSect
 
   return (
     <div className="mt-4 pt-4 border-t border-dashed space-y-4">
-      {/* Informação sobre rotação condicional */}
+      {/* Informação sobre mídias */}
       <div className="bg-primary/5 border border-primary/20 rounded-lg p-3 text-xs text-muted-foreground flex items-start gap-2.5">
         <Info className="h-4 w-4 text-primary shrink-0 mt-0.5" />
         <div className="space-y-0.5">
           <p className="font-medium text-foreground">
-            Mídias com limite de respostas por mídia (até {maxMediaCount} mídias)
+            Mídias da questão (até {maxMediaCount} mídias)
           </p>
           <p>
-            Configure um limite condicional de <strong>1 até 9999</strong> respostas para cada mídia. Quando o limite for atingido, os novos respondentes verão automaticamente a próxima mídia configurada na sequência.
+            Anexe imagens, vídeos ou áudios para ilustrar esta pergunta ou servir de base para as respostas dos participantes.
           </p>
         </div>
       </div>

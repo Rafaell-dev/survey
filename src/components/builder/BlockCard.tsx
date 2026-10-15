@@ -2,13 +2,15 @@
 
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { GripVertical, Trash2 } from "lucide-react";
+import { GripVertical, Trash2, EyeOff } from "lucide-react";
 import { LocalBlock } from "@/domain/block.types";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { QuestionList } from "./QuestionList";
+import { BlockLimitConfig } from "./BlockLimitConfig";
 
 interface BlockCardProps {
   block: LocalBlock;
@@ -48,9 +50,18 @@ export function BlockCard({ block, onUpdate, onDelete }: BlockCardProps) {
       </div>
 
       <CardHeader className="pl-12 py-3 flex flex-row items-center justify-between border-b bg-muted/20 space-y-0">
-        <div className="font-semibold text-sm text-muted-foreground flex items-center gap-2">
+        <div className="font-semibold text-sm text-muted-foreground flex items-center gap-2 flex-wrap">
           <span>Bloco {block.orderIndex + 1}</span>
           {block.isNew && <span className="text-[10px] bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full font-medium">Novo</span>}
+          {block.showOnlyOnFallback && (
+            <Badge 
+              variant="outline" 
+              className="text-[10px] border-indigo-500/40 bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 gap-1 font-medium py-0"
+            >
+              <EyeOff className="h-3 w-3" />
+              Apenas via limite
+            </Badge>
+          )}
         </div>
         <Button 
           variant="ghost" 
@@ -83,6 +94,8 @@ export function BlockCard({ block, onUpdate, onDelete }: BlockCardProps) {
             className="min-h-[60px] resize-none bg-transparent border-transparent focus-visible:border-primary px-0 rounded-none shadow-none focus-visible:ring-0 transition-colors py-1"
           />
         </div>
+
+        <BlockLimitConfig block={block} onUpdate={onUpdate} />
 
         <QuestionList blockId={block.id} />
       </CardContent>

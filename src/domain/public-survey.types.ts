@@ -57,6 +57,11 @@ export interface SurveyBlockDTO {
   title: string | null;
   description: string | null;
   orderIndex: number;
+  responseLimit?: number | null;
+  fallbackBlockId?: string | null;
+  showOnlyOnFallback?: boolean;
+  responsesCount?: number;
+  isLimitReached?: boolean;
   questions: SurveyQuestionDTO[];
 }
 

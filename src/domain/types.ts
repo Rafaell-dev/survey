@@ -12,6 +12,10 @@ export interface Block {
   id: string;
   title: string;
   description: string;
+  responseLimit?: number | null;
+  fallbackBlockId?: string | null;
+  showOnlyOnFallback?: boolean;
+  responsesCount?: number;
   questions: Question[];
 }
 

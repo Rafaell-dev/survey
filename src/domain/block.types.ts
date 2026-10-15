@@ -3,6 +3,10 @@ export interface Block {
   title: string | null;
   description: string | null;
   orderIndex: number;
+  responseLimit?: number | null;
+  fallbackBlockId?: string | null;
+  showOnlyOnFallback?: boolean;
+  responsesCount?: number;
   surveyId: string;
   createdAt: string;
   updatedAt: string;
@@ -11,11 +15,17 @@ export interface Block {
 export interface CreateBlockDTO {
   title?: string;
   description?: string;
+  responseLimit?: number | null;
+  fallbackBlockId?: string | null;
+  showOnlyOnFallback?: boolean;
 }
 
 export interface UpdateBlockDTO {
   title?: string;
   description?: string;
+  responseLimit?: number | null;
+  fallbackBlockId?: string | null;
+  showOnlyOnFallback?: boolean;
 }
 
 export interface ReorderBlocksDTO {
@@ -34,6 +44,10 @@ export interface LocalBlock extends Partial<Block> {
   title: string;
   description: string;
   orderIndex: number;
+  responseLimit?: number | null;
+  fallbackBlockId?: string | null;
+  showOnlyOnFallback?: boolean;
+  responsesCount?: number;
   isNew?: boolean;
   isDeleted?: boolean;
 }

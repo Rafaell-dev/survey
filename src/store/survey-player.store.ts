@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { SurveyPlayerDTO, ConditionalRuleDTO, SurveyQuestionDTO } from '../domain/public-survey.types';
+import { SurveyPlayerDTO, ConditionalRuleDTO, SurveyQuestionDTO, SurveyBlockDTO } from '../domain/public-survey.types';
 import { CreateParticipantDTO, ResponseSessionDTO } from '../domain/participant.types';
 import { publicSurveyService } from '../services/public-survey.service';
 import { answerService } from '../services/answer.service';
@@ -9,6 +9,7 @@ import { mediaTrackingService } from '../services/media-tracking.service';
 import { SaveAnswerDTO } from '../domain/answer.types';
 import { SaveTrackingDTO } from '../domain/tracking.types';
 import { MediaInteractionType } from '../domain/media-tracking.types';
+import { toast } from 'sonner';
 type PlayerStep = 'IDENTIFICATION' | 'RESPONDING' | 'FINISHED';
 
 interface SurveyPlayerState {
@@ -49,7 +50,7 @@ interface SurveyPlayerState {
   interruptSession: () => Promise<void>;
 }
 
-function evaluateRule(rule: ConditionalRuleDTO, answer: any): boolean {
+export function evaluateRule(rule: ConditionalRuleDTO, answer: any): boolean {
   if (answer === undefined || answer === null || answer === '') return false;
 
   const matchValue = rule.matchValue;
@@ -78,6 +79,78 @@ function evaluateRule(rule: ConditionalRuleDTO, answer: any): boolean {
     default:
       return false;
   }
+}
+
+export function shouldSkipBlock(
+  block: SurveyBlockDTO,
+  allBlocks: SurveyBlockDTO[],
+  answers?: Record<string, any>
+): boolean {
+  const alreadyAnswered = answers
+    ? block.questions.some((q) => answers[q.id] !== undefined && answers[q.id] !== null && answers[q.id] !== "")
+    : false;
+
+  // 1. Se o bloco já atingiu o limite de respostas e o usuário não o respondeu,
+  // ele deve ser pulado (não é respondido nem contabilizado na barra de progresso)
+  if (block.isLimitReached && !alreadyAnswered) {
+    return true;
+  }
+
+  // 2. Se o bloco é exclusivo de fallback (showOnlyOnFallback) ou é destino de fallback de outro bloco:
+  const isFallbackTarget = allBlocks.some((b) => b.fallbackBlockId === block.id);
+  if (block.showOnlyOnFallback || isFallbackTarget) {
+    // Só deve aparecer se algum bloco de origem tiver atingido o limite
+    const originTriggered = allBlocks.some(
+      (b) => b.fallbackBlockId === block.id && b.isLimitReached
+    );
+    if (!originTriggered && !alreadyAnswered) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+export function resolveTargetBlockIndex(
+  blocks: SurveyBlockDTO[] | undefined,
+  startIndex: number,
+  answers?: Record<string, any>
+): number {
+  if (!blocks || startIndex < 0 || startIndex >= blocks.length) return startIndex;
+
+  const visited = new Set<number>();
+  let currIndex = startIndex;
+
+  while (currIndex >= 0 && currIndex < blocks.length) {
+    if (visited.has(currIndex)) break; // Previne loops circulares
+    visited.add(currIndex);
+
+    const block = blocks[currIndex];
+    if (block) {
+      const alreadyAnswered = answers
+        ? block.questions.some((q) => answers[q.id] !== undefined && answers[q.id] !== null && answers[q.id] !== "")
+        : false;
+
+      if (block.isLimitReached && !alreadyAnswered) {
+        if (block.fallbackBlockId) {
+          const fallbackIdx = blocks.findIndex((b) => b.id === block.fallbackBlockId);
+          if (fallbackIdx !== -1 && fallbackIdx !== currIndex) {
+            currIndex = fallbackIdx;
+            continue;
+          }
+        }
+        // Sem fallback: avança para o próximo bloco linear válido
+        currIndex++;
+        while (currIndex < blocks.length && shouldSkipBlock(blocks[currIndex], blocks, answers)) {
+          currIndex++;
+        }
+        continue;
+      }
+    }
+    break;
+  }
+
+  return currIndex;
 }
 
 const debounceTimers: Record<string, NodeJS.Timeout> = {};
@@ -192,11 +265,21 @@ export const useSurveyPlayerStore = create<SurveyPlayerState>((set, get) => ({
         }));
       }
 
+      let initialCandidateIndex = 0;
+      while (
+        initialCandidateIndex < survey.blocks.length &&
+        shouldSkipBlock(survey.blocks[initialCandidateIndex], survey.blocks)
+      ) {
+        initialCandidateIndex++;
+      }
+
+      const initialBlockIndex = resolveTargetBlockIndex(survey.blocks, initialCandidateIndex);
+
       set({
         participant: data,
         responseSession: session,
         playerStep: 'RESPONDING',
-        currentBlockIndex: 0,
+        currentBlockIndex: initialBlockIndex,
         history: [],
         answers: {},
         blockTrackings: {},
@@ -373,6 +456,22 @@ export const useSurveyPlayerStore = create<SurveyPlayerState>((set, get) => ({
       if (ruleFired) break;
     }
 
+    if (!ruleFired) {
+      while (
+        nextIndex < survey.blocks.length &&
+        shouldSkipBlock(survey.blocks[nextIndex], survey.blocks, answers)
+      ) {
+        nextIndex++;
+      }
+    }
+
+    const effectiveNextIndex = resolveTargetBlockIndex(survey.blocks, nextIndex, answers);
+
+    if (effectiveNextIndex >= survey.blocks.length) {
+      get().finishSurvey();
+      return;
+    }
+
     const newHistory = [...history, currentBlockIndex];
 
     // Persiste o progresso
@@ -381,7 +480,7 @@ export const useSurveyPlayerStore = create<SurveyPlayerState>((set, get) => ({
       if (saved) {
         try {
           const parsed = JSON.parse(saved);
-          parsed.currentBlockIndex = nextIndex;
+          parsed.currentBlockIndex = effectiveNextIndex;
           parsed.history = newHistory;
           parsed.blockTrackings = blockTrackings;
           parsed.trackedMediaEvents = get().trackedMediaEvents;
@@ -392,7 +491,7 @@ export const useSurveyPlayerStore = create<SurveyPlayerState>((set, get) => ({
 
     set({
       history: newHistory,
-      currentBlockIndex: nextIndex,
+      currentBlockIndex: effectiveNextIndex,
       saveError: null
     });
     get().trackBlockStart();
@@ -434,6 +533,7 @@ export const useSurveyPlayerStore = create<SurveyPlayerState>((set, get) => ({
     
     if (savingAnswers > 0) {
       set({ saveError: 'Aguarde o salvamento das respostas antes de finalizar.' });
+      toast.warning('Aguarde o salvamento das respostas antes de finalizar.');
       return;
     }
 
@@ -441,7 +541,9 @@ export const useSurveyPlayerStore = create<SurveyPlayerState>((set, get) => ({
       try {
         await responseService.finishResponse(responseSession.responseId);
       } catch (e: any) {
-        set({ saveError: e.response?.data?.message || 'Erro ao finalizar a pesquisa. Verifique sua conexão e tente novamente.' });
+        const errorMsg = e.response?.data?.message || 'Erro ao finalizar a pesquisa. Verifique sua conexão e tente novamente.';
+        set({ saveError: errorMsg });
+        toast.error(errorMsg);
         return; // interrompe a finalização se falhar
       }
     }
