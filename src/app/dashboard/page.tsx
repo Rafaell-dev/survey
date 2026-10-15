@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Plus, Users, LayoutTemplate, Clock, Download, ExternalLink, Trash2, Star } from "lucide-react";
+import { Plus, Users, LayoutTemplate, Clock, Download, ExternalLink, Trash2, Star, Copy, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,8 +13,10 @@ import { useSurveyStore } from "@/store/survey.store";
 import { api } from "@/services/api";
 
 export default function DashboardPage() {
-  const { surveys, loading, fetchSurveys, deleteSurvey, total, globalMetrics, fetchGlobalMetrics, toggleHighlight } = useSurveyStore();
+  const { surveys, loading, fetchSurveys, deleteSurvey, duplicateSurvey, total, globalMetrics, fetchGlobalMetrics, toggleHighlight } = useSurveyStore();
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [duplicateTarget, setDuplicateTarget] = useState<any | null>(null);
+  const [isDuplicating, setIsDuplicating] = useState(false);
   const [showArchived, setShowArchived] = useState(false);
 
   useEffect(() => {
@@ -42,6 +44,28 @@ export default function DashboardPage() {
       toast.success("Download iniciado com sucesso");
     } catch (err) {
       toast.error("Erro ao exportar dados");
+    }
+  };
+
+  const handleDuplicateConfirm = async () => {
+    if (!duplicateTarget || isDuplicating) return;
+
+    setIsDuplicating(true);
+    try {
+      await duplicateSurvey(duplicateTarget.id);
+      toast.success("Formulário duplicado com sucesso! A cópia foi criada como rascunho.");
+      setDuplicateTarget(null);
+    } catch (err: unknown) {
+      console.error("Erro na duplicação:", err);
+      if (isAxiosError(err)) {
+        toast.error(err.response?.data?.message || "Erro ao duplicar formulário.");
+      } else if (err instanceof Error) {
+        toast.error(err.message);
+      } else {
+        toast.error("Erro ao duplicar formulário.");
+      }
+    } finally {
+      setIsDuplicating(false);
     }
   };
 
@@ -167,6 +191,20 @@ export default function DashboardPage() {
                           </>
                         )}
                         
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          className="h-8 w-8 text-muted-foreground hover:text-primary" 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            e.preventDefault();
+                            setDuplicateTarget(survey);
+                          }} 
+                          title="Duplicar Formulário"
+                        >
+                          <Copy className="h-4 w-4" />
+                        </Button>
+                        
                         <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive" onClick={(e) => { e.stopPropagation(); e.preventDefault(); setDeleteId(survey.id); }}>
                           <Trash2 className="h-4 w-4" />
                         </Button>
@@ -188,6 +226,48 @@ export default function DashboardPage() {
           </div>
         )}
       </div>
+
+      {duplicateTarget && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in">
+          <div className="bg-background w-full max-w-md rounded-xl p-6 shadow-xl animate-in zoom-in-95">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="p-2 bg-primary/10 rounded-full text-primary">
+                <Copy className="w-5 h-5" />
+              </div>
+              <h3 className="text-xl font-bold">Duplicar Formulário</h3>
+            </div>
+            <p className="text-muted-foreground text-sm mb-6 leading-relaxed">
+              Deseja criar uma cópia do formulário <strong className="text-foreground">"{duplicateTarget.title}"</strong>? Toda a estrutura de blocos, questões e regras será copiada, e o novo formulário ficará com o status de <strong>Rascunho</strong>.
+            </p>
+            <div className="flex justify-end gap-3">
+              <Button 
+                variant="outline" 
+                onClick={() => setDuplicateTarget(null)}
+                disabled={isDuplicating}
+              >
+                Cancelar
+              </Button>
+              <Button 
+                onClick={handleDuplicateConfirm} 
+                disabled={isDuplicating}
+                className="gap-2"
+              >
+                {isDuplicating ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Duplicando...
+                  </>
+                ) : (
+                  <>
+                    <Copy className="h-4 w-4" />
+                    Sim, duplicar
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {deleteId && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in">

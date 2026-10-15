@@ -78,5 +78,10 @@ export const surveyService = {
   async getPreviewSurvey(id: string): Promise<any> {
     const response = await api.get(`/surveys/${id}/preview`);
     return response.data;
+  },
+
+  async duplicateSurvey(id: string): Promise<Survey> {
+    const response = await api.post<Survey>(`/surveys/${id}/duplicate`);
+    return response.data;
   }
 };

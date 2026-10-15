@@ -23,6 +23,7 @@ interface SurveyState {
   updateSurvey: (id: string, data: UpdateSurveyDTO) => Promise<Survey>;
   updateSurveySettings: (id: string, data: UpdateSurveySettingsDTO) => Promise<Survey>;
   deleteSurvey: (id: string) => Promise<void>;
+  duplicateSurvey: (id: string) => Promise<Survey>;
   toggleHighlight: (id: string, currentStatus: boolean) => Promise<void>;
   clearSelectedSurvey: () => void;
 
@@ -126,8 +127,23 @@ export const useSurveyStore = create<SurveyState>((set, get) => ({
       await surveyService.deleteSurvey(id);
       set((state) => ({
         surveys: state.surveys.filter(s => s.id !== id),
+        total: Math.max(0, state.total - 1),
         selectedSurvey: state.selectedSurvey?.id === id ? null : state.selectedSurvey
       }));
+    } finally {
+      set({ loading: false });
+    }
+  },
+
+  duplicateSurvey: async (id: string) => {
+    set({ loading: true });
+    try {
+      const duplicated = await surveyService.duplicateSurvey(id);
+      set((state) => ({
+        surveys: [duplicated, ...state.surveys],
+        total: state.total + 1
+      }));
+      return duplicated;
     } finally {
       set({ loading: false });
     }
